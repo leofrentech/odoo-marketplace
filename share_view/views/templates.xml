@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="shared_view_state_load">
+        <div id="shared_view">
+            <t t-esc="action" />
+            <script type="module">
+                odoo.define('share_view.loader', function (require) {
+                "use strict";
+                const { registry } = require("@web/core/registry");
+                const { session } = require("@web/session");
+
+                const actionService = require("@web/webclient/actions").actionService;
+                document.addEventListener("DOMContentLoaded", async () => {
+                const container = document.getElementById("shared_view");
+                if (container) {
+                const data = container.dataset.oeAction;
+                if (data) {
+                const parsed = JSON.parse(data);
+                const action = JSON.parse(parsed.action);
+
+                // Call doAction
+                const env = odoo.__DEBUG__.services.env; // quick hack for demo
+                const actionService = env.services.action;
+                actionService.doAction(action);
+                }
+                }
+                });
+                });
+            </script>
+        </div>
+    </template>
+</odoo>

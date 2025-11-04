@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="product_trackable_qr">
+        <div
+            class="d-flex flex-column align-items-center justify-content-between text-center"
+            style="height: 25mm; width: 25mm; padding: 1mm; box-sizing: border-box;">
+            <img
+                t-att-src="'/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s' %
+                                    ('QR', product.qr_url, 25, 25)"
+                class="mb-2" style="width: 25px; height: 25px; margin-top: 1mm;" />
+        </div>
+    </template>
+
+    <template id="report_productlabel_dymo" inherit_id="product.report_simple_label_dymo">
+        <xpath expr="//div[hasclass('o_label_small_barcode')]" position="after">
+            <t t-call="product_qr_track.product_trackable_qr">
+                <t t-set="product" t-value="product" />
+            </t>
+        </xpath>
+    </template>
+</odoo>

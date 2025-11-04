@@ -1,0 +1,20 @@
+{
+    "name": "Product QR Track",
+    "version": "18.0.1.0.0",
+    "summary": "Product QR Track",
+    "website": "https://leofren.com",
+    "author": "Leofren Technologies",
+    "maintainer": "Fenil Moradiya",
+    "depends": ["stock", "website_sale"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/product_product_views.xml",
+        "views/product_qr_visit_views.xml",
+        "reports/product_product_templates.xml",
+    ],
+    "images": ["static/description/icon.png"],
+    "license": "OPL-1",
+    "application": True,
+    "installable": True,
+    "auto_install": False,
+}
