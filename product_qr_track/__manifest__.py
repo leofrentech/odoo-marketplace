@@ -1,7 +1,7 @@
 {
     "name": "Product QR Track",
     "version": "18.0.1.0.0",
-    "summary": "Product QR Track",
+    "summary": "Adds QR code to track the customer analytics.",
     "website": "https://leofren.com",
     "author": "Leofren Technologies",
     "maintainer": "Fenil Moradiya",
