@@ -15,13 +15,22 @@
     <template id="product_personalization_page" name="Product Personalization Page">
         <t t-call="website.layout">
             <div id="wrap" class="o_product_personalize_page" t-att-data-product-id="product.id" style="position: relative;">
-                <!-- Top right action buttons (moved) -->
                 <div style="position: absolute; top: 20px; right: 10px; z-index: 1050;
                     display: flex; flex-direction: column; gap: 8px;">                                    
+                    <div class="form-group mb-3">
+                        <label><strong>Quantity</strong></label>
+                        <t t-if="edit_mode">
+                            <t t-set="line" t-value="env['sale.order.line'].sudo().browse(line_id)"/>
+                        </t>
+                        <input type="number" id="product_qty" class="form-control" min="1" 
+                            t-att-value="line.product_uom_qty if edit_mode else 1"/>
+                    </div>
                     <button type="button" id="add_to_cart_personalized"
                         class="btn btn-primary d-flex align-items-center"
                         style="height: 48px;">
-                        <i class="fa fa-shopping-cart" style="margin-right:5px;" ></i> Add to Cart
+                        <i class="fa fa-shopping-cart" style="margin-right:5px;"></i>
+                        <t t-if="edit_mode">Update Design</t>
+                        <t t-else="">Add to Cart</t>
                     </button>
                     <a t-attf-href="/shop/product/#{product.id}"
                         class="btn btn-outline-secondary d-flex align-items-center"
@@ -32,7 +41,7 @@
 
                 <div class="container-fluid mt-4">
                     <div class="row">
-                        <!-- Sidebar (left icon menu + panels) -->
+                        <!-- Sidebar -->
                         <div class="col-lg-3" style="display: flex; background-color: #f8f9fa; min-height: calc(100vh - 100px); padding: 0;">
                             <!-- Left Menu Bar -->
                             <div style="width: 80px; background-color: #2d3748; display: flex; flex-direction: column; align-items: center; padding-top: 20px;">
@@ -64,7 +73,6 @@
 
                             <!-- Right Panel Content -->
                             <div style="flex: 1; padding: 20px; overflow-y: auto; position: relative;">
-                                <!-- Sticky top toolbar visible in every panel -->
                                 <div style="position: sticky; top: 20px; z-index: 50; background: transparent; padding-bottom: 12px;">
                                     <div class="btn-group w-100 mb-3" role="group" style="display: flex; gap:6px;">
                                         <button id="undo_button" class="btn btn-outline-secondary btn-sm" title="Undo (Ctrl+Z)">
@@ -80,8 +88,7 @@
                                 <div id="variant_panel" class="menu-panel">
                                     <h5 class="mb-3">Select Variant</h5>
                                     <div class="form-group mb-3">
-                                        <select id="variant_selector" class="form-control">
-                                            <!-- options populated by JS -->
+                                        <select id="variant_selector" class="form-control" t-att-disabled="'disabled' if edit_mode else None">
                                             <option value="">Select Variant</option>
                                         </select>
                                     </div>
@@ -95,11 +102,6 @@
                                         <select id="design_type_selector" class="form-control mb-3">
                                             <option value="">Select Area</option>
                                         </select>
-                                    </div>
-
-                                    <div class="form-group mb-3">
-                                        <label><strong>Quantity</strong></label>
-                                        <input type="number" id="product_qty" class="form-control" min="1" value="1"/>
                                     </div>
                                 </div>
 
@@ -245,22 +247,21 @@
                                 <!-- Layers Panel (NEW) -->
                                 <div id="layers_panel" class="menu-panel" style="display: none; margin-top: 10px;">
                                     <h5 class="mb-3">Layers</h5>
-
                                     <div id="layers_list" style="max-height:420px; overflow:auto; margin-top:10px;">
                                         <!-- Populated by JS -->
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
                         <!-- Canvas Area -->
                         <div class="col-lg-9 d-flex align-items-center justify-content-center" style="background-color: #e9ecef; min-height: calc(100vh - 100px); position: relative;">
                             <input type="hidden" id="product_id" t-att-value="product.id"/>
-                            <div id="canvas_wrapper" style="position: relative; width: 800px; height: 800px;">
-                            </div>
+                            <input type="hidden" id="edit_mode" t-att-value="'true' if edit_mode else 'false'"/>
+                            <input type="hidden" id="line_id" t-att-value="line_id if edit_mode else ''"/>
+                            <input type="hidden" id="edit_variant_id" t-att-value="variant_id if edit_mode else ''"/>
+                            <div id="canvas_wrapper"/>
                         </div>
-
                     </div>
                 </div>
             </div>

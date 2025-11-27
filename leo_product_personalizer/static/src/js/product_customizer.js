@@ -54,11 +54,22 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         self.productData = null;
         self.fabricCanvas = null;
         self._layerCounter = 1;
+        self.editMode = false;
+        self.editLineId = null;
+        self.editVariantId = null;
 
         return this._super.apply(this, arguments).then(function () {
+            // Check if we're in edit mode
+            self.editMode = self.$('#edit_mode').val() === 'true';
+            self.editLineId = parseInt(self.$('#line_id').val()) || null;
+            self.editVariantId = parseInt(self.$('#edit_variant_id').val()) || null;
+
             return self._loadProductData().then(function () {
                 self._initializeCanvas();
-                self._restoreFromSession();
+                if (self.editMode && self.editLineId) {
+                    return self._loadEditModeData();
+                }
+            }).then(function () {
                 self._setupEventListeners();
                 self._setupKeyboardShortcuts();
                 self._initDesignTypeSelector();
@@ -66,22 +77,49 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         });
     },
 
-    _restoreFromSession: function () {
-        const self = this;
-        const sessionKey = `personalization_${self.productId}_${self.activeVariantId}`;
-        const savedData = sessionStorage.getItem(sessionKey);
 
-        if (savedData) {
-            try {
-                const parsed = JSON.parse(savedData);
-                // Only restore if it's valid object with design types
-                if (parsed && typeof parsed === 'object') {
-                    self.designData = parsed;
-                }
-            } catch (e) {
-                console.error('Failed to restore session data:', e);
+
+    _loadEditModeData: function () {
+        const self = this;
+        return rpc('/shop/cart/get_line_personalization', {
+            line_id: self.editLineId
+        }).then(function (result) {
+            if (!result.success) {
+                console.error('Failed to load line personalization:', result.error);
+                return;
             }
-        }
+
+            // Load the persisted design data from the cart line
+            if (result.designs) {
+                self.designData = result.designs;
+                Object.keys(self.designData).forEach(function (designType) {
+                    const design = self.designData[designType];
+
+                    // Parse personalized_json field to get actual canvas JSON
+                    if (design.personalized_json && typeof design.personalized_json === 'string') {
+                        try {
+                            design.json = JSON.parse(design.personalized_json);
+                        } catch (e) {
+                            console.error('Failed to parse personalized_json:', e);
+                            design.json = { version: "5.3.0", objects: [] };
+                        }
+                    } else if (design.personalized_json && typeof design.personalized_json === 'object') {
+                        design.json = design.personalized_json;
+                    } else if (design.json && typeof design.json === 'string') {
+                        design.json = JSON.parse(design.json);
+                    } else {
+                        design.json = { version: "5.3.0", objects: [] };
+                    }
+
+                    // Store the preview image URL
+                    if (design.product_image_url) {
+                        design.backgroundImageUrl = design.product_image_url;
+                    }
+                });
+            }
+        }).catch(function (error) {
+            console.error('Error loading edit mode data:', error);
+        });
     },
 
     _initializeCanvas: function () {
@@ -256,7 +294,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                 } else if (e.key === 'y') {
                     e.preventDefault();
                     self._onClickRedo();
-                } 
+                }
             }
         });
     },
@@ -265,9 +303,12 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         const self = this;
         self.productId = parseInt(self.$('#product_id').val());
 
+        // In edit mode, use the stored variant ID
+        const variantIdParam = self.editMode && self.editVariantId ? self.editVariantId : null;
+
         return rpc('/shop/product_personalization_data', {
             product_id: self.productId,
-            variant_id: null
+            variant_id: variantIdParam
         }).then(function (data) {
             if (data.error) {
                 alert(data.error);
@@ -285,6 +326,13 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
     _onVariantChange: function (ev) {
         const self = this;
+
+        if (self.editMode) {
+            ev.preventDefault();
+            alert('Cannot change variant while editing an existing design');
+            return;
+        }
+
         const newVariantId = parseInt(ev.target.value);
         if (!newVariantId || newVariantId === self.activeVariantId) return;
 
@@ -296,24 +344,9 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         self.zoneRect = null;
         self.zone = null;
 
-        // Save old variant data
-        const oldSessionKey = `personalization_${self.productId}_${self.activeVariantId}`;
-        sessionStorage.setItem(oldSessionKey, JSON.stringify(self.designData));
-
         // Switch variant
         self.activeVariantId = newVariantId;
-        self.designData = {};  // Reset design data for new variant
-
-        // Try to restore new variant's data from session
-        const newSessionKey = `personalization_${self.productId}_${newVariantId}`;
-        const savedData = sessionStorage.getItem(newSessionKey);
-        if (savedData) {
-            try {
-                self.designData = JSON.parse(savedData);
-            } catch (e) {
-                self.designData = {};
-            }
-        }
+        self.designData = {};
 
         return rpc('/shop/product_personalization_data', {
             product_id: self.productId,
@@ -707,8 +740,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
     _initDesignTypeSelector: function () {
         const self = this;
 
-        // Initialize variant selector (only if variants exist)
-        debugger
         if (self.productData.variants && self.productData.variants.length > 0) {
             const $variantSelector = self.$('#variant_selector');
             $variantSelector.empty();
@@ -717,7 +748,21 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                 $variantSelector.append('<option value="' + v.id + '">' + v.name + '</option>');
             });
 
-            $variantSelector.val(self.activeVariantId);
+            // In edit mode, set the current variant
+            if (self.editMode && self.editVariantId) {
+                $variantSelector.val(self.editVariantId);
+            } else {
+                $variantSelector.val(self.activeVariantId);
+            }
+
+            // Disable variant menu in edit mode
+            if (self.editMode) {
+                self.$('.menu-item[data-menu="variant"]').css({
+                    'opacity': '0.5',
+                    'pointer-events': 'none',
+                    'cursor': 'not-allowed'
+                });
+            }
         }
 
         // Initialize design type selector
@@ -753,21 +798,22 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         try {
             if (!self.activeDesignType) return;
 
-            const canvasJSON = self.fabricCanvas.toJSON();
+            const objs = self.fabricCanvas.getObjects().filter(function (obj) {
+                return !obj.isZoneRect && obj.name !== 'zoneRect';
+            });
 
-            // Filter out zone rectangles
-            if (canvasJSON.objects) {
-                canvasJSON.objects = canvasJSON.objects.filter(function (obj) {
-                    return !obj.isZoneRect && obj.name !== 'zoneRect';
-                });
+            const canvasJSON = {
+                version: "5.3.0",
+                objects: objs.map(function (obj) {
+                    return obj.toObject();
+                })
+            };
+
+            if (!self.designData[self.activeDesignType]) {
+                self.designData[self.activeDesignType] = {};
             }
 
-            // Save ONLY for current design type
-            self.designData[self.activeDesignType] = canvasJSON;
-
-            // Update session storage
-            const sessionKey = `personalization_${self.productId}_${self.activeVariantId}`;
-            sessionStorage.setItem(sessionKey, JSON.stringify(self.designData));
+            self.designData[self.activeDesignType].json = canvasJSON;
 
         } catch (e) {
             console.error('Could not save current canvas JSON', e);
@@ -784,22 +830,18 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
         const designs = (self.productData && self.productData.designs) ? self.productData.designs : {};
         const side = designs[designType];
+        const savedDesignData = self.designData[designType];
 
-        if (!side) {
-            if (self.productData && self.productData.fallback_image_url) {
-                self._setBackgroundFromUrl(self.productData.fallback_image_url, function () {
-                    self._restoreSavedJson(designType);
-                });
-            } else {
-                self.fabricCanvas.setBackgroundImage(null, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
-                self._restoreSavedJson(designType);
-            }
-            return;
+        let backgroundUrl = null;
+        if (side && side.image_url) {
+            backgroundUrl = side.image_url;
+        } else if (self.productData && self.productData.fallback_image_url) {
+            backgroundUrl = self.productData.fallback_image_url;
         }
-
-        if (side.image_url) {
-            self._setBackgroundFromUrl(side.image_url, function () {
-                if (side.is_restricted_area) {
+        
+        if (backgroundUrl) {
+            self._setBackgroundFromUrl(backgroundUrl, function () {
+                if (side && side.is_restricted_area) {
                     const zoneData = {
                         bound_x: parseFloat(side.bound_x) || 0,
                         bound_y: parseFloat(side.bound_y) || 0,
@@ -807,14 +849,12 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                         height: parseFloat(side.bound_height || side.height) || 0
                     };
                     self._setZone(zoneData);
-                    self._restoreSavedJson(designType);
-                } else {
-                    self._restoreSavedJson(designType);
                 }
+                self._restoreSavedJson(designType);
             });
         } else {
             self.fabricCanvas.setBackgroundImage(null, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
-            if (side.is_restricted_area) {
+            if (side && side.is_restricted_area) {
                 const zoneData = {
                     bound_x: parseFloat(side.bound_x) || 0,
                     bound_y: parseFloat(side.bound_y) || 0,
@@ -822,48 +862,70 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                     height: parseFloat(side.bound_height || side.height) || 0
                 };
                 self._setZone(zoneData);
-                self._restoreSavedJson(designType);
-            } else {
-                self._restoreSavedJson(designType);
             }
+            self._restoreSavedJson(designType);
         }
     },
 
     _setBackgroundFromUrl: function (url, callback) {
         const self = this;
+
         fabric.Image.fromURL(url, function (img) {
             if (!img) {
-                if (callback) callback();
+                console.warn('Failed to load image from URL:', url, '- retrying with absolute path');
+
+                // If URL is relative, try with absolute path
+                if (url && url.startsWith('/')) {
+                    const absoluteUrl = window.location.origin + url;
+                    fabric.Image.fromURL(absoluteUrl, function (img2) {
+                        if (img2) {
+                            self._applyBackgroundImage(img2);
+                        } else {
+                            console.error('Failed to load image from both relative and absolute URLs:', url, absoluteUrl);
+                        }
+                        if (callback) callback();
+                    }, null, {
+                        crossOrigin: 'anonymous'
+                    });
+                } else {
+                    console.error('Failed to load image from URL:', url);
+                    if (callback) callback();
+                }
                 return;
             }
 
-            img.set({
-                selectable: false,
-                evented: false
-            });
-
-            const w = self.fabricCanvas.getWidth();
-            const h = self.fabricCanvas.getHeight();
-            const scale = Math.min(w / img.width, h / img.height);
-
-            img.left = (w - img.width * scale) / 2;
-            img.top = (h - img.height * scale) / 2;
-            img.scaleX = scale;
-            img.scaleY = scale;
-
-            self.fabricCanvas.setBackgroundImage(img, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
-
+            self._applyBackgroundImage(img);
             if (callback) callback();
+        }, null, {
+            crossOrigin: 'anonymous'
         });
+    },
+
+    _applyBackgroundImage: function (img) {
+        const self = this;
+
+        img.set({
+            selectable: false,
+            evented: false
+        });
+
+        const w = self.fabricCanvas.getWidth();
+        const h = self.fabricCanvas.getHeight();
+        const scale = Math.min(w / img.width, h / img.height);
+
+        img.left = (w - img.width * scale) / 2;
+        img.top = (h - img.height * scale) / 2;
+        img.scaleX = scale;
+        img.scaleY = scale;
+        self.fabricCanvas.setBackgroundImage(img, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
     },
 
     _restoreSavedJson: function (designType) {
         const self = this;
-
         self.isUndoRedoAction = true;
 
         try {
-            // Remove all user objects (keep background and zone)
+            // Remove existing objects (keep background and zone)
             const objs = self.fabricCanvas.getObjects().slice();
             for (let i = 0; i < objs.length; i++) {
                 const o = objs[i];
@@ -871,32 +933,34 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                 self.fabricCanvas.remove(o);
             }
 
-            // Load ONLY the saved data for THIS specific design type
             const savedForThisType = self.designData[designType];
 
-            if (savedForThisType) {
-                let jsonToLoad = savedForThisType;
+            if (savedForThisType && savedForThisType.json) {
+                let jsonToLoad = savedForThisType.json;
 
                 if (typeof jsonToLoad === 'string') {
                     jsonToLoad = JSON.parse(jsonToLoad);
                 }
 
-                // Ensure no zone rectangles in saved data
-                if (jsonToLoad.objects) {
-                    jsonToLoad.objects = jsonToLoad.objects.filter(function (obj) {
+                // Only restore objects array, nothing else
+                const objectsOnly = {
+                    version: jsonToLoad.version || "5.3.0",
+                    objects: (jsonToLoad.objects || []).filter(function (obj) {
                         return obj.isZoneRect !== true && obj.name !== 'zoneRect';
-                    });
-                }
+                    })
+                };
 
-                self.fabricCanvas.loadFromJSON(jsonToLoad, function () {
-                    // Ensure zone stays on top after loading
+                fabric.util.enlivenObjects(objectsOnly.objects, function (enlivenedObjects) {
+                    enlivenedObjects.forEach(function (obj) {
+                        self.fabricCanvas.add(obj);
+                    });
+
                     if (self.zoneRect) {
                         self.fabricCanvas.bringToFront(self.zoneRect);
                     }
                     self.fabricCanvas.renderAll();
-                    // assign stable layer ids and update layers UI
-                    try { self._assignLayerIds(); } catch (e) { }
-                    try { self._renderLayersList(); } catch (e) { }
+                    self._assignLayerIds();
+                    self._renderLayersList();
                     self.isUndoRedoAction = false;
 
                     // Initialize history for this design type
@@ -907,13 +971,10 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                     }, 100);
                 });
             } else {
-                // No saved data for this design type - start fresh
                 if (self.zoneRect) {
                     self.fabricCanvas.bringToFront(self.zoneRect);
                 }
                 self.fabricCanvas.renderAll();
-                try { self._assignLayerIds(); } catch (e) { }
-                try { self._renderLayersList(); } catch (e) { }
                 self.isUndoRedoAction = false;
 
                 // Initialize history
@@ -1103,75 +1164,90 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         for (const dt of allDesignTypes) {
             let canvasJSON, previewURL;
 
-            if (self.designData[dt] && self.designData[dt].objects && self.designData[dt].objects.length > 0) {
-                // User customized this design type
-                canvasJSON = self.designData[dt];
+            if (self.designData[dt] && self.designData[dt].json && self.designData[dt].json.objects && self.designData[dt].json.objects.length > 0) {
+                // User customized - save their work
+                canvasJSON = self.designData[dt].json;
                 previewURL = await self._generatePreviewForDesignType(dt);
             } else {
-                // Not customized - use original design config image
+                // Not customized - save empty objects with original image
                 const designConfig = self.productData.designs[dt];
                 previewURL = designConfig ? designConfig.image_url : self.productData.fallback_image_url;
                 canvasJSON = { version: "5.3.0", objects: [] };
             }
 
-            const filteredJSON = {
-                ...canvasJSON,
-                objects: (canvasJSON.objects || []).filter(obj => !obj.isZoneRect && obj.name !== 'zoneRect')
-            };
-
             designs[dt] = {
-                json: JSON.stringify(filteredJSON),
+                json: JSON.stringify(canvasJSON),
                 preview: previewURL,
             };
         }
 
-        const qty = parseInt(self.$('#product_qty').val()) || 1;
-
-        // Store in sessionStorage
-        const sessionKey = `personalization_${self.productId}_${self.activeVariantId}`;
-        sessionStorage.setItem(sessionKey, JSON.stringify(self.designData));
-
-        rpc('/shop/cart/update_personalization', {
-            variant_id: self.activeVariantId,
-            add_qty: qty,
-            designs: designs
-        }).then(function (result) {
-            if (result && result.success) {
-                // Clear session after successful cart add
-                sessionStorage.removeItem(sessionKey);
-                window.location.href = '/shop/cart';
-            } else {
-                alert(result.error || 'Failed to add product to cart');
-            }
-        }).catch(function (error) {
-            console.error('Add to cart error:', error);
-            alert('Failed to add product to cart');
-        });
+        const qty = parseInt(self.$('#product_qty').val() || 1);
+        if (self.editMode && self.editLineId) {
+            rpc('/shop/cart/update_line_personalization', {
+                line_id: self.editLineId,
+                add_qty: qty,
+                designs: designs
+            }).then(function (result) {
+                if (result && result.success) {
+                    window.location.href = '/shop/cart';
+                } else {
+                    alert(result.error || 'Failed to update design');
+                }
+            }).catch(function (error) {
+                console.error('Update design error:', error);
+                alert('Failed to update design');
+            });
+        } else {
+            rpc('/shop/cart/update_personalization', {
+                variant_id: self.activeVariantId,
+                add_qty: qty,
+                designs: designs
+            }).then(function (result) {
+                if (result && result.success) {
+                    window.location.href = '/shop/cart';
+                } else {
+                    alert(result.error || 'Failed to add product to cart');
+                }
+            }).catch(function (error) {
+                console.error('Add to cart error:', error);
+                alert('Failed to add product to cart');
+            });
+        }
     },
 
     _generatePreviewForDesignType: function (designType) {
         const self = this;
-
-        // Get saved data for this specific design type
         const savedData = self.designData[designType];
 
-        if (!savedData || !savedData.objects || savedData.objects.length === 0) {
-            // No customization - return design config image URL
+        // If no customization, return design config image
+        if (!savedData || !savedData.json || !savedData.json.objects || savedData.json.objects.length === 0) {
             const designConfig = self.productData.designs[designType];
-            return designConfig ? designConfig.image_url : self.productData.fallback_image_url;
+            return Promise.resolve(designConfig ? designConfig.image_url : self.productData.fallback_image_url);
         }
 
+        // Has customization - generate preview with background + objects
         try {
-            // Create temporary canvas for preview generation
             const tempCanvas = new fabric.Canvas(document.createElement('canvas'));
             tempCanvas.setWidth(800);
             tempCanvas.setHeight(800);
 
-            // Load design config background for this type
             const designConfig = self.productData.designs[designType];
             const bgUrl = designConfig ? designConfig.image_url : self.productData.fallback_image_url;
 
             return new Promise(function (resolve) {
+                function loadObjects() {
+                    fabric.util.enlivenObjects(savedData.json.objects || [], function (enlivenedObjects) {
+                        enlivenedObjects.forEach(function (obj) {
+                            tempCanvas.add(obj);
+                        });
+
+                        tempCanvas.renderAll();
+                        const dataURL = tempCanvas.toDataURL({ format: 'png', quality: 0.8 });
+                        tempCanvas.dispose();
+                        resolve(dataURL);
+                    });
+                }
+
                 if (bgUrl) {
                     fabric.Image.fromURL(bgUrl, function (img) {
                         if (img) {
@@ -1188,30 +1264,20 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                                 evented: false
                             });
 
-                            tempCanvas.setBackgroundImage(img, function () {
-                                loadObjects();
-                            });
+                            tempCanvas.setBackgroundImage(img, loadObjects);
                         } else {
                             loadObjects();
                         }
-                    });
+                    }, null, { crossOrigin: 'anonymous' });
                 } else {
                     loadObjects();
-                }
-
-                function loadObjects() {
-                    tempCanvas.loadFromJSON(savedData, function () {
-                        const dataURL = tempCanvas.toDataURL({ format: 'png', quality: 0.8 });
-                        tempCanvas.dispose();
-                        resolve(dataURL);
-                    });
                 }
             });
 
         } catch (e) {
             console.error('Preview generation failed:', e);
             const designConfig = self.productData.designs[designType];
-            return designConfig ? designConfig.image_url : self.productData.fallback_image_url;
+            return Promise.resolve(designConfig ? designConfig.image_url : self.productData.fallback_image_url);
         }
     },
 

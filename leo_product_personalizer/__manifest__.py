@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Product Personalization Editor',
     'version': '1.0',
@@ -25,13 +23,20 @@
         'security/ir.model.access.csv',
         'views/product_template_views.xml',
         'views/website_templates.xml',
+        'views/cart_templates.xml',
         'views/sale_order_line_personalization_views.xml',
         'views/sale_order_views.xml',
     ],
     'assets': {
+        'web.assets_backend': [
+            'leo_product_personalizer/static/src/js/design_area_widget.js',
+            'leo_product_personalizer/static/src/xml/design_area_widget.xml',
+            'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js',
+        ],
         'web.assets_frontend': [
             'leo_product_personalizer/static/src/css/customizer.css',
             'leo_product_personalizer/static/src/js/product_customizer.js',
+            'leo_product_personalizer/static/src/js/cart_personalization.js',
             'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js',
         ],
     },
