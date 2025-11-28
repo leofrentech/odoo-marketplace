@@ -22,6 +22,15 @@ class DesignAreaWidget extends Component {
         this.restrictedRect = null;
         this.previousImageId = null;
         this.previousRestricted = null;
+        this.isUpdatingFromRect = false;
+        
+        // Track previous field values
+        this.previousBounds = {
+            x: null,
+            y: null,
+            width: null,
+            height: null
+        };
 
         onMounted(async () => {
             await this.initCanvas();
@@ -39,6 +48,9 @@ class DesignAreaWidget extends Component {
                 this.previousImageId = recordId;
                 this.previousRestricted = isRestricted;
                 await this.initCanvas();
+            } else if (this.fabricCanvas && this.restrictedRect && !this.isUpdatingFromRect) {
+                // Check if bound values changed manually
+                this.updateRectFromFields();
             }
         });
 
@@ -55,7 +67,6 @@ class DesignAreaWidget extends Component {
     }
 
     async initCanvas() {
-        // Wait for DOM to be ready
         await new Promise(resolve => setTimeout(resolve, 150));
 
         const hasImage = !!this.record.data.design_image;
@@ -65,7 +76,7 @@ class DesignAreaWidget extends Component {
         this.state.hasImage = hasImage;
         this.state.isRestricted = isRestricted;
 
-        // Dispose existing canvas if any
+        // Dispose existing canvas
         if (this.fabricCanvas) {
             console.log('Disposing existing canvas');
             this.fabricCanvas.dispose();
@@ -73,7 +84,6 @@ class DesignAreaWidget extends Component {
             this.restrictedRect = null;
         }
 
-        // Check if we should show the canvas
         if (!hasImage) {
             this.state.initialized = false;
             return;
@@ -97,6 +107,9 @@ class DesignAreaWidget extends Component {
             await this.loadBackgroundImage(imageUrl);            
             this.createRestrictedRect();
             this.setupEvents();
+
+            // Initialize previous bounds
+            this.updatePreviousBounds();
 
             this.state.initialized = true;
         } catch (error) {
@@ -164,7 +177,6 @@ class DesignAreaWidget extends Component {
         this.fabricCanvas.add(this.restrictedRect);
         this.fabricCanvas.setActiveObject(this.restrictedRect);
         this.fabricCanvas.renderAll();
-        
     }
 
     setupEvents() {
@@ -203,6 +215,10 @@ class DesignAreaWidget extends Component {
 
     onRectModified() {
         if (!this.restrictedRect) return;
+        
+        // Set flag to prevent circular updates
+        this.isUpdatingFromRect = true;
+        
         const br = this.restrictedRect.getBoundingRect();
         this.record.update({
             bound_x: Math.round(br.left),
@@ -210,6 +226,84 @@ class DesignAreaWidget extends Component {
             bound_width: Math.round(br.width),
             bound_height: Math.round(br.height),
         });
+        
+        this.updatePreviousBounds();
+        
+        // Reset flag after a short delay
+        setTimeout(() => {
+            this.isUpdatingFromRect = false;
+        }, 100);
+    }
+
+    updatePreviousBounds() {
+        this.previousBounds = {
+            x: this.record.data.bound_x,
+            y: this.record.data.bound_y,
+            width: this.record.data.bound_width,
+            height: this.record.data.bound_height
+        };
+    }
+
+    updateRectFromFields() {
+        const currentBounds = {
+            x: this.record.data.bound_x,
+            y: this.record.data.bound_y,
+            width: this.record.data.bound_width,
+            height: this.record.data.bound_height
+        };
+
+        // Check if any bound value changed
+        const hasChanged = 
+            currentBounds.x !== this.previousBounds.x ||
+            currentBounds.y !== this.previousBounds.y ||
+            currentBounds.width !== this.previousBounds.width ||
+            currentBounds.height !== this.previousBounds.height;
+
+        if (!hasChanged) return;
+
+        console.log('Field values changed, updating rectangle');
+
+        // Validate values
+        const canvasW = this.fabricCanvas.getWidth();
+        const canvasH = this.fabricCanvas.getHeight();
+
+        let x = Math.max(0, currentBounds.x || 0);
+        let y = Math.max(0, currentBounds.y || 0);
+        let w = Math.max(10, Math.min(currentBounds.width || 100, canvasW));
+        let h = Math.max(10, Math.min(currentBounds.height || 100, canvasH));
+
+        // Ensure rect doesn't go outside canvas
+        if (x + w > canvasW) x = canvasW - w;
+        if (y + h > canvasH) y = canvasH - h;
+
+        // Update the rectangle
+        this.restrictedRect.set({
+            left: x,
+            top: y,
+            width: w,
+            height: h
+        });
+
+        this.restrictedRect.setCoords();
+        this.fabricCanvas.renderAll();
+
+        // Update previous bounds
+        this.updatePreviousBounds();
+
+        // If values were clamped, update the fields
+        if (x !== currentBounds.x || y !== currentBounds.y || 
+            w !== currentBounds.width || h !== currentBounds.height) {
+            this.isUpdatingFromRect = true;
+            this.record.update({
+                bound_x: Math.round(x),
+                bound_y: Math.round(y),
+                bound_width: Math.round(w),
+                bound_height: Math.round(h),
+            });
+            setTimeout(() => {
+                this.isUpdatingFromRect = false;
+            }, 100);
+        }
     }
 }
 

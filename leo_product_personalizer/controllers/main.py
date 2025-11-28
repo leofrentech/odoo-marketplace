@@ -88,11 +88,10 @@ class ProductPersonalizerController(http.Controller):
         design_types = []
 
         for config in variant.design_config_ids:
-            design_type = config.design_type or config.label or str(config.id)
+            design_type = config.design_type or str(config.id)
             designs[design_type] = {
                 "id": config.id,
-                "design_type": design_type,
-                "label": config.label or config.design_type,
+                "design_type": config.design_type,
                 "image_url": self._get_image_url(config, variant_id),
                 "is_restricted_area": config.is_restricted_area,
                 "bound_x": float(config.bound_x or 0.0),
