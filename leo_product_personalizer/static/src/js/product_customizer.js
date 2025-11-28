@@ -39,6 +39,10 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         'change #product_qty': '_onChangeQty',
         'change #variant_selector': '_onVariantChange',
         'click .menu-item': '_onMenuItemClick',
+        // Preview & Download
+        'click #preview_designs_button': '_onClickPreviewDesigns',
+        'click #download_designs_button': '_onClickDownloadDesigns',
+        'click .download-format-btn': '_onClickDownloadFormat',
     },
 
     start: function () {
@@ -838,7 +842,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         } else if (self.productData && self.productData.fallback_image_url) {
             backgroundUrl = self.productData.fallback_image_url;
         }
-        
+
         if (backgroundUrl) {
             self._setBackgroundFromUrl(backgroundUrl, function () {
                 if (side && side.is_restricted_area) {
@@ -1434,6 +1438,181 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             }
 
             $list.append($item);
+        });
+    },
+
+    // Preview and Download
+    _onClickPreviewDesigns: function () {
+        const self = this;
+        self._saveCurrentSideState();
+        // Generate previews
+        const $grid = $('#preview_grid');
+        $grid.empty();
+
+        const allDesignTypes = self.productData.design_types || [];
+
+        const previewPromises = allDesignTypes.map(function (designType) {
+            return self._generatePreviewForDesignType(designType).then(function (previewUrl) {
+                const label = designType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+                const $col = $('<div class="col-12 col-md-6 mb-3"></div>');
+                const $card = $('<div class="card h-100"></div>');
+                const $cardBody = $('<div class="card-body d-flex flex-column"></div>');
+
+                $cardBody.append('<strong class="card-title mb-2">' + label + '</strong>');
+
+                const $imgWrapper = $('<div class="flex-fill d-flex align-items-center justify-content-center" style="height: 500px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"></div>');
+                const $img = $('<img class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;"/>').attr('src', previewUrl);
+
+                $imgWrapper.append($img);
+                $cardBody.append($imgWrapper);
+                $card.append($cardBody);
+                $col.append($card);
+
+                return $col;
+            });
+        });
+
+        Promise.all(previewPromises).then(function (columns) {
+            columns.forEach(function ($col) {
+                $grid.append($col);
+            });
+
+            $('#preview_personalization_modal').modal('show');
+        }).catch(function (error) {
+            console.error('Error generating previews:', error);
+            alert('Failed to generate previews');
+        });
+    },
+
+    _onClickDownloadDesigns: function () {
+        const self = this;
+        self._saveCurrentSideState();
+        // Generate previews for download modal
+        const $grid = $('#download_preview_grid');
+        $grid.empty();
+
+        const allDesignTypes = self.productData.design_types || [];
+
+        const previewPromises = allDesignTypes.map(function (designType) {
+            return self._generatePreviewForDesignType(designType).then(function (previewUrl) {
+                const label = designType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+                const $col = $('<div class="col-12 col-md-6 mb-3"></div>');
+                const $card = $('<div class="card h-100"></div>');
+                const $cardBody = $('<div class="card-body d-flex flex-column"></div>');
+
+                $cardBody.append('<strong class="card-title mb-2">' + label + '</strong>');
+
+                const $imgWrapper = $('<div class="flex-fill d-flex align-items-center justify-content-center" style="height: 500px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"></div>');
+                const $img = $('<img class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;"/>').attr('src', previewUrl).attr('data-design-type', designType);
+
+                $imgWrapper.append($img);
+                $cardBody.append($imgWrapper);
+                $card.append($cardBody);
+                $col.append($card);
+
+                return $col;
+            });
+        });
+
+        Promise.all(previewPromises).then(function (columns) {
+            columns.forEach(function ($col) {
+                $grid.append($col);
+            });
+
+            $('#download_personalization_modal').modal('show');
+        }).catch(function (error) {
+            console.error('Error generating download previews:', error);
+            alert('Failed to generate previews');
+        });
+    },
+
+    _onClickDownloadFormat: function (ev) {
+        const self = this;
+        const format = $(ev.currentTarget).data('format');
+
+        if (!format) {
+            alert('Invalid format');
+            return;
+        }
+
+        // Visual feedback
+        $(ev.currentTarget).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Downloading...');
+
+        const allDesignTypes = self.productData.design_types || [];
+        let downloadCount = 0;
+        const totalDownloads = allDesignTypes.length;
+
+        allDesignTypes.forEach(function (designType, index) {
+            self._generatePreviewForDesignType(designType).then(function (previewUrl) {
+                self._downloadImageAs(previewUrl, designType, format).then(function () {
+                    downloadCount++;
+
+                    // Close modal and reset button when all downloads complete
+                    if (downloadCount === totalDownloads) {
+                        setTimeout(function () {
+                            $('#download_personalization_modal').modal('hide');
+                            $('.download-format-btn').prop('disabled', false).each(function () {
+                                const fmt = $(this).data('format');
+                                let label = 'PNG';
+                                if (fmt === 'jpeg') label = 'JPG';
+                                else if (fmt === 'webp') label = 'WebP';
+                                $(this).html('<i class="fa fa-file-image-o fa-2x d-block mb-2"></i>Download as ' + label);
+                            });
+                        }, 300);
+                    }
+                });
+            });
+        });
+    },
+
+    _downloadImageAs: function (imageUrl, designType, format) {
+        return new Promise(function (resolve, reject) {
+            const tempCanvas = document.createElement('canvas');
+            const tempImg = new Image();
+
+            tempImg.onload = function () {
+                tempCanvas.width = tempImg.width;
+                tempCanvas.height = tempImg.height;
+
+                const ctx = tempCanvas.getContext('2d');
+                ctx.drawImage(tempImg, 0, 0);
+
+                // Convert to selected format
+                let mimeType = 'image/png';
+                let extension = 'png';
+
+                if (format === 'jpeg') {
+                    mimeType = 'image/jpeg';
+                    extension = 'jpg';
+                } else if (format === 'webp') {
+                    mimeType = 'image/webp';
+                    extension = 'webp';
+                }
+
+                tempCanvas.toBlob(function (blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const fileName = designType.replace(/_/g, '-') + '.' + extension;
+
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    resolve();
+                }, mimeType, 0.95);
+            };
+
+            tempImg.onerror = function () {
+                reject(new Error('Failed to load image'));
+            };
+
+            tempImg.crossOrigin = 'anonymous';
+            tempImg.src = imageUrl;
         });
     },
 });

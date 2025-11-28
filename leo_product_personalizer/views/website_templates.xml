@@ -16,7 +16,22 @@
         <t t-call="website.layout">
             <div id="wrap" class="o_product_personalize_page" t-att-data-product-id="product.id" style="position: relative;">
                 <div style="position: absolute; top: 20px; right: 10px; z-index: 1050;
-                    display: flex; flex-direction: column; gap: 8px;">                                    
+                    display: flex; flex-direction: column; gap: 8px;">   
+                    
+                    <button type="button" id="preview_designs_button"
+                        class="btn btn-info d-flex align-items-center"
+                        style="height: 48px;">
+                        <i class="fa fa-eye" style="margin-right:5px;"></i>
+                        Preview Designs
+                    </button>
+                    
+                    <button type="button" id="download_designs_button"
+                        class="btn btn-success d-flex align-items-center"
+                        style="height: 48px;">
+                        <i class="fa fa-download" style="margin-right:5px;"></i>
+                        Download Designs
+                    </button> 
+
                     <div class="form-group mb-3">
                         <label><strong>Quantity</strong></label>
                         <t t-if="edit_mode">
@@ -58,11 +73,18 @@
                                     <span style="font-size: 10px; margin-top: 4px;">Image</span>
                                 </div>
                                 <div class="menu-item" data-menu="shape" style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; color: #a0aec0;">
-                                    <i class="fas" style="font-size: 24px;">&#xf61f;</i>
+                                    <i class="fas fa-shapes" style="font-size: 24px;"/>
+                                    <svg viewBox="0 0 512 512" fill="currentColor">
+                                        <path d="...svg path here..."/>
+                                    </svg>
+                                    <!-- <img src="/leo_product_personalizer/static/description/img/elements.png" height="30px"/> -->
                                     <span style="font-size: 10px; margin-top: 4px;">Shapes</span>
                                 </div>
                                 <div class="menu-item" data-menu="layers" style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; color: #a0aec0;">
-                                    <i class="fas fa-list" style="font-size: 24px;" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-stack" viewBox="0 0 16 16">
+                                        <path d="m14.12 10.163 1.715.858c.22.11.22.424 0 .534L8.267 15.34a.6.6 0 0 1-.534 0L.165 11.555a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.66zM7.733.063a.6.6 0 0 1 .534 0l7.568 3.784a.3.3 0 0 1 0 .535L8.267 8.165a.6.6 0 0 1-.534 0L.165 4.382a.299.299 0 0 1 0-.535z"/>
+                                        <path d="m14.12 6.576 1.715.858c.22.11.22.424 0 .534l-7.568 3.784a.6.6 0 0 1-.534 0L.165 7.968a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0z"/>
+                                    </svg>
                                     <span style="font-size: 10px; margin-top: 4px;">Layers</span>
                                 </div>
                             </div>
@@ -257,6 +279,8 @@
                     </div>
                 </div>
             </div>
+            <!-- <t t-call="leo_product_personalizer.personalization_preview_modal"/>
+            <t t-call="leo_product_personalizer.personalization_download_modal"/> -->
         </t>
     </template>
 </odoo>
