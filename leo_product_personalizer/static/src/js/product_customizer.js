@@ -488,9 +488,13 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
         const isText = obj.type === 'i-text' || obj.type === 'text';
         const isImage = obj.type === 'image';
+        const isShape = !isText && !isImage;
+
+        // Auto-switch left sidebar panel based on selected object type
+        this._switchPanelForObjectType(isText, isImage, isShape);
 
         this.$('#text_controls').toggle(isText);
-        this.$('#shape_controls').toggle(!isText && !isImage);
+        this.$('#shape_controls').toggle(isShape);
         this.$('#layer_controls').show();
 
         if (isText) {
@@ -500,12 +504,32 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             this.$('#text_bold').toggleClass('active', obj.fontWeight === 'bold');
             this.$('#text_italic').toggleClass('active', obj.fontStyle === 'italic');
             this.$('#text_underline').toggleClass('active', obj.underline);
-        } else if (!isImage) {
+        } else if (isShape) {
             this.$('#shape_fill_color').val(this._toHex(obj.fill));
             this.$('#shape_stroke_color').val(this._toHex(obj.stroke));
             this.$('#shape_stroke_width').val(obj.strokeWidth || 2);
         }
+        // For images, no specific controls to update
+    },
 
+    _switchPanelForObjectType: function (isText, isImage, isShape) {
+        // Hide all panels
+        this.$('.menu-panel').hide();
+        this.$('.menu-item').removeClass('active');
+
+        if (isText) {
+            // Show text panel and activate text menu item
+            this.$('#text_panel').show();
+            this.$('.menu-item[data-menu="text"]').addClass('active');
+        } else if (isImage) {
+            // Show image panel and activate image menu item
+            this.$('#image_panel').show();
+            this.$('.menu-item[data-menu="image"]').addClass('active');
+        } else if (isShape) {
+            // Show shape panel and activate shape menu item
+            this.$('#shape_panel').show();
+            this.$('.menu-item[data-menu="shape"]').addClass('active');
+        }
     },
 
     _hideControls: function () {
@@ -764,7 +788,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             { id: 'triangle', name: 'Triangle', icon: 'fa-play', faClass: 'fa fa-play' },
             { id: 'star', name: 'Star', icon: 'fa-star', faClass: 'fa fa-star' },
             { id: 'heart', name: 'Heart', icon: 'fa-heart', faClass: 'fa fa-heart' },
-            { id: 'diamond', name: 'Diamond', icon: 'fa-heart', faClass: 'fa fa-heart' },
+            { id: 'diamond', name: 'Diamond', icon: 'fa-diamond', faClass: 'fa fa-diamond' },
             { id: 'ellipse', name: 'Ellipse', icon: 'fa-ellipsis-h', faClass: 'fa fa-ellipsis-h' },
             { id: 'polygon', name: 'Pentagon', icon: 'fa-certificate', faClass: 'fa fa-certificate' },
             { id: 'hexagon', name: 'Hexagon', icon: 'fa-circle', faClass: 'fa fa-circle' },

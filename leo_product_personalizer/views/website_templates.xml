@@ -93,8 +93,8 @@
                             </div>
 
                             <!-- Right Panel Content -->
-                            <div style="flex: 1; padding: 20px; overflow-y: auto; position: relative;">
-                                <div style="position: sticky; top: 20px; z-index: 50; background: transparent; padding-bottom: 25px;">
+                            <div style="flex: 1; padding: 20px; overflow: hidden; position: relative; display: flex; flex-direction: column;">
+                                <div style="position: sticky; top: 0; z-index: 50; background: #f8f9fa; padding-bottom: 15px; flex-shrink: 0;">
                                     <div class="btn-group w-100 mb-3" role="group" style="display: flex; gap:6px;">
                                         <button id="undo_button" class="btn btn-outline-secondary btn-sm" title="Undo (Ctrl+Z)">
                                             <i class="fa fa-undo"/>
@@ -112,7 +112,10 @@
                                     </div>
                                 </div>
 
-                                <!-- Variant Panel -->
+                                <!-- Panels Container - This scrolls independently -->
+                                <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                                    <!-- Variant Panel -->
+
                                 <div id="variant_panel" class="menu-panel">
                                     <h5 class="mb-3">Select Variant</h5>
                                     <div id="variants_grid" class="row g-2">
@@ -248,9 +251,10 @@
                                 <!-- Layers Panel (NEW) -->
                                 <div id="layers_panel" class="menu-panel" style="display: none; margin-top: 10px;">
                                     <h5 class="mb-3">Layers</h5>
-                                    <div id="layers_list" style="max-height:420px; overflow:auto; margin-top:10px;">
+                                    <div id="layers_list" style="margin-top:10px;">
                                         <!-- Populated by JS -->
                                     </div>
+                                </div>
                                 </div>
                             </div>
                         </div>
