@@ -21,7 +21,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
     events: {
         'click #add_text_button': '_onClickAddText',
         'click #add_image_button': '_onClickAddImage',
-        'click #add_shape_button': '_onClickAddShape',
         'click #add_to_cart_personalized': '_onClickAddToCartPersonalized',
         'click #undo_button': '_onClickUndo',
         'click #redo_button': '_onClickRedo',
@@ -37,7 +36,8 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         'click .preset-color': '_onClickPresetColor',
         'change #design_type_selector': '_onDesignTypeChange',
         'change #product_qty': '_onChangeQty',
-        'change #variant_selector': '_onVariantChange',
+        'click .variant-item': '_onVariantChange',
+        'click .shape-item': '_onShapeSelect',
         'click .menu-item': '_onMenuItemClick',
         // Preview & Download
         'click #preview_designs_button': '_onClickPreviewDesigns',
@@ -337,7 +337,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             return;
         }
 
-        const newVariantId = parseInt(ev.target.value);
+        const newVariantId = parseInt($(ev.currentTarget).data('variant-id'));
         if (!newVariantId || newVariantId === self.activeVariantId) return;
 
         // Save current variant's design before switching
@@ -361,6 +361,9 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                 return;
             }
             self.productData = data;
+
+            // Update variant grid UI
+            self._renderVariantGrid();
 
             // Re-initialize design type selector
             const $selector = self.$('#design_type_selector');
@@ -455,6 +458,12 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             }
             if (currentZone) {
                 self._setZone(currentZone);
+
+                self.fabricCanvas.getObjects().forEach(function (obj) {
+                    if (obj !== self.zoneRect && !obj.isZoneRect) {
+                        self._clampObjectToZone(obj);
+                    }
+                });
             }
             self.fabricCanvas.renderAll();
             self.isUndoRedoAction = false;
@@ -525,16 +534,28 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             return;
         }
 
+        let initialLeft = 100;
+        let initialTop = 100;
+
+        if (self.zone) {
+            initialLeft = self.zone.bound_x + (self.zone.width / 2);
+            initialTop = self.zone.bound_y + (self.zone.height / 2);
+        }
+
         const textObj = new fabric.IText(text, {
-            left: 100,
-            top: 100,
+            left: initialLeft,
+            top: initialTop,
             fontFamily: 'Arial',
             fill: '#000000',
             fontSize: 40
         });
 
         self.fabricCanvas.add(textObj);
-        // store a human-friendly label for layers list
+
+        if (self.zone) {
+            self._clampObjectToZone(textObj);
+        }
+
         try { textObj.__label = text; } catch (e) { }
         self.fabricCanvas.setActiveObject(textObj);
         self.fabricCanvas.renderAll();
@@ -595,9 +616,20 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                 fabric.Image.fromURL(e.target.result, function (img) {
                     if (!img) return;
                     img.scaleToWidth(150);
+
+                    // Calculate initial position
+                    let initialLeft = 100 + i * 20;
+                    let initialTop = 100 + i * 20;
+
+                    if (self.zone) {
+                        // Position image in center of zone area
+                        initialLeft = self.zone.bound_x + (self.zone.width / 2) + (i * 10);
+                        initialTop = self.zone.bound_y + (self.zone.height / 2) + (i * 10);
+                    }
+
                     img.set({
-                        left: 100 + i * 20,
-                        top: 100 + i * 20
+                        left: initialLeft,
+                        top: initialTop
                     });
                     // attach filename as label (used in layers list)
                     try {
@@ -605,6 +637,11 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                     } catch (err) { }
                     try { img.__label = file.name; } catch (err) { }
                     self.fabricCanvas.add(img);
+
+                    if (self.zone) {
+                        self._clampObjectToZone(img);
+                    }
+
                     self.fabricCanvas.setActiveObject(img);
                     self.fabricCanvas.renderAll();
                 });
@@ -615,28 +652,202 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         self.$('#personalization_image_upload').val('');
     },
 
-    _onClickAddShape: function () {
+    _onChangeShapeProperty: function (ev) {
+        const obj = this.fabricCanvas.getActiveObject();
+        if (!obj || obj.type === 'i-text' || obj.type === 'text' || obj.type === 'image') return;
+
+        const propMap = {
+            'shape_fill_color': ['fill', ev.target.value],
+            'shape_stroke_color': ['stroke', ev.target.value],
+            'shape_stroke_width': ['strokeWidth', parseInt(ev.target.value)]
+        };
+
+        const prop = propMap[ev.target.id];
+        if (prop) {
+            obj.set(prop[0], prop[1]);
+            this.fabricCanvas.renderAll();
+        }
+    },
+
+    _onClickPresetColor: function (ev) {
+        const color = $(ev.currentTarget).data('color');
+        const obj = this.fabricCanvas.getActiveObject();
+        if (!obj || obj === this.zoneRect) return;
+
+        if (obj.type === 'i-text' || obj.type === 'text') {
+            obj.set('fill', color);
+            this.$('#text_color').val(color);
+        } else if (obj.type !== 'image') {
+            obj.set('fill', color);
+            this.$('#shape_fill_color').val(color);
+        }
+
+        this.fabricCanvas.renderAll();
+    },
+
+    _initDesignTypeSelector: function () {
+        const self = this;
+
+        if (self.productData.variants && self.productData.variants.length > 0) {
+            self._renderVariantGrid();
+
+            // Disable variant menu in edit mode
+            if (self.editMode) {
+                self.$('.menu-item[data-menu="variant"]').css({
+                    'opacity': '0.5',
+                    'pointer-events': 'none',
+                    'cursor': 'not-allowed'
+                });
+            }
+        }
+
+        self._renderShapesGrid();
+        // Initialize design type selector
+        const $selector = self.$('#design_type_selector');
+        const types = self.productData.design_types || [];
+
+        $selector.empty();
+        types.forEach(function (t) {
+            const label = t.replace(/_/g, ' ').replace(/\b\w/g, function (c) {
+                return c.toUpperCase();
+            });
+            $selector.append('<option value="' + t + '">' + label + '</option>');
+        });
+
+        const defaultType = self.productData.default_design_type || types[0];
+        self.activeDesignType = defaultType;
+        $selector.val(defaultType);
+
+        self._loadDesignType(defaultType);
+    },
+
+    _renderVariantGrid: function () {
+        const self = this;
+        const $grid = self.$('#variants_grid');
+        $grid.empty();
+
+        if (!self.productData.variants) return;
+
+        self.productData.variants.forEach(function (variant) {
+            const isActive = variant.id === self.activeVariantId;
+            const activeClass = isActive ? 'active' : '';
+            const imageUrl = variant.image_url || '';
+
+            const $item = $('<div>')
+                .addClass('col-6 variant-item p-2 ' + activeClass)
+                .attr('data-variant-id', variant.id);
+
+            if (imageUrl) {
+                const $imageWrapper = $('<div class="variant-image-wrapper"></div>');
+                const $img = $('<img>')
+                    .addClass('img-fluid')
+                    .attr('src', imageUrl)
+                    .attr('alt', variant.name);
+                $imageWrapper.append($img);
+                $item.append($imageWrapper);
+            }
+
+            // $item.append(
+            //     $('<div>')
+            //         .addClass('variant-item-name')
+            //         .text(variant.name)
+            // );
+
+            $grid.append($item);
+        });
+    },
+
+    _getShapesData: function () {
+        return [
+            { id: 'rect', name: 'Rectangle', icon: 'fa-square', faClass: 'fa fa-square' },
+            { id: 'circle', name: 'Circle', icon: 'fa-circle', faClass: 'fa fa-circle' },
+            { id: 'triangle', name: 'Triangle', icon: 'fa-play', faClass: 'fa fa-play' },
+            { id: 'star', name: 'Star', icon: 'fa-star', faClass: 'fa fa-star' },
+            { id: 'heart', name: 'Heart', icon: 'fa-heart', faClass: 'fa fa-heart' },
+            { id: 'diamond', name: 'Diamond', icon: 'fa-heart', faClass: 'fa fa-heart' },
+            { id: 'ellipse', name: 'Ellipse', icon: 'fa-ellipsis-h', faClass: 'fa fa-ellipsis-h' },
+            { id: 'polygon', name: 'Pentagon', icon: 'fa-certificate', faClass: 'fa fa-certificate' },
+            { id: 'hexagon', name: 'Hexagon', icon: 'fa-circle', faClass: 'fa fa-circle' },
+            { id: 'arrow', name: 'Arrow', icon: 'fa-arrow-right', faClass: 'fa fa-arrow-right' },
+            { id: 'square', name: 'Square', icon: 'fa-square', faClass: 'fa fa-square' },
+            { id: 'line', name: 'Line', icon: 'fa-minus', faClass: 'fa fa-minus' },
+        ];
+    },
+
+    _renderShapesGrid: function () {
+        const self = this;
+        const $grid = self.$('#shapes_grid');
+        $grid.empty();
+
+        const shapes = self._getShapesData();
+        shapes.forEach(function (shape) {
+            const $item = $('<div>')
+                .addClass('col-6 shape-item')
+                .attr('data-shape-id', shape.id);
+
+            $item.append(
+                $('<div>')
+                    .addClass('shape-item-icon')
+                    .html('<i class="' + shape.faClass + '"></i>')
+            );
+
+            $item.append(
+                $('<div>')
+                    .addClass('shape-item-name')
+                    .text(shape.name)
+            );
+
+            $grid.append($item);
+        });
+    },
+
+    _onShapeSelect: function (ev) {
+        const self = this;
+        const shapeId = $(ev.currentTarget).data('shape-id');
+
+        // Update active state
+        self.$('.shape-item').removeClass('active');
+        $(ev.currentTarget).addClass('active');
+
+        // Store selected shape
+        self.selectedShapeId = shapeId;
+
+        // Trigger shape addition
+        self._addShapeToCanvas(shapeId);
+    },
+
+    _addShapeToCanvas: function (shapeType) {
         const self = this;
         if (!self.fabricCanvas) {
             alert('Canvas not ready');
             return;
         }
 
+        // Calculate initial position
+        let initialLeft = 100;
+        let initialTop = 100;
+
+        if (self.zone) {
+            // Position shape in center of zone area
+            initialLeft = self.zone.bound_x + (self.zone.width / 2);
+            initialTop = self.zone.bound_y + (self.zone.height / 2);
+        }
+
         const props = {
-            left: 100,
-            top: 100,
+            left: initialLeft,
+            top: initialTop,
             fill: '#3b82f6',
             stroke: '#1e40af',
             strokeWidth: 2
         };
 
-        const $shapeSelect = self.$('#personalization_shape');
-        const shapeType = $shapeSelect.val();
-        const shapeLabel = $shapeSelect.find('option:selected').text() || shapeType;
         let shape = null;
+        const shapeName = self._getShapeNameById(shapeType);
 
         switch (shapeType) {
             case 'rect':
+                shape = new fabric.Rect({ ...props, width: 100, height: 100 });
+                break;
             case 'square':
                 shape = new fabric.Rect({ ...props, width: 100, height: 100 });
                 break;
@@ -700,92 +911,23 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         }
 
         if (shape) {
-            // attach a readable label for the layers list (from dropdown)
-            try { shape.__label = shapeLabel; } catch (e) { }
+            try { shape.__label = shapeName; } catch (e) { }
             self.fabricCanvas.add(shape);
+
+            // Clamp to zone if zone exists
+            if (self.zone) {
+                self._clampObjectToZone(shape);
+            }
+
             self.fabricCanvas.setActiveObject(shape);
             self.fabricCanvas.renderAll();
         }
     },
 
-    _onChangeShapeProperty: function (ev) {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || obj.type === 'i-text' || obj.type === 'text' || obj.type === 'image') return;
-
-        const propMap = {
-            'shape_fill_color': ['fill', ev.target.value],
-            'shape_stroke_color': ['stroke', ev.target.value],
-            'shape_stroke_width': ['strokeWidth', parseInt(ev.target.value)]
-        };
-
-        const prop = propMap[ev.target.id];
-        if (prop) {
-            obj.set(prop[0], prop[1]);
-            this.fabricCanvas.renderAll();
-        }
-    },
-
-    _onClickPresetColor: function (ev) {
-        const color = $(ev.currentTarget).data('color');
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || obj === this.zoneRect) return;
-
-        if (obj.type === 'i-text' || obj.type === 'text') {
-            obj.set('fill', color);
-            this.$('#text_color').val(color);
-        } else if (obj.type !== 'image') {
-            obj.set('fill', color);
-            this.$('#shape_fill_color').val(color);
-        }
-
-        this.fabricCanvas.renderAll();
-    },
-
-    _initDesignTypeSelector: function () {
-        const self = this;
-
-        if (self.productData.variants && self.productData.variants.length > 0) {
-            const $variantSelector = self.$('#variant_selector');
-            $variantSelector.empty();
-
-            self.productData.variants.forEach(function (v) {
-                $variantSelector.append('<option value="' + v.id + '">' + v.name + '</option>');
-            });
-
-            // In edit mode, set the current variant
-            if (self.editMode && self.editVariantId) {
-                $variantSelector.val(self.editVariantId);
-            } else {
-                $variantSelector.val(self.activeVariantId);
-            }
-
-            // Disable variant menu in edit mode
-            if (self.editMode) {
-                self.$('.menu-item[data-menu="variant"]').css({
-                    'opacity': '0.5',
-                    'pointer-events': 'none',
-                    'cursor': 'not-allowed'
-                });
-            }
-        }
-
-        // Initialize design type selector
-        const $selector = self.$('#design_type_selector');
-        const types = self.productData.design_types || [];
-
-        $selector.empty();
-        types.forEach(function (t) {
-            const label = t.replace(/_/g, ' ').replace(/\b\w/g, function (c) {
-                return c.toUpperCase();
-            });
-            $selector.append('<option value="' + t + '">' + label + '</option>');
-        });
-
-        const defaultType = self.productData.default_design_type || types[0];
-        self.activeDesignType = defaultType;
-        $selector.val(defaultType);
-
-        self._loadDesignType(defaultType);
+    _getShapeNameById: function (shapeId) {
+        const shapes = this._getShapesData();
+        const shape = shapes.find(s => s.id === shapeId);
+        return shape ? shape.name : shapeId;
     },
 
     _onDesignTypeChange: function (ev) {
