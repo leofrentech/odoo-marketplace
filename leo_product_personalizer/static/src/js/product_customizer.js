@@ -39,6 +39,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         'click .variant-item': '_onVariantChange',
         'click .shape-item': '_onShapeSelect',
         'click .menu-item': '_onMenuItemClick',
+        'click .text-submenu-toggle': '_onToggleTextSubmenu',
         // Preview & Download
         'click #preview_designs_button': '_onClickPreviewDesigns',
         'click #download_designs_button': '_onClickDownloadDesigns',
@@ -208,6 +209,10 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         self.fabricCanvas.on('object:scaling', function (e) {
             if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
                 self._clampObjectToZone(e.target);
+                // Update font size on scaling for text objects
+                if (e.target.type === 'i-text' || e.target.type === 'text' || e.target.type === 'curved-text') {
+                    self._updateFontSizeOnScale(e.target);
+                }
             }
         });
 
@@ -403,6 +408,11 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
         // Show selected panel
         this.$('#' + menuType + '_panel').show();
+
+        // Reset controls visibility
+        this.$('#text_controls, #shape_controls, #layer_controls').hide();
+        this.$('#personalization_text, #add_text_button').show();
+        this.$('#shapes_grid').show();
     },
 
     _saveState: function () {
@@ -427,6 +437,25 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         }
     },
 
+    _updateFontSizeOnScale: function (obj) {
+        const scale = Math.max(obj.scaleX, obj.scaleY);
+        const newFontSize = (obj.fontSize || 20) * scale;
+
+        // Apply the new font size and reset scale
+        obj.set({
+            fontSize: newFontSize,
+            scaleX: 1,
+            scaleY: 1
+        });
+
+        // Update the font size input field in the UI
+        this.$('#text_font_size').val(Math.round(newFontSize));
+
+        // For curved text, diameter also needs to be scaled
+        if (obj.type === 'curved-text') {
+            obj.set('diameter', (obj.diameter || 250) * scale);
+        }
+    },
     _updateHistoryButtons: function () {
         this.$('#undo_button').prop('disabled', this.historyStep <= 0);
         this.$('#redo_button').prop('disabled', this.historyStep >= this.history.length - 1);
@@ -521,6 +550,10 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             // Show text panel and activate text menu item
             this.$('#text_panel').show();
             this.$('.menu-item[data-menu="text"]').addClass('active');
+
+            // Hide add text controls, show edit controls
+            this.$('#personalization_text, #add_text_button').hide();
+            this.$('#text_controls').show();
         } else if (isImage) {
             // Show image panel and activate image menu item
             this.$('#image_panel').show();
@@ -529,11 +562,19 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             // Show shape panel and activate shape menu item
             this.$('#shape_panel').show();
             this.$('.menu-item[data-menu="shape"]').addClass('active');
+
+            // Hide shapes grid, show edit controls
+            this.$('#shapes_grid').hide();
+            this.$('#shape_controls').show();
         }
     },
 
     _hideControls: function () {
         this.$('#text_controls, #shape_controls, #layer_controls').hide();
+
+        // Restore add controls visibility
+        this.$('#personalization_text, #add_text_button').show();
+        this.$('#shapes_grid').show();
     },
 
     _toHex: function (color) {
@@ -586,23 +627,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         self.$('#personalization_text').val('');
     },
 
-    _onChangeTextProperty: function (ev) {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) return;
-
-        const propMap = {
-            'text_font_family': ['fontFamily', ev.target.value],
-            'text_font_size': ['fontSize', parseInt(ev.target.value)],
-            'text_color': ['fill', ev.target.value]
-        };
-
-        const prop = propMap[ev.target.id];
-        if (prop) {
-            obj.set(prop[0], prop[1]);
-            this.fabricCanvas.renderAll();
-        }
-    },
-
     _onClickTextStyle: function (ev) {
         const obj = this.fabricCanvas.getActiveObject();
         if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) return;
@@ -620,6 +644,43 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             this.fabricCanvas.renderAll();
         }
     },
+
+    _onToggleTextSubmenu: function (ev) {
+        const $button = $(ev.currentTarget);
+        const $content = $button.closest('.text-submenu').find('.text-submenu-content');
+        const isOpen = $content.is(':visible');
+        
+        // Close all other submenus
+        this.$('.text-submenu-content').slideUp(200);
+        this.$('.text-submenu-toggle').removeClass('active');
+        
+        // Toggle current submenu
+        if (!isOpen) {
+            $content.slideDown(200);
+            $button.addClass('active');
+        }
+    },
+
+    _onChangeTextProperty: function (ev) {
+        const obj = this.fabricCanvas.getActiveObject();
+        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) return;
+
+        const propMap = {
+            'text_font_family': ['fontFamily', ev.target.value],
+            'text_font_size': ['fontSize', parseInt(ev.target.value)],
+            'text_color': ['fill', ev.target.value]
+        };
+
+        const prop = propMap[ev.target.id];
+        if (prop) {
+            obj.set(prop[0], prop[1]);
+            this.fabricCanvas.renderAll();
+        }
+    },
+
+
+
+
 
     _onClickAddImage: function () {
         const self = this;
@@ -870,7 +931,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
         switch (shapeType) {
             case 'rect':
-                shape = new fabric.Rect({ ...props, width: 100, height: 100 });
+                shape = new fabric.Rect({ ...props, width: 100, height: 70 });
                 break;
             case 'square':
                 shape = new fabric.Rect({ ...props, width: 100, height: 100 });

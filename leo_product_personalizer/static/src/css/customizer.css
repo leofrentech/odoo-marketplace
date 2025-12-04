@@ -143,3 +143,85 @@
     text-overflow: ellipsis;
     width: 100%;
 }
+
+/* Text Sub-Menu Styling */
+.text-submenu {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.text-submenu-toggle {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 12px !important;
+    transition: all 0.2s ease;
+}
+
+.text-submenu-toggle:hover {
+    background-color: #e2e8f0 !important;
+}
+
+.text-submenu-toggle.active {
+    background-color: #cbd5e1 !important;
+    color: #1a202c !important;
+}
+
+.text-submenu-toggle i:last-child {
+    transition: transform 0.3s ease;
+}
+
+.text-submenu-toggle.active i:last-child {
+    transform: rotate(180deg);
+}
+
+.text-submenu-content {
+    border-top: 1px solid #e2e8f0;
+}
+
+.text-submenu-content .form-control,
+.text-submenu-content .form-range,
+.text-submenu-content .form-select {
+    font-size: 13px;
+    height: 36px;
+}
+
+.text-submenu-content label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 6px;
+}
+
+.text-submenu-content .btn-group {
+    gap: 4px;
+}
+
+.text-submenu-content .btn-group .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Form Range (Slider) Styling */
+.form-range {
+    height: 5px;
+    border-radius: 5px;
+}
+
+.form-range::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    background: #4a5568;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.form-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #4a5568;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
