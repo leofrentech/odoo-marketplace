@@ -3,303 +3,375 @@
 import publicWidget from '@web/legacy/js/public/public_widget';
 import { rpc } from '@web/core/network/rpc';
 
+// Core Modules
+import { CanvasManager } from './core/canvas_manager';
+import { HistoryManager } from './core/history_manager';
+import { StateManager } from './core/state_manager';
+
+// Handlers
+import { TextHandler } from './handlers/text_handler';
+import { ImageHandler } from './handlers/image_handler';
+import { ShapeHandler } from './handlers/shape_handler';
+import { LayerHandler } from './handlers/layer_handler';
+
+// UI Controllers
+import { MenuController } from './ui/menu_controller';
+import { ControlsUpdater } from './ui/controls_updater';
+
+// Utilities
+import { ObjectUtils } from './utils/object_utils';
+import { PreviewGenerator } from './utils/preview_generator';
+
+
+/**
+ * Shows "Customize Product" button on product page.
+ */
 publicWidget.registry.ProductPagePersonalization = publicWidget.Widget.extend({
     selector: '.oe_website_sale:not(.o_product_personalize_page)',
+
     events: {
         'click #customize_product_button': '_onClickCustomizeProduct',
     },
 
-    _onClickCustomizeProduct: function (ev) {
+    /** Redirect to personalization editor */
+    _onClickCustomizeProduct(ev) {
         ev.preventDefault();
         const productId = this.$('input[name="product_template_id"]').val();
         window.location.href = `/shop/personalize/${productId}`;
     },
 });
 
+
+/**
+ * Main Editor Controller for Product Personalization Page
+ */
 publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend({
     selector: '.o_product_personalize_page',
+
     events: {
+        // Text
         'click #add_text_button': '_onClickAddText',
-        'click #add_image_button': '_onClickAddImage',
-        'click #add_to_cart_personalized': '_onClickAddToCartPersonalized',
-        'click #undo_button': '_onClickUndo',
-        'click #redo_button': '_onClickRedo',
         'change #text_font_family': '_onChangeTextProperty',
         'change #text_font_size': '_onChangeTextProperty',
         'change #text_color': '_onChangeTextProperty',
         'click #text_bold': '_onClickTextStyle',
         'click #text_italic': '_onClickTextStyle',
         'click #text_underline': '_onClickTextStyle',
+
+        // Images
+        'click #add_image_button': '_onClickAddImage',
+
+        // Shapes
+        'click .shape-item': '_onShapeSelect',
         'change #shape_fill_color': '_onChangeShapeProperty',
         'change #shape_stroke_color': '_onChangeShapeProperty',
         'change #shape_stroke_width': '_onChangeShapeProperty',
+
+        // Preset colors
         'click .preset-color': '_onClickPresetColor',
-        'change #design_type_selector': '_onDesignTypeChange',
-        'change #product_qty': '_onChangeQty',
-        'click .variant-item': '_onVariantChange',
-        'click .shape-item': '_onShapeSelect',
+
+        // Navigation
         'click .menu-item': '_onMenuItemClick',
         'click .text-submenu-toggle': '_onToggleTextSubmenu',
+
+        // Design Type Switching
+        'change #design_type_selector': '_onDesignTypeChange',
+
+        // Variant switching
+        'click .variant-item': '_onVariantChange',
+
+        // Quantity
+        'change #product_qty': '_onChangeQty',
+
+        // Undo / Redo
+        'click #undo_button': '_onClickUndo',
+        'click #redo_button': '_onClickRedo',
+
         // Preview & Download
         'click #preview_designs_button': '_onClickPreviewDesigns',
         'click #download_designs_button': '_onClickDownloadDesigns',
         'click .download-format-btn': '_onClickDownloadFormat',
+
+        // Add to cart
+        'click #add_to_cart_personalized': '_onClickAddToCartPersonalized',
     },
 
-    start: function () {
+    /**
+     * Entry point for personalization page
+     */
+    start() {
         const self = this;
-        self.history = [];
-        self.historyStep = -1;
-        self.isUndoRedoAction = false;
-        self.designData = {};
-        self.activeDesignType = null;
-        self.activeVariantId = null;
-        self.zone = null;
-        self.zoneRect = null;
-        self.productData = null;
-        self.fabricCanvas = null;
-        self._layerCounter = 1;
+
+        self.canvasManager = new CanvasManager();
+        self.stateManager = new StateManager();
         self.editMode = false;
         self.editLineId = null;
         self.editVariantId = null;
 
-        return this._super.apply(this, arguments).then(function () {
-            // Check if we're in edit mode
+        return this._super.apply(this, arguments).then(() => {
+            // Load initial config
             self.editMode = self.$('#edit_mode').val() === 'true';
             self.editLineId = parseInt(self.$('#line_id').val()) || null;
             self.editVariantId = parseInt(self.$('#edit_variant_id').val()) || null;
 
-            return self._loadProductData().then(function () {
-                self._initializeCanvas();
-                if (self.editMode && self.editLineId) {
-                    return self._loadEditModeData();
-                }
-            }).then(function () {
-                self._setupEventListeners();
-                self._setupKeyboardShortcuts();
-                self._initDesignTypeSelector();
-            });
+            // Load product data & initialize
+            return self._loadProductData()
+                .then(() => self._initializeCanvas())
+                .then(() => self.editMode ? self._loadEditModeData() : null)
+                .then(() => {
+                    self._initializeHandlers();
+                    self._initializeUI();
+                    self._setupEventListeners();
+                    self._setupKeyboardShortcuts();
+                    self._initDesignTypeSelector();
+                });
         });
     },
 
+    /** Setup canvas, history, and layers */
+    _initializeCanvas() {
+        this.canvasManager.initialize();
+        const canvas = this.canvasManager.getCanvas();
 
+        this.historyManager = new HistoryManager(canvas, this.canvasManager.zoneRect);
+        this.layerHandler = new LayerHandler(canvas, this.canvasManager.zoneRect);
+    },
 
-    _loadEditModeData: function () {
-        const self = this;
+    /** Initialize text, image, and shape handlers */
+    _initializeHandlers() {
+        const canvas = this.canvasManager.getCanvas();
+
+        this.textHandler = new TextHandler(canvas, this.canvasManager.zone);
+        this.imageHandler = new ImageHandler(canvas, this.canvasManager.zone);
+        this.shapeHandler = new ShapeHandler(canvas, this.canvasManager.zone);
+    },
+
+    /** Create UI controllers */
+    _initializeUI() {
+        this.menuController = new MenuController(this.$el);
+        this.controlsUpdater = new ControlsUpdater(this.$el);
+    },
+
+    /**
+     * Load product & design configuration from backend
+     */
+    _loadProductData() {
+        const productId = parseInt(this.$('#product_id').val());
+        const variantId = this.editMode ? this.editVariantId : null;
+
+        return rpc('/shop/product_personalization_data', {
+            product_id: productId,
+            variant_id: variantId,
+        })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                this.stateManager.setProductData(data);
+                return data;
+            })
+            .catch(error => {
+                console.error("Load product data failed:", error);
+                alert("Failed to load product data.");
+                throw error;
+            });
+    },
+
+    /**
+     * Load saved JSON when editing existing personalization
+     */
+    _loadEditModeData() {
         return rpc('/shop/cart/get_line_personalization', {
-            line_id: self.editLineId
-        }).then(function (result) {
-            if (!result.success) {
-                console.error('Failed to load line personalization:', result.error);
-                return;
-            }
+            line_id: this.editLineId,
+        })
+            .then(result => {
+                if (!result.success) return;
 
-            // Load the persisted design data from the cart line
-            if (result.designs) {
-                self.designData = result.designs;
-                Object.keys(self.designData).forEach(function (designType) {
-                    const design = self.designData[designType];
-
-                    // Parse personalized_json field to get actual canvas JSON
-                    if (design.personalized_json && typeof design.personalized_json === 'string') {
+                // Prepare JSON for each design type
+                if (result.designs) {
+                    Object.entries(result.designs).forEach(([type, design]) => {
                         try {
-                            design.json = JSON.parse(design.personalized_json);
-                        } catch (e) {
-                            console.error('Failed to parse personalized_json:', e);
+                            if (typeof design.personalized_json === 'string') {
+                                design.json = JSON.parse(design.personalized_json);
+                            } else if (typeof design.personalized_json === 'object') {
+                                design.json = design.personalized_json;
+                            } else if (typeof design.json === 'string') {
+                                design.json = JSON.parse(design.json);
+                            } else {
+                                design.json = { version: "5.3.0", objects: [] };
+                            }
+                        } catch {
                             design.json = { version: "5.3.0", objects: [] };
                         }
-                    } else if (design.personalized_json && typeof design.personalized_json === 'object') {
-                        design.json = design.personalized_json;
-                    } else if (design.json && typeof design.json === 'string') {
-                        design.json = JSON.parse(design.json);
-                    } else {
-                        design.json = { version: "5.3.0", objects: [] };
-                    }
 
-                    // Store the preview image URL
-                    if (design.product_image_url) {
-                        design.backgroundImageUrl = design.product_image_url;
-                    }
-                });
-            }
-        }).catch(function (error) {
-            console.error('Error loading edit mode data:', error);
-        });
-    },
-
-    _initializeCanvas: function () {
-        const wrapper = document.getElementById("canvas_wrapper");
-        if (!wrapper) {
-            console.error("canvas_wrapper not found");
-            return;
-        }
-
-        wrapper.innerHTML = "";
-        const canvas = document.createElement("canvas");
-        canvas.id = "personalization_canvas";
-        canvas.width = 800;
-        canvas.height = 800;
-        canvas.style.width = "800px";
-        canvas.style.height = "800px";
-        canvas.style.border = "2px solid #dee2e6";
-        wrapper.appendChild(canvas);
-
-        this.fabricCanvas = new fabric.Canvas("personalization_canvas");
-    },
-
-    _setupEventListeners: function () {
-        const self = this;
-
-        self.fabricCanvas.on('selection:created', function () {
-            self._updateControls();
-            self._renderLayersList();
-        });
-
-        self.fabricCanvas.on('selection:updated', function () {
-            self._updateControls();
-            self._renderLayersList();
-        });
-
-        self.fabricCanvas.on('selection:cleared', function () {
-            self._hideControls();
-            self._renderLayersList();
-        });
-
-        self.fabricCanvas.on('object:added', function (e) {
-            if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
-                if (!self.isUndoRedoAction) {
-                    self._saveState();
-                }
-                self._onObjectAdded(e.target);
-                // assign id and refresh layers list
-                try {
-                    self._assignLayerId(e.target);
-                } catch (err) {
-                    console.warn('assignLayerId failed', err);
-                }
-                self._renderLayersList();
-            }
-        });
-
-        self.fabricCanvas.on('object:modified', function (e) {
-            if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
-                if (!self.isUndoRedoAction) {
-                    self._saveState();
-                }
-                self._clampObjectToZone(e.target);
-                self._renderLayersList();
-            }
-        });
-
-        self.fabricCanvas.on('object:removed', function (e) {
-            if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
-                if (!self.isUndoRedoAction) {
-                    self._saveState();
-                }
-                self._renderLayersList();
-            }
-        });
-
-        self.fabricCanvas.on('object:moving', function (e) {
-            if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
-                self._clampObjectToZone(e.target);
-            }
-        });
-
-        self.fabricCanvas.on('object:scaling', function (e) {
-            if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
-                self._clampObjectToZone(e.target);
-                // Update font size on scaling for text objects
-                if (e.target.type === 'i-text' || e.target.type === 'text' || e.target.type === 'curved-text') {
-                    self._updateFontSizeOnScale(e.target);
-                }
-            }
-        });
-
-        self.fabricCanvas.on('object:rotating', function (e) {
-            if (e.target && e.target.isZoneRect !== true && e.target !== self.zoneRect) {
-                self._clampObjectToZone(e.target);
-            }
-        });
-
-        // Ensure zone stays on top after any render
-        self.fabricCanvas.on('after:render', function () {
-            if (self.zoneRect && !self.isUndoRedoAction) {
-                const currentIndex = self.fabricCanvas.getObjects().indexOf(self.zoneRect);
-                const lastIndex = self.fabricCanvas.getObjects().length - 1;
-                if (currentIndex !== lastIndex) {
-                    self.fabricCanvas.bringToFront(self.zoneRect);
-                }
-            }
-        });
-    },
-
-    _onObjectAdded: function (obj) {
-        const self = this;
-        if (!obj || obj.isZoneRect === true || obj === self.zoneRect) return;
-
-        // Skip auto-positioning during undo/redo or restoration
-        if (self.isUndoRedoAction) {
-            if (self.zoneRect) {
-                self.fabricCanvas.bringToFront(self.zoneRect);
-            }
-            return;
-        }
-
-        // Wait for object to be fully added
-        setTimeout(function () {
-            if (self.zone && obj && !obj.isZoneRect) {
-                const cx = self.zone.bound_x + (self.zone.width / 2);
-                const cy = self.zone.bound_y + (self.zone.height / 2);
-
-                obj.set({
-                    left: cx,
-                    top: cy,
-                    originX: 'center',
-                    originY: 'center'
-                });
-                obj.setCoords();
-
-                // Scale down if larger than zone
-                const br = obj.getBoundingRect(true, true);
-                if (br.width > self.zone.width - 20 || br.height > self.zone.height - 20) {
-                    const scaleX = (self.zone.width - 40) / obj.width;
-                    const scaleY = (self.zone.height - 40) / obj.height;
-                    const scale = Math.min(scaleX, scaleY);
-
-                    obj.set({
-                        scaleX: scale,
-                        scaleY: scale
+                        // Map background image url
+                        if (design.product_image_url) {
+                            design.backgroundImageUrl = design.product_image_url;
+                        }
                     });
-                    obj.setCoords();
+
+                    this.stateManager.setDesignData(result.designs);
                 }
+            })
+            .catch(err => {
+                console.error("Failed loading edit mode JSON:", err);
+            });
+    },
+
+    /** Bind Fabric.js canvas events */
+    _setupEventListeners() {
+        const canvas = this.canvasManager.getCanvas();
+        const self = this;
+
+        canvas.on('selection:created', () => self._onSelection());
+        canvas.on('selection:updated', () => self._onSelection());
+        canvas.on('selection:cleared', () => self._onSelectionCleared());
+
+        canvas.on('object:added', e => self._onObjectAdded(e));
+        canvas.on('object:modified', e => self._onObjectModified(e));
+        canvas.on('object:removed', () => self._onObjectRemoved());
+
+        canvas.on('object:moving', e => self._onObjectMoving(e));
+        canvas.on('object:scaling', e => self._onObjectScaling(e));
+        canvas.on('object:rotating', e => self._onObjectRotating(e));
+
+        canvas.on('after:render', () => self.canvasManager.ensureZoneOnTop());
+    },
+
+    /**
+     * Update UI when an object is selected
+     */
+    _onSelection() {
+        const obj = this.canvasManager.getCanvas().getActiveObject();
+
+        this.controlsUpdater.updateControls(obj, this.canvasManager.zoneRect);
+        this.layerHandler.renderLayersList(
+            this.$('#layers_list'),
+            obj => this._selectObject(obj)
+        );
+
+        const isText = obj.type === 'i-text' || obj.type === 'text';
+        const isImage = obj.type === 'image';
+        const isShape = !isText && !isImage;
+
+        this.menuController.autoSwitchPanel(isText, isImage, isShape);
+    },
+
+    /** Clear control visibility */
+    _onSelectionCleared() {
+        this.controlsUpdater.hideControls();
+        this.layerHandler.renderLayersList(
+            this.$('#layers_list'),
+            obj => this._selectObject(obj)
+        );
+    },
+
+    /**
+     * After object added to canvas
+     */
+    _onObjectAdded(e) {
+        const obj = e.target;
+        if (!obj || obj.isZoneRect) return;
+
+        if (!this.historyManager.isUndoRedoAction) {
+            this.historyManager.saveState();
+        }
+
+        this._positionNewObject(obj);
+        this.layerHandler.assignLayerId(obj);
+        this.layerHandler.renderLayersList(this.$('#layers_list'), o => this._selectObject(o));
+    },
+
+    /** Position new object and scale inside zone */
+    _positionNewObject(obj) {
+        if (this.historyManager.isUndoRedoAction) return;
+
+        setTimeout(() => {
+            if (this.canvasManager.zone && !obj.isZoneRect) {
+                ObjectUtils.positionInZoneCenter(obj, this.canvasManager.zone);
+                ObjectUtils.scaleToFitZone(obj, this.canvasManager.zone);
             }
 
-            // Always ensure zone is on top
-            if (self.zoneRect) {
-                self.fabricCanvas.bringToFront(self.zoneRect);
+            if (this.canvasManager.zoneRect) {
+                this.canvasManager.getCanvas().bringToFront(this.canvasManager.zoneRect);
             }
-            self.fabricCanvas.renderAll();
+
+            this.canvasManager.getCanvas().renderAll();
         }, 10);
     },
 
-    _setupKeyboardShortcuts: function () {
+    /** After scaling */
+    _onObjectScaling(e) {
+        const obj = e.target;
+        if (!obj || obj.isZoneRect) return;
+
+        this.canvasManager.clampObjectToZone(obj);
+
+        if (obj.type === 'i-text' || obj.type === 'text') {
+            this.textHandler.updateFontSizeOnScale(obj);
+            this.controlsUpdater.updateControls(obj, this.canvasManager.zoneRect);
+        }
+    },
+
+    /** After modify */
+    _onObjectModified(e) {
+        const obj = e.target;
+        if (!obj || obj.isZoneRect) return;
+
+        if (!this.historyManager.isUndoRedoAction) {
+            this.historyManager.saveState();
+        }
+
+        this.canvasManager.clampObjectToZone(obj);
+
+        this.layerHandler.renderLayersList(
+            this.$('#layers_list'),
+            o => this._selectObject(o)
+        );
+    },
+
+    /** After removal */
+    _onObjectRemoved() {
+        if (!this.historyManager.isUndoRedoAction) {
+            this.historyManager.saveState();
+        }
+        this.layerHandler.renderLayersList(
+            this.$('#layers_list'),
+            obj => this._selectObject(obj)
+        );
+    },
+
+    /** Clamp object during movement */
+    _onObjectMoving(e) {
+        const obj = e.target;
+        if (!obj || obj.isZoneRect) return;
+        this.canvasManager.clampObjectToZone(obj);
+    },
+
+    /** Clamp while rotating */
+    _onObjectRotating(e) {
+        const obj = e.target;
+        if (!obj || obj.isZoneRect) return;
+        this.canvasManager.clampObjectToZone(obj);
+    },
+
+    /** Add Delete, Ctrl+Z, Ctrl+Y support */
+    _setupKeyboardShortcuts() {
         const self = this;
+
         $(document).on('keydown', function (e) {
             if ($(e.target).is('input, textarea')) return;
 
-            const obj = self.fabricCanvas.getActiveObject();
-            if ((e.key === 'Delete' || e.key === 'Backspace') && obj && obj !== self.zoneRect) {
+            const obj = self.canvasManager.getCanvas().getActiveObject();
+
+            if ((e.key === 'Delete' || e.key === 'Backspace') && obj) {
                 e.preventDefault();
-                self._deleteActiveObject();
-            } else if (e.ctrlKey || e.metaKey) {
+                self.canvasManager.getCanvas().remove(obj);
+                self.canvasManager.getCanvas().renderAll();
+            }
+
+            if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'z') {
                     e.preventDefault();
-                    if (e.shiftKey) {
-                        self._onClickRedo();
-                    } else {
-                        self._onClickUndo();
-                    }
+                    e.shiftKey ? self._onClickRedo() : self._onClickUndo();
                 } else if (e.key === 'y') {
                     e.preventDefault();
                     self._onClickRedo();
@@ -308,1538 +380,566 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         });
     },
 
-    _loadProductData: function () {
-        const self = this;
-        self.productId = parseInt(self.$('#product_id').val());
-
-        // In edit mode, use the stored variant ID
-        const variantIdParam = self.editMode && self.editVariantId ? self.editVariantId : null;
-
-        return rpc('/shop/product_personalization_data', {
-            product_id: self.productId,
-            variant_id: variantIdParam
-        }).then(function (data) {
-            if (data.error) {
-                alert(data.error);
-                throw new Error(data.error);
-            }
-            self.productData = data;
-            self.activeVariantId = data.active_variant_id;
-            return data;
-        }).catch(function (error) {
-            console.error('Failed to load product data:', error);
-            alert('Failed to load product data. Please refresh.');
-            throw error;
-        });
+    /** Add new text */
+    _onClickAddText() {
+        const text = this.$('#personalization_text').val().trim();
+        const obj = this.textHandler.addText(text);
+        if (obj) {
+            this.canvasManager.clampObjectToZone(obj);
+            this.$('#personalization_text').val('');
+        }
     },
 
-    _onVariantChange: function (ev) {
-        const self = this;
+    /** Toggle bold/italic/underline */
+    _onClickTextStyle(ev) {
+        const styleMap = {
+            'text_bold': 'bold',
+            'text_italic': 'italic',
+            'text_underline': 'underline',
+        };
 
-        if (self.editMode) {
-            ev.preventDefault();
-            alert('Cannot change variant while editing an existing design');
+        const obj = this.canvasManager.getCanvas().getActiveObject();
+        const style = styleMap[ev.target.id];
+
+        if (style) {
+            this.textHandler.toggleTextStyle(obj, style);
+            $(ev.currentTarget).toggleClass('active');
+        }
+    },
+
+    /** Update font/fill properties */
+    _onChangeTextProperty(ev) {
+        const obj = this.canvasManager.getCanvas().getActiveObject();
+        const map = {
+            'text_font_family': ['fontFamily', ev.target.value],
+            'text_font_size': ['fontSize', parseInt(ev.target.value)],
+            'text_color': ['fill', ev.target.value],
+        };
+
+        const prop = map[ev.target.id];
+        if (prop) this.textHandler.updateTextProperty(obj, prop[0], prop[1]);
+    },
+
+    /** Upload image into canvas */
+    _onClickAddImage() {
+        const files = $('#personalization_image_upload')[0].files;
+        this.imageHandler.addImages(files);
+        $('#personalization_image_upload').val('');
+    },
+
+    /** Add shape to canvas */
+    _onShapeSelect(ev) {
+        this.$('.shape-item').removeClass('active');
+        $(ev.currentTarget).addClass('active');
+
+        const type = $(ev.currentTarget).data('shape-id');
+        this.shapeHandler.addShape(type);
+    },
+
+    /** Update shape fill/stroke/width */
+    _onChangeShapeProperty(ev) {
+        const obj = this.canvasManager.getCanvas().getActiveObject();
+        const map = {
+            'shape_fill_color': ['fill', ev.target.value],
+            'shape_stroke_color': ['stroke', ev.target.value],
+            'shape_stroke_width': ['strokeWidth', parseInt(ev.target.value)],
+        };
+
+        const prop = map[ev.target.id];
+        if (prop) this.shapeHandler.updateShapeProperty(obj, prop[0], prop[1]);
+    },
+
+    /** Apply preset color to text or shape */
+    _onClickPresetColor(ev) {
+        const color = $(ev.currentTarget).data('color');
+        const obj = this.canvasManager.getCanvas().getActiveObject();
+        if (!obj) return;
+
+        if (obj.type === 'i-text' || obj.type === 'text') {
+            this.textHandler.updateTextProperty(obj, 'fill', color);
+            $('#text_color').val(color);
+        } else if (obj.type !== 'image') {
+            this.shapeHandler.updateShapeProperty(obj, 'fill', color);
+            $('#shape_fill_color').val(color);
+        }
+    },
+
+    /** Switch menu panel */
+    _onMenuItemClick(ev) {
+        const type = $(ev.currentTarget).data('menu');
+        this.menuController.switchToPanel(type);
+        this.controlsUpdater.hideControls();
+    },
+
+    /** Toggle text style submenu */
+    _onToggleTextSubmenu(ev) {
+        const $btn = $(ev.currentTarget);
+        const $content = $btn.closest('.text-submenu').find('.text-submenu-content');
+        const open = $content.is(':visible');
+
+        $('.text-submenu-content').slideUp(200);
+        $('.text-submenu-toggle').removeClass('active');
+
+        if (!open) {
+            $content.slideDown(200);
+            $btn.addClass('active');
+        }
+    },
+
+    /** Build selector + load initial design type */
+    _initDesignTypeSelector() {
+        const pdata = this.stateManager.getProductData();
+
+        if (pdata.variants?.length) {
+            this.menuController.renderVariantGrid(pdata.variants, this.stateManager.getActiveVariant());
+
+            if (this.editMode) {
+                this.$('.menu-item[data-menu="variant"]').css({
+                    opacity: 0.5,
+                    'pointer-events': 'none',
+                    cursor: 'not-allowed',
+                });
+            }
+        }
+
+        // Shapes
+        this.menuController.renderShapesGrid(ShapeHandler.getShapesData());
+
+        // Design types
+        const types = pdata.design_types || [];
+        const defaultType = pdata.default_design_type || types[0];
+
+        this.menuController.initializeDesignTypeSelector(types, defaultType);
+        this.stateManager.setActiveDesignType(defaultType);
+
+        this._loadDesignType(defaultType);
+    },
+
+    /** Save old and load new design type */
+    _onDesignTypeChange(ev) {
+        const newType = ev.target.value;
+        if (!newType || newType === this.stateManager.getActiveDesignType()) return;
+
+        this._saveCurrentSideState();
+        this.stateManager.setActiveDesignType(newType);
+        this._loadDesignType(newType);
+    },
+
+    /** Save current side JSON */
+    _saveCurrentSideState() {
+        const type = this.stateManager.getActiveDesignType();
+        if (!type) return;
+
+        const json = ObjectUtils.serializeCanvas(this.canvasManager.getCanvas());
+        this.stateManager.saveDesignState(type, json);
+    },
+
+    /**
+     * Load background + zone + saved objects
+     */
+    _loadDesignType(designType) {
+        const pdata = this.stateManager.getProductData();
+        const side = pdata.designs?.[designType];
+
+        this.canvasManager.clear();
+
+        let bgUrl = side?.image_url || pdata.fallback_image_url || null;
+
+        const loadSide = () => {
+            if (side?.is_restricted_area) {
+                const zone = {
+                    bound_x: parseFloat(side.bound_x) || 0,
+                    bound_y: parseFloat(side.bound_y) || 0,
+                    width: parseFloat(side.bound_width || side.width) || 0,
+                    height: parseFloat(side.bound_height || side.height) || 0,
+                };
+                this.canvasManager.setZone(zone);
+                this._updateHandlersZone();
+            }
+            this._restoreSavedJson(designType);
+        };
+
+        if (bgUrl) {
+            this.canvasManager.setBackgroundFromUrl(bgUrl, loadSide);
+        } else {
+            this.canvasManager.getCanvas().setBackgroundImage(null, () =>
+                this.canvasManager.getCanvas().renderAll()
+            );
+            loadSide();
+        }
+    },
+
+    /** Refresh handler references after zone changes */
+    _updateHandlersZone() {
+        this.textHandler.updateZone(this.canvasManager.zone);
+        this.imageHandler.updateZone(this.canvasManager.zone);
+        this.shapeHandler.updateZone(this.canvasManager.zone);
+        this.historyManager.updateZoneRect(this.canvasManager.zoneRect);
+        this.layerHandler.updateZoneRect(this.canvasManager.zoneRect);
+    },
+
+    /**
+     * Load saved JSON objects into canvas
+     */
+    _restoreSavedJson(designType) {
+        const canvas = this.canvasManager.getCanvas();
+        this.historyManager.isUndoRedoAction = true;
+
+        try {
+            // Remove existing non-zone objects
+            canvas.getObjects().forEach(o => {
+                if (!o.isZoneRect) canvas.remove(o);
+            });
+
+            const saved = this.stateManager.getDesignState(designType);
+
+            if (saved?.json) {
+                let json = saved.json;
+                if (typeof json === 'string') json = JSON.parse(json);
+
+                ObjectUtils.restoreCanvas(canvas, json, () => {
+                    if (this.canvasManager.zoneRect) canvas.bringToFront(this.canvasManager.zoneRect);
+                    canvas.renderAll();
+
+                    this.layerHandler.assignLayerIds();
+                    this.layerHandler.renderLayersList(this.$('#layers_list'), o => this._selectObject(o));
+
+                    this.historyManager.isUndoRedoAction = false;
+
+                    setTimeout(() => {
+                        this.historyManager.reset();
+                        this.historyManager.saveState();
+                    }, 100);
+                });
+            } else {
+                if (this.canvasManager.zoneRect) canvas.bringToFront(this.canvasManager.zoneRect);
+                canvas.renderAll();
+                this.historyManager.isUndoRedoAction = false;
+
+                setTimeout(() => {
+                    this.historyManager.reset();
+                    this.historyManager.saveState();
+                }, 100);
+            }
+        } catch (e) {
+            console.error("Restore JSON failed:", designType, e);
+            this.historyManager.isUndoRedoAction = false;
+        }
+    },
+
+    /** Set object active */
+    _selectObject(obj) {
+        const canvas = this.canvasManager.getCanvas();
+        canvas.discardActiveObject();
+        canvas.setActiveObject(obj);
+        canvas.renderAll();
+
+        this.controlsUpdater.updateControls(obj, this.canvasManager.zoneRect);
+        this.layerHandler.renderLayersList(this.$('#layers_list'), o => this._selectObject(o));
+    },
+
+    /** Enforce min quantity of 1 */
+    _onChangeQty(ev) {
+        const qty = parseInt(ev.target.value) || 1;
+        $('#product_qty').val(Math.max(1, qty));
+    },
+
+    /** Change product variant */
+    _onVariantChange(ev) {
+        if (this.editMode) {
+            alert("Cannot change variant while editing.");
             return;
         }
 
         const newVariantId = parseInt($(ev.currentTarget).data('variant-id'));
-        if (!newVariantId || newVariantId === self.activeVariantId) return;
-
-        // Save current variant's design before switching
-        self._saveCurrentSideState();
-
-        // Clear canvas and reset state
-        self.fabricCanvas.clear();
-        self.zoneRect = null;
-        self.zone = null;
-
-        // Switch variant
-        self.activeVariantId = newVariantId;
-        self.designData = {};
-
-        return rpc('/shop/product_personalization_data', {
-            product_id: self.productId,
-            variant_id: newVariantId
-        }).then(function (data) {
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-            self.productData = data;
-
-            // Update variant grid UI
-            self._renderVariantGrid();
-
-            // Re-initialize design type selector
-            const $selector = self.$('#design_type_selector');
-            const types = data.design_types || [];
-
-            $selector.empty();
-            types.forEach(function (t) {
-                const label = t.replace(/_/g, ' ').replace(/\b\w/g, function (c) {
-                    return c.toUpperCase();
-                });
-                $selector.append('<option value="' + t + '">' + label + '</option>');
-            });
-
-            const defaultType = data.default_design_type || types[0];
-            self.activeDesignType = defaultType;
-            $selector.val(defaultType);
-
-            if (defaultType) {
-                self._loadDesignType(defaultType);
-            }
-        }).catch(function (error) {
-            console.error('Failed to load variant data:', error);
-            alert('Failed to load variant. Please try again.');
-        });
-    },
-
-    _onMenuItemClick: function (ev) {
-        const $target = $(ev.currentTarget);
-        const menuType = $target.data('menu');
-
-        // Remove active from all
-        this.$('.menu-item').removeClass('active');
-        $target.addClass('active');
-
-        // Hide all panels
-        this.$('.menu-panel').hide();
-
-        // Show selected panel
-        this.$('#' + menuType + '_panel').show();
-
-        // Reset controls visibility
-        this.$('#text_controls, #shape_controls, #layer_controls').hide();
-        this.$('#personalization_text, #add_text_button').show();
-        this.$('#shapes_grid').show();
-    },
-
-    _saveState: function () {
-        const self = this;
-        try {
-            self.history = self.history.slice(0, self.historyStep + 1);
-
-            const canvasJSON = self.fabricCanvas.toJSON();
-
-            // Filter out zone rectangles from history
-            if (canvasJSON.objects) {
-                canvasJSON.objects = canvasJSON.objects.filter(function (obj) {
-                    return !obj.isZoneRect && obj.name !== 'zoneRect';
-                });
-            }
-
-            self.history.push(JSON.stringify(canvasJSON));
-            self.historyStep++;
-            self._updateHistoryButtons();
-        } catch (e) {
-            console.error('saveState error', e);
-        }
-    },
-
-    _updateFontSizeOnScale: function (obj) {
-        const scale = Math.max(obj.scaleX, obj.scaleY);
-        const newFontSize = (obj.fontSize || 20) * scale;
-
-        // Apply the new font size and reset scale
-        obj.set({
-            fontSize: newFontSize,
-            scaleX: 1,
-            scaleY: 1
-        });
-
-        // Update the font size input field in the UI
-        this.$('#text_font_size').val(Math.round(newFontSize));
-
-        // For curved text, diameter also needs to be scaled
-        if (obj.type === 'curved-text') {
-            obj.set('diameter', (obj.diameter || 250) * scale);
-        }
-    },
-    _updateHistoryButtons: function () {
-        this.$('#undo_button').prop('disabled', this.historyStep <= 0);
-        this.$('#redo_button').prop('disabled', this.historyStep >= this.history.length - 1);
-    },
-
-    _onClickUndo: function () {
-        if (this.historyStep > 0) {
-            this.historyStep--;
-            this._loadHistoryState();
-        }
-    },
-
-    _onClickRedo: function () {
-        if (this.historyStep < this.history.length - 1) {
-            this.historyStep++;
-            this._loadHistoryState();
-        }
-    },
-
-    _loadHistoryState: function () {
-        const self = this;
-        self.isUndoRedoAction = true;
-        const bg = self.fabricCanvas.backgroundImage;
-        const currentZone = self.zone;
-
-        self.fabricCanvas.loadFromJSON(self.history[self.historyStep], function () {
-            if (bg) {
-                self.fabricCanvas.setBackgroundImage(bg, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
-            }
-            if (currentZone) {
-                self._setZone(currentZone);
-
-                self.fabricCanvas.getObjects().forEach(function (obj) {
-                    if (obj !== self.zoneRect && !obj.isZoneRect) {
-                        self._clampObjectToZone(obj);
-                    }
-                });
-            }
-            self.fabricCanvas.renderAll();
-            self.isUndoRedoAction = false;
-            self._updateHistoryButtons();
-        });
-    },
-
-    _deleteActiveObject: function () {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (obj && obj !== this.zoneRect) {
-            this.fabricCanvas.remove(obj);
-            this.fabricCanvas.renderAll();
-        }
-    },
-
-    _updateControls: function () {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || obj === this.zoneRect) {
-            this._hideControls();
-            return;
-        }
-
-        const isText = obj.type === 'i-text' || obj.type === 'text';
-        const isImage = obj.type === 'image';
-        const isShape = !isText && !isImage;
-
-        // Auto-switch left sidebar panel based on selected object type
-        this._switchPanelForObjectType(isText, isImage, isShape);
-
-        this.$('#text_controls').toggle(isText);
-        this.$('#shape_controls').toggle(isShape);
-        this.$('#layer_controls').show();
-
-        if (isText) {
-            this.$('#text_font_family').val(obj.fontFamily || 'Arial');
-            this.$('#text_font_size').val(obj.fontSize || 40);
-            this.$('#text_color').val(this._toHex(obj.fill));
-            this.$('#text_bold').toggleClass('active', obj.fontWeight === 'bold');
-            this.$('#text_italic').toggleClass('active', obj.fontStyle === 'italic');
-            this.$('#text_underline').toggleClass('active', obj.underline);
-        } else if (isShape) {
-            this.$('#shape_fill_color').val(this._toHex(obj.fill));
-            this.$('#shape_stroke_color').val(this._toHex(obj.stroke));
-            this.$('#shape_stroke_width').val(obj.strokeWidth || 2);
-        }
-        // For images, no specific controls to update
-    },
-
-    _switchPanelForObjectType: function (isText, isImage, isShape) {
-        // Hide all panels
-        this.$('.menu-panel').hide();
-        this.$('.menu-item').removeClass('active');
-
-        if (isText) {
-            // Show text panel and activate text menu item
-            this.$('#text_panel').show();
-            this.$('.menu-item[data-menu="text"]').addClass('active');
-
-            // Hide add text controls, show edit controls
-            this.$('#personalization_text, #add_text_button').hide();
-            this.$('#text_controls').show();
-        } else if (isImage) {
-            // Show image panel and activate image menu item
-            this.$('#image_panel').show();
-            this.$('.menu-item[data-menu="image"]').addClass('active');
-        } else if (isShape) {
-            // Show shape panel and activate shape menu item
-            this.$('#shape_panel').show();
-            this.$('.menu-item[data-menu="shape"]').addClass('active');
-
-            // Hide shapes grid, show edit controls
-            this.$('#shapes_grid').hide();
-            this.$('#shape_controls').show();
-        }
-    },
-
-    _hideControls: function () {
-        this.$('#text_controls, #shape_controls, #layer_controls').hide();
-
-        // Restore add controls visibility
-        this.$('#personalization_text, #add_text_button').show();
-        this.$('#shapes_grid').show();
-    },
-
-    _toHex: function (color) {
-        if (!color || color.startsWith('#')) return color || '#000000';
-        const rgb = color.match(/\d+/g);
-        if (!rgb || rgb.length < 3) return '#000000';
-        return '#' + rgb.slice(0, 3).map(function (x) {
-            return parseInt(x).toString(16).padStart(2, '0');
-        }).join('');
-    },
-
-    _onClickAddText: function () {
-        const self = this;
-        if (!self.fabricCanvas) {
-            alert('Canvas not ready');
-            return;
-        }
-
-        const text = self.$('#personalization_text').val().trim();
-        if (!text) {
-            alert('Please enter some text');
-            return;
-        }
-
-        let initialLeft = 100;
-        let initialTop = 100;
-
-        if (self.zone) {
-            initialLeft = self.zone.bound_x + (self.zone.width / 2);
-            initialTop = self.zone.bound_y + (self.zone.height / 2);
-        }
-
-        const textObj = new fabric.IText(text, {
-            left: initialLeft,
-            top: initialTop,
-            fontFamily: 'Arial',
-            fill: '#000000',
-            fontSize: 40
-        });
-
-        self.fabricCanvas.add(textObj);
-
-        if (self.zone) {
-            self._clampObjectToZone(textObj);
-        }
-
-        try { textObj.__label = text; } catch (e) { }
-        self.fabricCanvas.setActiveObject(textObj);
-        self.fabricCanvas.renderAll();
-        self.$('#personalization_text').val('');
-    },
-
-    _onClickTextStyle: function (ev) {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) return;
-
-        const styleMap = {
-            'text_bold': ['fontWeight', obj.fontWeight === 'bold' ? 'normal' : 'bold'],
-            'text_italic': ['fontStyle', obj.fontStyle === 'italic' ? 'normal' : 'italic'],
-            'text_underline': ['underline', !obj.underline]
-        };
-
-        const style = styleMap[ev.target.id];
-        if (style) {
-            obj.set(style[0], style[1]);
-            $(ev.currentTarget).toggleClass('active');
-            this.fabricCanvas.renderAll();
-        }
-    },
-
-    _onToggleTextSubmenu: function (ev) {
-        const $button = $(ev.currentTarget);
-        const $content = $button.closest('.text-submenu').find('.text-submenu-content');
-        const isOpen = $content.is(':visible');
-        
-        // Close all other submenus
-        this.$('.text-submenu-content').slideUp(200);
-        this.$('.text-submenu-toggle').removeClass('active');
-        
-        // Toggle current submenu
-        if (!isOpen) {
-            $content.slideDown(200);
-            $button.addClass('active');
-        }
-    },
-
-    _onChangeTextProperty: function (ev) {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) return;
-
-        const propMap = {
-            'text_font_family': ['fontFamily', ev.target.value],
-            'text_font_size': ['fontSize', parseInt(ev.target.value)],
-            'text_color': ['fill', ev.target.value]
-        };
-
-        const prop = propMap[ev.target.id];
-        if (prop) {
-            obj.set(prop[0], prop[1]);
-            this.fabricCanvas.renderAll();
-        }
-    },
-
-
-
-
-
-    _onClickAddImage: function () {
-        const self = this;
-        if (!self.fabricCanvas) {
-            alert('Canvas not ready');
-            return;
-        }
-
-        const files = self.$('#personalization_image_upload')[0].files;
-        if (!files || !files.length) {
-            alert('Please select an image file');
-            return;
-        }
-
-        Array.from(files).forEach(function (file, i) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                fabric.Image.fromURL(e.target.result, function (img) {
-                    if (!img) return;
-                    img.scaleToWidth(150);
-
-                    // Calculate initial position
-                    let initialLeft = 100 + i * 20;
-                    let initialTop = 100 + i * 20;
-
-                    if (self.zone) {
-                        // Position image in center of zone area
-                        initialLeft = self.zone.bound_x + (self.zone.width / 2) + (i * 10);
-                        initialTop = self.zone.bound_y + (self.zone.height / 2) + (i * 10);
-                    }
-
-                    img.set({
-                        left: initialLeft,
-                        top: initialTop
-                    });
-                    // attach filename as label (used in layers list)
-                    try {
-                        if (img._element) img._element.name = file.name;
-                    } catch (err) { }
-                    try { img.__label = file.name; } catch (err) { }
-                    self.fabricCanvas.add(img);
-
-                    if (self.zone) {
-                        self._clampObjectToZone(img);
-                    }
-
-                    self.fabricCanvas.setActiveObject(img);
-                    self.fabricCanvas.renderAll();
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        self.$('#personalization_image_upload').val('');
-    },
-
-    _onChangeShapeProperty: function (ev) {
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || obj.type === 'i-text' || obj.type === 'text' || obj.type === 'image') return;
-
-        const propMap = {
-            'shape_fill_color': ['fill', ev.target.value],
-            'shape_stroke_color': ['stroke', ev.target.value],
-            'shape_stroke_width': ['strokeWidth', parseInt(ev.target.value)]
-        };
-
-        const prop = propMap[ev.target.id];
-        if (prop) {
-            obj.set(prop[0], prop[1]);
-            this.fabricCanvas.renderAll();
-        }
-    },
-
-    _onClickPresetColor: function (ev) {
-        const color = $(ev.currentTarget).data('color');
-        const obj = this.fabricCanvas.getActiveObject();
-        if (!obj || obj === this.zoneRect) return;
-
-        if (obj.type === 'i-text' || obj.type === 'text') {
-            obj.set('fill', color);
-            this.$('#text_color').val(color);
-        } else if (obj.type !== 'image') {
-            obj.set('fill', color);
-            this.$('#shape_fill_color').val(color);
-        }
-
-        this.fabricCanvas.renderAll();
-    },
-
-    _initDesignTypeSelector: function () {
-        const self = this;
-
-        if (self.productData.variants && self.productData.variants.length > 0) {
-            self._renderVariantGrid();
-
-            // Disable variant menu in edit mode
-            if (self.editMode) {
-                self.$('.menu-item[data-menu="variant"]').css({
-                    'opacity': '0.5',
-                    'pointer-events': 'none',
-                    'cursor': 'not-allowed'
-                });
-            }
-        }
-
-        self._renderShapesGrid();
-        // Initialize design type selector
-        const $selector = self.$('#design_type_selector');
-        const types = self.productData.design_types || [];
-
-        $selector.empty();
-        types.forEach(function (t) {
-            const label = t.replace(/_/g, ' ').replace(/\b\w/g, function (c) {
-                return c.toUpperCase();
-            });
-            $selector.append('<option value="' + t + '">' + label + '</option>');
-        });
-
-        const defaultType = self.productData.default_design_type || types[0];
-        self.activeDesignType = defaultType;
-        $selector.val(defaultType);
-
-        self._loadDesignType(defaultType);
-    },
-
-    _renderVariantGrid: function () {
-        const self = this;
-        const $grid = self.$('#variants_grid');
-        $grid.empty();
-
-        if (!self.productData.variants) return;
-
-        self.productData.variants.forEach(function (variant) {
-            const isActive = variant.id === self.activeVariantId;
-            const activeClass = isActive ? 'active' : '';
-            const imageUrl = variant.image_url || '';
-
-            const $item = $('<div>')
-                .addClass('col-6 variant-item p-2 ' + activeClass)
-                .attr('data-variant-id', variant.id);
-
-            if (imageUrl) {
-                const $imageWrapper = $('<div class="variant-image-wrapper"></div>');
-                const $img = $('<img>')
-                    .addClass('img-fluid')
-                    .attr('src', imageUrl)
-                    .attr('alt', variant.name);
-                $imageWrapper.append($img);
-                $item.append($imageWrapper);
-            }
-
-            // $item.append(
-            //     $('<div>')
-            //         .addClass('variant-item-name')
-            //         .text(variant.name)
-            // );
-
-            $grid.append($item);
-        });
-    },
-
-    _getShapesData: function () {
-        return [
-            { id: 'rect', name: 'Rectangle', icon: 'fa-square', faClass: 'fa fa-square' },
-            { id: 'circle', name: 'Circle', icon: 'fa-circle', faClass: 'fa fa-circle' },
-            { id: 'triangle', name: 'Triangle', icon: 'fa-play', faClass: 'fa fa-play' },
-            { id: 'star', name: 'Star', icon: 'fa-star', faClass: 'fa fa-star' },
-            { id: 'heart', name: 'Heart', icon: 'fa-heart', faClass: 'fa fa-heart' },
-            { id: 'diamond', name: 'Diamond', icon: 'fa-diamond', faClass: 'fa fa-diamond' },
-            { id: 'ellipse', name: 'Ellipse', icon: 'fa-ellipsis-h', faClass: 'fa fa-ellipsis-h' },
-            { id: 'polygon', name: 'Pentagon', icon: 'fa-certificate', faClass: 'fa fa-certificate' },
-            { id: 'hexagon', name: 'Hexagon', icon: 'fa-circle', faClass: 'fa fa-circle' },
-            { id: 'arrow', name: 'Arrow', icon: 'fa-arrow-right', faClass: 'fa fa-arrow-right' },
-            { id: 'square', name: 'Square', icon: 'fa-square', faClass: 'fa fa-square' },
-            { id: 'line', name: 'Line', icon: 'fa-minus', faClass: 'fa fa-minus' },
-        ];
-    },
-
-    _renderShapesGrid: function () {
-        const self = this;
-        const $grid = self.$('#shapes_grid');
-        $grid.empty();
-
-        const shapes = self._getShapesData();
-        shapes.forEach(function (shape) {
-            const $item = $('<div>')
-                .addClass('col-6 shape-item')
-                .attr('data-shape-id', shape.id);
-
-            $item.append(
-                $('<div>')
-                    .addClass('shape-item-icon')
-                    .html('<i class="' + shape.faClass + '"></i>')
-            );
-
-            $item.append(
-                $('<div>')
-                    .addClass('shape-item-name')
-                    .text(shape.name)
-            );
-
-            $grid.append($item);
-        });
-    },
-
-    _onShapeSelect: function (ev) {
-        const self = this;
-        const shapeId = $(ev.currentTarget).data('shape-id');
-
-        // Update active state
-        self.$('.shape-item').removeClass('active');
-        $(ev.currentTarget).addClass('active');
-
-        // Store selected shape
-        self.selectedShapeId = shapeId;
-
-        // Trigger shape addition
-        self._addShapeToCanvas(shapeId);
-    },
-
-    _addShapeToCanvas: function (shapeType) {
-        const self = this;
-        if (!self.fabricCanvas) {
-            alert('Canvas not ready');
-            return;
-        }
-
-        // Calculate initial position
-        let initialLeft = 100;
-        let initialTop = 100;
-
-        if (self.zone) {
-            // Position shape in center of zone area
-            initialLeft = self.zone.bound_x + (self.zone.width / 2);
-            initialTop = self.zone.bound_y + (self.zone.height / 2);
-        }
-
-        const props = {
-            left: initialLeft,
-            top: initialTop,
-            fill: '#3b82f6',
-            stroke: '#1e40af',
-            strokeWidth: 2
-        };
-
-        let shape = null;
-        const shapeName = self._getShapeNameById(shapeType);
-
-        switch (shapeType) {
-            case 'rect':
-                shape = new fabric.Rect({ ...props, width: 100, height: 70 });
-                break;
-            case 'square':
-                shape = new fabric.Rect({ ...props, width: 100, height: 100 });
-                break;
-            case 'circle':
-                shape = new fabric.Circle({ ...props, radius: 50 });
-                break;
-            case 'ellipse':
-                shape = new fabric.Ellipse({ ...props, rx: 60, ry: 40 });
-                break;
-            case 'triangle':
-                shape = new fabric.Triangle({ ...props, width: 100, height: 100 });
-                break;
-            case 'line':
-                shape = new fabric.Line([50, 50, 200, 50], { ...props, fill: null, strokeWidth: 4 });
-                break;
-            case 'polygon':
-                shape = new fabric.Polygon([
-                    { x: 50, y: 0 },
-                    { x: 100, y: 38 },
-                    { x: 82, y: 100 },
-                    { x: 18, y: 100 },
-                    { x: 0, y: 38 }
-                ], props);
-                break;
-            case 'star':
-                const pts = [];
-                for (let i = 0; i < 10; i++) {
-                    const r = i % 2 ? 25 : 50;
-                    const a = (i * Math.PI) / 5;
-                    pts.push({
-                        x: 50 + r * Math.sin(a),
-                        y: 50 - r * Math.cos(a)
-                    });
-                }
-                shape = new fabric.Polygon(pts, props);
-                break;
-            case 'heart':
-                shape = new fabric.Path('M 50,30 C 50,20 40,10 30,10 C 20,10 10,20 10,30 C 10,50 30,70 50,90 C 70,70 90,50 90,30 C 90,20 80,10 70,10 C 60,10 50,20 50,30 Z', { ...props, scaleX: 0.8, scaleY: 0.8 });
-                break;
-            case 'arrow':
-                shape = new fabric.Path('M 10,50 L 60,50 L 60,30 L 90,55 L 60,80 L 60,60 L 10,60 Z', props);
-                break;
-            case 'hexagon':
-                const hexPts = [];
-                for (let i = 0; i < 6; i++) {
-                    hexPts.push({
-                        x: 50 + 50 * Math.cos(Math.PI / 3 * i),
-                        y: 50 + 50 * Math.sin(Math.PI / 3 * i)
-                    });
-                }
-                shape = new fabric.Polygon(hexPts, props);
-                break;
-            case 'diamond':
-                shape = new fabric.Polygon([
-                    { x: 50, y: 0 },
-                    { x: 100, y: 50 },
-                    { x: 50, y: 100 },
-                    { x: 0, y: 50 }
-                ], props);
-                break;
-        }
-
-        if (shape) {
-            try { shape.__label = shapeName; } catch (e) { }
-            self.fabricCanvas.add(shape);
-
-            // Clamp to zone if zone exists
-            if (self.zone) {
-                self._clampObjectToZone(shape);
-            }
-
-            self.fabricCanvas.setActiveObject(shape);
-            self.fabricCanvas.renderAll();
-        }
-    },
-
-    _getShapeNameById: function (shapeId) {
-        const shapes = this._getShapesData();
-        const shape = shapes.find(s => s.id === shapeId);
-        return shape ? shape.name : shapeId;
-    },
-
-    _onDesignTypeChange: function (ev) {
-        const newType = ev.target.value;
-        if (!newType || newType === this.activeDesignType) return;
+        if (!newVariantId || newVariantId === this.stateManager.getActiveVariant()) return;
 
         this._saveCurrentSideState();
-        this.activeDesignType = newType;
-        this._loadDesignType(newType);
-    },
+        this.canvasManager.clear();
+        this.stateManager.setActiveVariant(newVariantId);
+        this.stateManager.clearDesignData();
 
-    _saveCurrentSideState: function () {
-        const self = this;
-        try {
-            if (!self.activeDesignType) return;
+        return rpc('/shop/product_personalization_data', {
+            product_id: parseInt(this.$('#product_id').val()),
+            variant_id: newVariantId,
+        })
+            .then(data => {
+                if (data.error) return alert(data.error);
 
-            const objs = self.fabricCanvas.getObjects().filter(function (obj) {
-                return !obj.isZoneRect && obj.name !== 'zoneRect';
+                this.stateManager.setProductData(data);
+                this.menuController.renderVariantGrid(data.variants, newVariantId);
+
+                const types = data.design_types || [];
+                const defaultType = data.default_design_type || types[0];
+                this.menuController.initializeDesignTypeSelector(types, defaultType);
+                this.stateManager.setActiveDesignType(defaultType);
+
+                if (defaultType) this._loadDesignType(defaultType);
+            })
+            .catch(err => {
+                console.error("Variant load failed:", err);
+                alert("Failed to load variant.");
             });
-
-            const canvasJSON = {
-                version: "5.3.0",
-                objects: objs.map(function (obj) {
-                    return obj.toObject();
-                })
-            };
-
-            if (!self.designData[self.activeDesignType]) {
-                self.designData[self.activeDesignType] = {};
-            }
-
-            self.designData[self.activeDesignType].json = canvasJSON;
-
-        } catch (e) {
-            console.error('Could not save current canvas JSON', e);
-        }
     },
 
-    _loadDesignType: function (designType) {
-        const self = this;
+    /** Build JSON + preview for each side and submit */
+    async _onClickAddToCartPersonalized() {
+        const canvas = this.canvasManager.getCanvas();
+        const variantId = this.stateManager.getActiveVariant();
 
-        // Clear canvas completely first
-        self.fabricCanvas.clear();
-        self.zoneRect = null;
-        self.zone = null;
-
-        const designs = (self.productData && self.productData.designs) ? self.productData.designs : {};
-        const side = designs[designType];
-        const savedDesignData = self.designData[designType];
-
-        let backgroundUrl = null;
-        if (side && side.image_url) {
-            backgroundUrl = side.image_url;
-        } else if (self.productData && self.productData.fallback_image_url) {
-            backgroundUrl = self.productData.fallback_image_url;
-        }
-
-        if (backgroundUrl) {
-            self._setBackgroundFromUrl(backgroundUrl, function () {
-                if (side && side.is_restricted_area) {
-                    const zoneData = {
-                        bound_x: parseFloat(side.bound_x) || 0,
-                        bound_y: parseFloat(side.bound_y) || 0,
-                        width: parseFloat(side.bound_width || side.width) || 0,
-                        height: parseFloat(side.bound_height || side.height) || 0
-                    };
-                    self._setZone(zoneData);
-                }
-                self._restoreSavedJson(designType);
-            });
-        } else {
-            self.fabricCanvas.setBackgroundImage(null, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
-            if (side && side.is_restricted_area) {
-                const zoneData = {
-                    bound_x: parseFloat(side.bound_x) || 0,
-                    bound_y: parseFloat(side.bound_y) || 0,
-                    width: parseFloat(side.bound_width || side.width) || 0,
-                    height: parseFloat(side.bound_height || side.height) || 0
-                };
-                self._setZone(zoneData);
-            }
-            self._restoreSavedJson(designType);
-        }
-    },
-
-    _setBackgroundFromUrl: function (url, callback) {
-        const self = this;
-
-        fabric.Image.fromURL(url, function (img) {
-            if (!img) {
-                console.warn('Failed to load image from URL:', url, '- retrying with absolute path');
-
-                // If URL is relative, try with absolute path
-                if (url && url.startsWith('/')) {
-                    const absoluteUrl = window.location.origin + url;
-                    fabric.Image.fromURL(absoluteUrl, function (img2) {
-                        if (img2) {
-                            self._applyBackgroundImage(img2);
-                        } else {
-                            console.error('Failed to load image from both relative and absolute URLs:', url, absoluteUrl);
-                        }
-                        if (callback) callback();
-                    }, null, {
-                        crossOrigin: 'anonymous'
-                    });
-                } else {
-                    console.error('Failed to load image from URL:', url);
-                    if (callback) callback();
-                }
-                return;
-            }
-
-            self._applyBackgroundImage(img);
-            if (callback) callback();
-        }, null, {
-            crossOrigin: 'anonymous'
-        });
-    },
-
-    _applyBackgroundImage: function (img) {
-        const self = this;
-
-        img.set({
-            selectable: false,
-            evented: false
-        });
-
-        const w = self.fabricCanvas.getWidth();
-        const h = self.fabricCanvas.getHeight();
-        const scale = Math.min(w / img.width, h / img.height);
-
-        img.left = (w - img.width * scale) / 2;
-        img.top = (h - img.height * scale) / 2;
-        img.scaleX = scale;
-        img.scaleY = scale;
-        self.fabricCanvas.setBackgroundImage(img, self.fabricCanvas.renderAll.bind(self.fabricCanvas));
-    },
-
-    _restoreSavedJson: function (designType) {
-        const self = this;
-        self.isUndoRedoAction = true;
-
-        try {
-            // Remove existing objects (keep background and zone)
-            const objs = self.fabricCanvas.getObjects().slice();
-            for (let i = 0; i < objs.length; i++) {
-                const o = objs[i];
-                if (o.isZoneRect === true || o.name === 'zoneRect') continue;
-                self.fabricCanvas.remove(o);
-            }
-
-            const savedForThisType = self.designData[designType];
-
-            if (savedForThisType && savedForThisType.json) {
-                let jsonToLoad = savedForThisType.json;
-
-                if (typeof jsonToLoad === 'string') {
-                    jsonToLoad = JSON.parse(jsonToLoad);
-                }
-
-                // Only restore objects array, nothing else
-                const objectsOnly = {
-                    version: jsonToLoad.version || "5.3.0",
-                    objects: (jsonToLoad.objects || []).filter(function (obj) {
-                        return obj.isZoneRect !== true && obj.name !== 'zoneRect';
-                    })
-                };
-
-                fabric.util.enlivenObjects(objectsOnly.objects, function (enlivenedObjects) {
-                    enlivenedObjects.forEach(function (obj) {
-                        self.fabricCanvas.add(obj);
-                    });
-
-                    if (self.zoneRect) {
-                        self.fabricCanvas.bringToFront(self.zoneRect);
-                    }
-                    self.fabricCanvas.renderAll();
-                    self._assignLayerIds();
-                    self._renderLayersList();
-                    self.isUndoRedoAction = false;
-
-                    // Initialize history for this design type
-                    setTimeout(function () {
-                        self.history = [];
-                        self.historyStep = -1;
-                        self._saveState();
-                    }, 100);
-                });
-            } else {
-                if (self.zoneRect) {
-                    self.fabricCanvas.bringToFront(self.zoneRect);
-                }
-                self.fabricCanvas.renderAll();
-                self.isUndoRedoAction = false;
-
-                // Initialize history
-                setTimeout(function () {
-                    self.history = [];
-                    self.historyStep = -1;
-                    self._saveState();
-                }, 100);
-            }
-        } catch (e) {
-            console.error('Error restoring JSON for designType', designType, e);
-            self.isUndoRedoAction = false;
-        }
-    },
-
-    _setZone: function (zoneObj) {
-        const self = this;
-
-        // Force remove all existing zone rectangles
-        const allObjs = self.fabricCanvas.getObjects();
-        for (let i = allObjs.length - 1; i >= 0; i--) {
-            if (allObjs[i].isZoneRect === true || allObjs[i].name === 'zoneRect') {
-                self.fabricCanvas.remove(allObjs[i]);
-            }
-        }
-
-        self.zoneRect = null;
-        self.zone = null;
-
-        if (!zoneObj) {
-            self.fabricCanvas.renderAll();
+        if (!canvas || !variantId) {
+            alert("Canvas not ready or no variant selected");
             return;
         }
 
-        const bx = parseFloat(zoneObj.bound_x) || 0;
-        const by = parseFloat(zoneObj.bound_y) || 0;
-        const bw = parseFloat(zoneObj.width) || 0;
-        const bh = parseFloat(zoneObj.height) || 0;
+        this._saveCurrentSideState();
 
-        if (bw <= 0 || bh <= 0) {
-            console.warn('Invalid zone dimensions');
-            return;
-        }
-
-        self.zone = {
-            bound_x: bx,
-            bound_y: by,
-            width: bw,
-            height: bh
-        };
-
-        self.zoneRect = new fabric.Rect({
-            left: bx,
-            top: by,
-            width: bw,
-            height: bh,
-            fill: 'rgba(0, 150, 255, 0.15)',
-            stroke: '#0096FF',
-            strokeWidth: 3,
-            strokeDashArray: [10, 5],
-            selectable: false,
-            evented: false,
-            hoverCursor: 'default',
-            hasControls: false,
-            hasBorders: false,
-            lockMovementX: true,
-            lockMovementY: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            lockRotation: true,
-            isZoneRect: true,
-            name: 'zoneRect',
-            excludeFromExport: true
-        });
-
-        self.fabricCanvas.add(self.zoneRect);
-        self.fabricCanvas.bringToFront(self.zoneRect);
-        self.fabricCanvas.renderAll();
-    },
-
-    _ensureZoneOnTop: function () {
-        const self = this;
-        // Remove any duplicate zones
-        const allObjs = self.fabricCanvas.getObjects();
-        const zones = [];
-
-        for (let i = 0; i < allObjs.length; i++) {
-            if (allObjs[i].isZoneRect === true || allObjs[i].name === 'zoneRect') {
-                zones.push(allObjs[i]);
-            }
-        }
-
-        // Keep only the current zoneRect, remove others
-        for (let i = 0; i < zones.length; i++) {
-            if (zones[i] !== self.zoneRect) {
-                self.fabricCanvas.remove(zones[i]);
-            }
-        }
-
-        // Bring current zone to front
-        if (self.zoneRect) {
-            self.fabricCanvas.bringToFront(self.zoneRect);
-        }
-    },
-
-    _clampObjectToZone: function (obj) {
-        const self = this;
-        if (!obj || !self.zone || obj === self.zoneRect) return;
-
-        obj.setCoords();
-        const br = obj.getBoundingRect(true, true);
-
-        const minLeft = self.zone.bound_x;
-        const minTop = self.zone.bound_y;
-        const maxRight = self.zone.bound_x + self.zone.width;
-        const maxBottom = self.zone.bound_y + self.zone.height;
-
-        let needsAdjustment = false;
-
-        if (br.width > self.zone.width) {
-            const scale = (self.zone.width - 10) / obj.width;
-            obj.scaleX = Math.min(obj.scaleX, scale);
-            obj.scaleY = Math.min(obj.scaleY, scale);
-            needsAdjustment = true;
-        }
-
-        if (br.height > self.zone.height) {
-            const scale = (self.zone.height - 10) / obj.height;
-            obj.scaleX = Math.min(obj.scaleX, scale);
-            obj.scaleY = Math.min(obj.scaleY, scale);
-            needsAdjustment = true;
-        }
-
-        if (needsAdjustment) {
-            obj.setCoords();
-        }
-
-        const br2 = obj.getBoundingRect(true, true);
-        let correctedLeft = obj.left;
-        let correctedTop = obj.top;
-
-        if (br2.left < minLeft) {
-            correctedLeft = obj.left + (minLeft - br2.left);
-        }
-        if (br2.top < minTop) {
-            correctedTop = obj.top + (minTop - br2.top);
-        }
-        if (br2.left + br2.width > maxRight) {
-            correctedLeft = obj.left - ((br2.left + br2.width) - maxRight);
-        }
-        if (br2.top + br2.height > maxBottom) {
-            correctedTop = obj.top - ((br2.top + br2.height) - maxBottom);
-        }
-
-        if (correctedLeft !== obj.left || correctedTop !== obj.top) {
-            obj.set({
-                left: correctedLeft,
-                top: correctedTop
-            });
-            obj.setCoords();
-        }
-
-        self._ensureZoneOnTop();
-        self.fabricCanvas.renderAll();
-    },
-
-    _onChangeQty: function (ev) {
-        const qty = parseInt(ev.target.value) || 1;
-        this.$('#product_qty').val(Math.max(1, qty));
-    },
-
-    _onClickAddToCartPersonalized: async function () {
-        const self = this;
-
-        if (!self.fabricCanvas || !self.activeVariantId) {
-            alert('Canvas not ready or no variant selected');
-            return;
-        }
-
-        // Save current active design type state
-        self._saveCurrentSideState();
+        const pdata = this.stateManager.getProductData();
+        const designTypes = pdata.design_types || [];
+        const allData = this.stateManager.getAllDesignData();
 
         const designs = {};
-        const allDesignTypes = self.productData.design_types || [];
 
-        // Process each design type separately
-        for (const dt of allDesignTypes) {
-            let canvasJSON, previewURL;
+        for (const dt of designTypes) {
+            const cfg = pdata.designs[dt];
+            const bg = cfg?.image_url || pdata.fallback_image_url;
 
-            if (self.designData[dt] && self.designData[dt].json && self.designData[dt].json.objects && self.designData[dt].json.objects.length > 0) {
-                // User customized - save their work
-                canvasJSON = self.designData[dt].json;
-                previewURL = await self._generatePreviewForDesignType(dt);
-            } else {
-                // Not customized - save empty objects with original image
-                const designConfig = self.productData.designs[dt];
-                previewURL = designConfig ? designConfig.image_url : self.productData.fallback_image_url;
-                canvasJSON = { version: "5.3.0", objects: [] };
-            }
+            const saved = this.stateManager.getDesignState(dt);
+            const json = saved?.json?.objects?.length
+                ? saved.json
+                : { version: "5.3.0", objects: [] };
+
+            const preview = await PreviewGenerator.generatePreview(dt, allData, pdata);
 
             designs[dt] = {
-                json: JSON.stringify(canvasJSON),
-                preview: previewURL,
+                json: JSON.stringify(json),
+                preview: preview,
+                background_url: bg,
             };
         }
 
-        const qty = parseInt(self.$('#product_qty').val() || 1);
-        if (self.editMode && self.editLineId) {
+        const qty = parseInt($('#product_qty').val() || 1);
+
+        if (this.editMode && this.editLineId) {
+            // Update existing line
             rpc('/shop/cart/update_line_personalization', {
-                line_id: self.editLineId,
+                line_id: this.editLineId,
                 add_qty: qty,
-                designs: designs
-            }).then(function (result) {
-                if (result && result.success) {
-                    window.location.href = '/shop/cart';
-                } else {
-                    alert(result.error || 'Failed to update design');
-                }
-            }).catch(function (error) {
-                console.error('Update design error:', error);
-                alert('Failed to update design');
-            });
-        } else {
-            rpc('/shop/cart/update_personalization', {
-                variant_id: self.activeVariantId,
-                add_qty: qty,
-                designs: designs
-            }).then(function (result) {
-                if (result && result.success) {
-                    window.location.href = '/shop/cart';
-                } else {
-                    alert(result.error || 'Failed to add product to cart');
-                }
-            }).catch(function (error) {
-                console.error('Add to cart error:', error);
-                alert('Failed to add product to cart');
-            });
-        }
-    },
-
-    _generatePreviewForDesignType: function (designType) {
-        const self = this;
-        const savedData = self.designData[designType];
-
-        // If no customization, return design config image
-        if (!savedData || !savedData.json || !savedData.json.objects || savedData.json.objects.length === 0) {
-            const designConfig = self.productData.designs[designType];
-            return Promise.resolve(designConfig ? designConfig.image_url : self.productData.fallback_image_url);
-        }
-
-        // Has customization - generate preview with background + objects
-        try {
-            const tempCanvas = new fabric.Canvas(document.createElement('canvas'));
-            tempCanvas.setWidth(800);
-            tempCanvas.setHeight(800);
-
-            const designConfig = self.productData.designs[designType];
-            const bgUrl = designConfig ? designConfig.image_url : self.productData.fallback_image_url;
-
-            return new Promise(function (resolve) {
-                function loadObjects() {
-                    fabric.util.enlivenObjects(savedData.json.objects || [], function (enlivenedObjects) {
-                        enlivenedObjects.forEach(function (obj) {
-                            tempCanvas.add(obj);
-                        });
-
-                        tempCanvas.renderAll();
-                        const dataURL = tempCanvas.toDataURL({ format: 'png', quality: 0.8 });
-                        tempCanvas.dispose();
-                        resolve(dataURL);
-                    });
-                }
-
-                if (bgUrl) {
-                    fabric.Image.fromURL(bgUrl, function (img) {
-                        if (img) {
-                            const w = tempCanvas.getWidth();
-                            const h = tempCanvas.getHeight();
-                            const scale = Math.min(w / img.width, h / img.height);
-
-                            img.set({
-                                left: (w - img.width * scale) / 2,
-                                top: (h - img.height * scale) / 2,
-                                scaleX: scale,
-                                scaleY: scale,
-                                selectable: false,
-                                evented: false
-                            });
-
-                            tempCanvas.setBackgroundImage(img, loadObjects);
-                        } else {
-                            loadObjects();
-                        }
-                    }, null, { crossOrigin: 'anonymous' });
-                } else {
-                    loadObjects();
-                }
-            });
-
-        } catch (e) {
-            console.error('Preview generation failed:', e);
-            const designConfig = self.productData.designs[designType];
-            return Promise.resolve(designConfig ? designConfig.image_url : self.productData.fallback_image_url);
-        }
-    },
-
-    /* Layer list helpers */
-    _assignLayerId: function (obj) {
-        const self = this;
-        if (!obj) return;
-        if (!obj.__layerId) {
-            obj.__layerId = 'layer_' + (self._layerCounter++);
-        }
-        return obj.__layerId;
-    },
-
-    _assignLayerIds: function () {
-        const self = this;
-        const objs = self.fabricCanvas ? self.fabricCanvas.getObjects() : [];
-        objs.forEach(function (o) {
-            if (o && !o.isZoneRect && o.name !== 'zoneRect') {
-                self._assignLayerId(o);
-            }
-        });
-    },
-
-    _renderLayersList: function () {
-        const self = this;
-        const $list = self.$('#layers_list');
-        if (!$list || !$list.length) return;
-
-        // Ensure ids assigned
-        self._assignLayerIds();
-
-        // Build items: top-most object first
-        const objs = (self.fabricCanvas ? self.fabricCanvas.getObjects() : []).filter(function (o) {
-            return o && !o.isZoneRect && o.name !== 'zoneRect';
-        });
-
-        // Reverse to show top-first
-        const items = objs.slice().reverse();
-
-        $list.empty();
-
-        items.forEach(function (obj) {
-            const layerId = obj.__layerId;
-            const $item = $('<div class="layer-item d-flex align-items-center p-2" ' +
-                'data-layer-id="' + layerId + '" style="border-bottom:1px solid #eee; cursor:pointer;"></div>');
-
-            // Thumbnail
-            const $thumb = $('<div style="width:46px; height:46px; flex:0 0 46px; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fff; margin-right:8px;"></div>');
-            if (obj.type === 'image' && obj._element && obj._element.src) {
-                const $img = $('<img/>').attr('src', obj._element.src).css({ width: '100%', height: '100%', objectFit: 'cover' });
-                $thumb.append($img);
-            } else if (obj.type === 'i-text' || obj.type === 'text') {
-                const text = (obj.text || '').toString();
-                $thumb.append($('<div style="font-size:11px; padding:4px; text-align:center;">' + (text.length > 20 ? text.substr(0, 20) + '…' : text) + '</div>'));
-            } else {
-                // Shape: use shape icon (stored __label or type to pick icon)
-                const shapeType = obj.__label ? obj.__label.toLowerCase() : (obj.type || 'shape').toLowerCase();
-                let icon = 'fa-layer-group';
-                if (shapeType.indexOf('rect') >= 0) icon = 'fa-square';
-                else if (shapeType.indexOf('circle') >= 0 || shapeType.indexOf('ellipse') >= 0) icon = 'fa-circle';
-                else if (shapeType.indexOf('triangle') >= 0) icon = 'fa-play';
-                else if (shapeType.indexOf('star') >= 0) icon = 'fa-star';
-                else if (shapeType.indexOf('heart') >= 0) icon = 'fa-heart';
-                else if (shapeType.indexOf('diamond') >= 0) icon = 'fa-diamond';
-                else if (shapeType.indexOf('arrow') >= 0) icon = 'fa-arrow-right';
-                else if (shapeType.indexOf('pentagon') >= 0 || shapeType.indexOf('hexagon') >= 0) icon = 'fa-stop';
-                else if (shapeType.indexOf('line') >= 0) icon = 'fa-minus';
-                $thumb.append($('<i class="fa ' + icon + '" style="font-size:20px; color:#3b82f6;"></i>'));
-            }
-
-            // Label
-            let label = '';
-            if (obj.type === 'i-text' || obj.type === 'text') {
-                label = obj.text || 'Text';
-            } else if (obj.type === 'image') {
-                label = (obj._element && obj._element.name) ? obj._element.name : 'Image';
-            } else {
-                // For shapes, use stored __label if available, else use type
-                label = obj.__label || obj.type || 'Shape';
-            }
-
-            const $label = $('<div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"></div>').text(label);
-
-            // Controls (hidden by default, shown on hover)
-            const $controls = $('<div class="layer-controls btn-group" style="display:none; flex:0 0 auto; margin-left:8px; gap:2px;"></div>');
-            const $btnFront = $('<button class="btn btn-sm btn-outline-secondary" title="Bring to Front"><i class="fa fa-arrow-up"/></button>');
-            const $btnBack = $('<button class="btn btn-sm btn-outline-secondary" title="Send to Back"><i class="fa fa-arrow-down"/></button>');
-            const $btnDup = $('<button class="btn btn-sm btn-outline-secondary" title="Duplicate"><i class="fa fa-copy"/></button>');
-            const $btnLock = $('<button class="btn btn-sm btn-outline-secondary" title="Lock/Unlock"><i class="fa fa-lock"/></button>');
-            const $btnDel = $('<button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa fa-trash"/></button>');
-
-            $controls.append($btnFront, $btnBack, $btnDup, $btnLock, $btnDel);
-
-            $item.append($thumb, $label, $controls);
-
-            // hover show controls
-            $item.on('mouseenter', function () {
-                $controls.show();
-            }).on('mouseleave', function () {
-                $controls.hide();
-            });
-
-            // click selects object
-            $item.on('click', function (ev) {
-                ev.stopPropagation();
-                self.fabricCanvas.discardActiveObject();
-                self.fabricCanvas.setActiveObject(obj);
-                self.fabricCanvas.renderAll();
-                self._updateControls();
-                self._renderLayersList();
-            });
-
-            // control actions
-            $btnFront.on('click', function (ev) {
-                ev.stopPropagation();
-                self.fabricCanvas.bringToFront(obj);
-                self._ensureZoneOnTop();
-                self.fabricCanvas.renderAll();
-                self._renderLayersList();
-            });
-            $btnBack.on('click', function (ev) {
-                ev.stopPropagation();
-                self.fabricCanvas.sendToBack(obj);
-                self._ensureZoneOnTop();
-                self.fabricCanvas.renderAll();
-                self._renderLayersList();
-            });
-            $btnDup.on('click', function (ev) {
-                ev.stopPropagation();
-                obj.clone(function (cloned) {
-                    cloned.set({ left: cloned.left + 20, top: cloned.top + 20 });
-                    self.fabricCanvas.add(cloned);
-                    self.fabricCanvas.setActiveObject(cloned);
-                    self.fabricCanvas.renderAll();
+                designs: designs,
+            })
+                .then(res => res?.success ? window.location.href = "/shop/cart" : alert(res.error))
+                .catch(err => {
+                    console.error("Update error:", err);
+                    alert("Failed to update design");
                 });
-            });
-            $btnLock.on('click', function (ev) {
-                ev.stopPropagation();
-                const locked = !obj.lockMovementX;
-                obj.set({ lockMovementX: locked, lockMovementY: locked, lockRotation: locked, lockScalingX: locked, lockScalingY: locked });
-                self.fabricCanvas.renderAll();
-                self._renderLayersList();
-            });
-            $btnDel.on('click', function (ev) {
-                ev.stopPropagation();
-                self.fabricCanvas.remove(obj);
-                self.fabricCanvas.renderAll();
-                self._renderLayersList();
-            });
 
-            // mark selected
-            if (self.fabricCanvas.getActiveObject() === obj) {
-                $item.css('background', '#f1f5f9');
-            }
-
-            $list.append($item);
-        });
+        } else {
+            // Add new line
+            rpc('/shop/cart/update_personalization', {
+                variant_id: variantId,
+                add_qty: qty,
+                designs: designs,
+            })
+                .then(res => res?.success ? window.location.href = "/shop/cart" : alert(res.error))
+                .catch(err => {
+                    console.error("Add error:", err);
+                    alert("Failed to add product");
+                });
+        }
     },
 
-    // Preview and Download
-    _onClickPreviewDesigns: function () {
+    /**
+ * Undo last action
+ */
+    _onClickUndo: function () {
         const self = this;
-        self._saveCurrentSideState();
-        // Generate previews
+        this.historyManager.undo(zone => {
+            self.canvasManager.setZone(zone);
+
+            self.canvasManager.getCanvas().getObjects().forEach(obj => {
+                if (obj !== self.canvasManager.zoneRect && !obj.isZoneRect) {
+                    self.canvasManager.clampObjectToZone(obj);
+                }
+            });
+        });
+
+        this.controlsUpdater.updateHistoryButtons(
+            this.historyManager.canUndo(),
+            this.historyManager.canRedo()
+        );
+    },
+
+    /**
+     * Redo last undone action
+     */
+    _onClickRedo: function () {
+        const self = this;
+        this.historyManager.redo(zone => {
+            self.canvasManager.setZone(zone);
+
+            self.canvasManager.getCanvas().getObjects().forEach(obj => {
+                if (obj !== self.canvasManager.zoneRect && !obj.isZoneRect) {
+                    self.canvasManager.clampObjectToZone(obj);
+                }
+            });
+        });
+
+        this.controlsUpdater.updateHistoryButtons(
+            this.historyManager.canUndo(),
+            this.historyManager.canRedo()
+        );
+    },
+
+
+    /** Show preview modal of all design sides */
+    _onClickPreviewDesigns() {
+        const pdata = this.stateManager.getProductData();
+        const designTypes = pdata.design_types || [];
+
+        this._saveCurrentSideState();
+
         const $grid = $('#preview_grid');
         $grid.empty();
 
-        const allDesignTypes = self.productData.design_types || [];
+        const previews = designTypes.map(dt =>
+            PreviewGenerator.generatePreview(dt, this.stateManager.getAllDesignData(), pdata)
+                .then(url => {
+                    const label = dt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    return this._buildPreviewCard(label, url);
+                })
+        );
 
-        const previewPromises = allDesignTypes.map(function (designType) {
-            return self._generatePreviewForDesignType(designType).then(function (previewUrl) {
-                const label = designType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
-                const $col = $('<div class="col-12 col-md-6 mb-3"></div>');
-                const $card = $('<div class="card h-100"></div>');
-                const $cardBody = $('<div class="card-body d-flex flex-column"></div>');
-
-                $cardBody.append('<strong class="card-title mb-2">' + label + '</strong>');
-
-                const $imgWrapper = $('<div class="flex-fill d-flex align-items-center justify-content-center" style="height: 500px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"></div>');
-                const $img = $('<img class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;"/>').attr('src', previewUrl);
-
-                $imgWrapper.append($img);
-                $cardBody.append($imgWrapper);
-                $card.append($cardBody);
-                $col.append($card);
-
-                return $col;
+        Promise.all(previews)
+            .then(cols => {
+                cols.forEach(col => $grid.append(col));
+                $('#preview_personalization_modal').modal('show');
+            })
+            .catch(err => {
+                console.error("Preview generation error:", err);
+                alert("Failed to generate previews");
             });
-        });
-
-        Promise.all(previewPromises).then(function (columns) {
-            columns.forEach(function ($col) {
-                $grid.append($col);
-            });
-
-            $('#preview_personalization_modal').modal('show');
-        }).catch(function (error) {
-            console.error('Error generating previews:', error);
-            alert('Failed to generate previews');
-        });
     },
 
-    _onClickDownloadDesigns: function () {
-        const self = this;
-        self._saveCurrentSideState();
-        // Generate previews for download modal
+    /** Build preview card */
+    _buildPreviewCard(label, imgUrl) {
+        const $col = $('<div class="col-12 col-md-6 mb-3"></div>');
+        const $card = $('<div class="card h-100"></div>');
+        const $body = $('<div class="card-body d-flex flex-column"></div>');
+
+        $body.append(`<strong class="card-title mb-2">${label}</strong>`);
+
+        const $imgWrapper = $(
+            `<div class="flex-fill d-flex align-items-center justify-content-center"
+                style="height:500px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;">
+             </div>`
+        );
+
+        const $img = $(`<img class="img-fluid rounded" style="max-height:100%;max-width:100%;object-fit:contain;">`);
+        $img.attr('src', imgUrl);
+
+        $imgWrapper.append($img);
+        $body.append($imgWrapper);
+        $card.append($body);
+        $col.append($card);
+
+        return $col;
+    },
+
+    /** Show preview images in download modal */
+    _onClickDownloadDesigns() {
+        const pdata = this.stateManager.getProductData();
+        const designTypes = pdata.design_types || [];
+
+        this._saveCurrentSideState();
+
         const $grid = $('#download_preview_grid');
         $grid.empty();
 
-        const allDesignTypes = self.productData.design_types || [];
+        const previews = designTypes.map(dt =>
+            PreviewGenerator.generatePreview(dt, this.stateManager.getAllDesignData(), pdata)
+                .then(url => {
+                    const label = dt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    return this._buildDownloadCard(label, dt, url);
+                })
+        );
 
-        const previewPromises = allDesignTypes.map(function (designType) {
-            return self._generatePreviewForDesignType(designType).then(function (previewUrl) {
-                const label = designType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
-                const $col = $('<div class="col-12 col-md-6 mb-3"></div>');
-                const $card = $('<div class="card h-100"></div>');
-                const $cardBody = $('<div class="card-body d-flex flex-column"></div>');
-
-                $cardBody.append('<strong class="card-title mb-2">' + label + '</strong>');
-
-                const $imgWrapper = $('<div class="flex-fill d-flex align-items-center justify-content-center" style="height: 500px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"></div>');
-                const $img = $('<img class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;"/>').attr('src', previewUrl).attr('data-design-type', designType);
-
-                $imgWrapper.append($img);
-                $cardBody.append($imgWrapper);
-                $card.append($cardBody);
-                $col.append($card);
-
-                return $col;
+        Promise.all(previews)
+            .then(cols => {
+                cols.forEach(c => $grid.append(c));
+                $('#download_personalization_modal').modal('show');
+            })
+            .catch(err => {
+                console.error("Download preview error:", err);
+                alert("Failed to generate previews");
             });
-        });
-
-        Promise.all(previewPromises).then(function (columns) {
-            columns.forEach(function ($col) {
-                $grid.append($col);
-            });
-
-            $('#download_personalization_modal').modal('show');
-        }).catch(function (error) {
-            console.error('Error generating download previews:', error);
-            alert('Failed to generate previews');
-        });
     },
 
-    _onClickDownloadFormat: function (ev) {
-        const self = this;
-        const format = $(ev.currentTarget).data('format');
+    /** Build card for download modal */
+    _buildDownloadCard(label, designType, imgUrl) {
+        const $col = $('<div class="col-12 col-md-6 mb-3"></div>');
+        const $card = $('<div class="card h-100"></div>');
+        const $body = $('<div class="card-body d-flex flex-column"></div>');
+
+        $body.append(`<strong class="card-title mb-2">${label}</strong>`);
+
+        const $imgWrapper = $(
+            `<div class="flex-fill d-flex align-items-center justify-content-center"
+                style="height:500px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;">
+            </div>`
+        );
+
+        const $img = $(`<img class="img-fluid rounded" style="max-height:100%;max-width:100%;object-fit:contain;">`);
+        $img.attr('src', imgUrl).attr('data-design-type', designType);
+
+        $imgWrapper.append($img);
+        $body.append($imgWrapper);
+        $card.append($body);
+        $col.append($card);
+
+        return $col;
+    },
+
+    /** Download selected format for all design sides */
+    _onClickDownloadFormat(ev) {
+        const btn = $(ev.currentTarget);
+        const format = btn.data('format');
 
         if (!format) {
-            alert('Invalid format');
+            alert("Invalid format.");
             return;
         }
 
-        // Visual feedback
-        $(ev.currentTarget).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Downloading...');
+        btn.prop('disabled', true).html(`<i class="fa fa-spinner fa-spin"></i> Downloading...`);
 
-        const allDesignTypes = self.productData.design_types || [];
-        let downloadCount = 0;
-        const totalDownloads = allDesignTypes.length;
+        const pdata = this.stateManager.getProductData();
+        const designTypes = pdata.design_types || [];
+        const allData = this.stateManager.getAllDesignData();
 
-        allDesignTypes.forEach(function (designType, index) {
-            self._generatePreviewForDesignType(designType).then(function (previewUrl) {
-                self._downloadImageAs(previewUrl, designType, format).then(function () {
-                    downloadCount++;
+        let completed = 0;
 
-                    // Close modal and reset button when all downloads complete
-                    if (downloadCount === totalDownloads) {
-                        setTimeout(function () {
+        designTypes.forEach(dt => {
+            PreviewGenerator.generatePreview(dt, allData, pdata)
+                .then(url => PreviewGenerator.downloadImageAs(url, dt, format))
+                .then(() => {
+                    completed++;
+                    if (completed === designTypes.length) {
+                        setTimeout(() => {
                             $('#download_personalization_modal').modal('hide');
+
                             $('.download-format-btn').prop('disabled', false).each(function () {
                                 const fmt = $(this).data('format');
                                 let label = 'PNG';
                                 if (fmt === 'jpeg') label = 'JPG';
-                                else if (fmt === 'webp') label = 'WebP';
-                                $(this).html('<i class="fa fa-file-image-o fa-2x d-block mb-2"></i>Download as ' + label);
+                                if (fmt === 'webp') label = 'WebP';
+
+                                $(this).html(
+                                    `<i class="fa fa-file-image-o fa-2x d-block mb-2"></i>Download as ${label}`
+                                );
                             });
+
                         }, 300);
                     }
                 });
-            });
-        });
-    },
-
-    _downloadImageAs: function (imageUrl, designType, format) {
-        return new Promise(function (resolve, reject) {
-            const tempCanvas = document.createElement('canvas');
-            const tempImg = new Image();
-
-            tempImg.onload = function () {
-                tempCanvas.width = tempImg.width;
-                tempCanvas.height = tempImg.height;
-
-                const ctx = tempCanvas.getContext('2d');
-                ctx.drawImage(tempImg, 0, 0);
-
-                // Convert to selected format
-                let mimeType = 'image/png';
-                let extension = 'png';
-
-                if (format === 'jpeg') {
-                    mimeType = 'image/jpeg';
-                    extension = 'jpg';
-                } else if (format === 'webp') {
-                    mimeType = 'image/webp';
-                    extension = 'webp';
-                }
-
-                tempCanvas.toBlob(function (blob) {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    const fileName = designType.replace(/_/g, '-') + '.' + extension;
-
-                    link.href = url;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-
-                    resolve();
-                }, mimeType, 0.95);
-            };
-
-            tempImg.onerror = function () {
-                reject(new Error('Failed to load image'));
-            };
-
-            tempImg.crossOrigin = 'anonymous';
-            tempImg.src = imageUrl;
         });
     },
 });
