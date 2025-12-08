@@ -225,3 +225,12 @@
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+body.modal-open {
+    overflow-y: scroll !important;
+    padding-right: 0 !important;
+}
+
+.modal {
+    padding-right: 0 !important;
+}
