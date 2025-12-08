@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_personalization" model="ir.ui.view">
+        <field name="name">product.template.form.personalization</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-flex" invisible="type == 'combo'">
+                    <field name="is_product_personalization"/>
+                    <label for="is_product_personalization"/>
+                </span>
+            </xpath>
+        </field>
+    </record>
+    
+    <record id="product_normal_form_view_personalization" model="ir.ui.view">
+        <field name="name">product.product.form.personalization</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Design Personalization" invisible="not is_product_personalization">
+                    <group>
+                        <field name="design_config_ids" nolabel="1">
+                            <list>
+                                <field name="design_type"/>
+                                <field name="is_restricted_area"/>
+                                <field name="bound_x"/>
+                                <field name="bound_y"/>
+                                <field name="bound_width"/>
+                                <field name="bound_height"/>
+                            </list>
+                            <form>
+                                <sheet>
+                                    <group>
+                                        <group>
+                                            <field name="design_type" required="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="design_image" widget="image" class="oe_avatar"/>
+                                        </group>
+                                    </group>
+                                    <group>
+                                        <field name="is_restricted_area"/>
+                                    </group>
+                                    <notebook>
+                                        <page string="Restricted Area" invisible="not is_restricted_area">
+                                            <group>
+                                                <field name="design_image" invisible="1"/>
+                                                <field name="design_image" widget="design_area_widget" nolabel="1"/>
+                                            </group>
+                                            <group string="Coordinates">
+                                                <group>
+                                                    <field name="bound_x"/>
+                                                    <field name="bound_y"/>
+                                                </group>
+                                                <group>
+                                                    <field name="bound_width"/>
+                                                    <field name="bound_height"/>
+                                                </group>
+                                            </group>
+                                        </page>
+                                    </notebook>
+                                </sheet>
+                            </form>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
