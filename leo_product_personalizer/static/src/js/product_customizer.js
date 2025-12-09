@@ -555,6 +555,9 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                 };
                 this.canvasManager.setZone(zone);
                 this._updateHandlersZone();
+            } else {
+                this.canvasManager.setZone(null);
+                this._updateHandlersZone();
             }
             this._restoreSavedJson(designType);
         };
@@ -753,9 +756,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
  */
     _onClickUndo: function () {
         const self = this;
-        this.historyManager.undo(zone => {
-            self.canvasManager.setZone(zone);
-
+        this.historyManager.undo(() => {
             self.canvasManager.getCanvas().getObjects().forEach(obj => {
                 if (obj !== self.canvasManager.zoneRect && !obj.isZoneRect) {
                     self.canvasManager.clampObjectToZone(obj);
@@ -774,9 +775,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
      */
     _onClickRedo: function () {
         const self = this;
-        this.historyManager.redo(zone => {
-            self.canvasManager.setZone(zone);
-
+        this.historyManager.redo(() => {
             self.canvasManager.getCanvas().getObjects().forEach(obj => {
                 if (obj !== self.canvasManager.zoneRect && !obj.isZoneRect) {
                     self.canvasManager.clampObjectToZone(obj);

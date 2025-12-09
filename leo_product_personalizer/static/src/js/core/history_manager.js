@@ -27,6 +27,14 @@ export class HistoryManager {
                 );
             }
 
+            // Also save zone information with the state
+            if (!json.metadata) json.metadata = {};
+            if (this.zoneRect) {
+                json.metadata.hasZone = true;
+            } else {
+                json.metadata.hasZone = false;
+            }
+
             this.history.push(JSON.stringify(json));
             this.historyStep++;
         } catch (e) {
@@ -74,7 +82,10 @@ export class HistoryManager {
 
         this.isUndoRedoAction = true;
 
-        this.fabricCanvas.loadFromJSON(this.history[this.historyStep], () => {
+        const historyJson = JSON.parse(this.history[this.historyStep]);
+        const shouldHaveZone = historyJson.metadata?.hasZone || false;
+
+        this.fabricCanvas.loadFromJSON(historyJson, () => {
             if (bg) {
                 this.fabricCanvas.setBackgroundImage(
                     bg,
@@ -82,7 +93,38 @@ export class HistoryManager {
                 );
             }
 
-            if (currentZone && callback) {
+            // Re-add zone if it should exist
+            if (shouldHaveZone && currentZone && currentZone.width > 0 && currentZone.height > 0) {
+                // Recreate zone rectangle after canvas load
+                const newZoneRect = new fabric.Rect({
+                    left: currentZone.bound_x,
+                    top: currentZone.bound_y,
+                    width: currentZone.width,
+                    height: currentZone.height,
+                    fill: "rgba(0,150,255,0.15)",
+                    stroke: "#0096FF",
+                    strokeWidth: 3,
+                    strokeDashArray: [10, 5],
+                    selectable: false,
+                    evented: false,
+                    name: "zoneRect",
+                    isZoneRect: true,
+                    excludeFromExport: true,
+                });
+                this.fabricCanvas.add(newZoneRect);
+                this.fabricCanvas.bringToFront(newZoneRect);
+                this.zoneRect = newZoneRect;
+            } else {
+                // Remove zone if it shouldn't exist
+                this.fabricCanvas.getObjects().forEach(o => {
+                    if (o.isZoneRect || o.name === "zoneRect") {
+                        this.fabricCanvas.remove(o);
+                    }
+                });
+                this.zoneRect = null;
+            }
+
+            if (shouldHaveZone && currentZone && callback) {
                 callback(currentZone);
             }
 
