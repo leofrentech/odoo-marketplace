@@ -9,7 +9,7 @@ class DesignAreaWidget extends Component {
         ...standardFieldProps,
     };
 
-    static template = "leo_product_personalizer.DesignAreaWidget";
+    static template = "lf_product_personalizer.DesignAreaWidget";
 
     setup() {
         this.canvasRef = useRef("canvas");

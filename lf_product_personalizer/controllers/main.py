@@ -19,7 +19,7 @@ class ProductPersonalizerController(http.Controller):
     def personalize_page(self, product_id, **kw):
         product = request.env["product.template"].sudo().browse(product_id)
         return request.render(
-            "leo_product_personalizer.product_personalization_page",
+            "lf_product_personalizer.product_personalization_page",
             {"product": product},
         )
 
@@ -265,7 +265,7 @@ class ProductPersonalizerController(http.Controller):
             raise NotFound()
 
         return request.render(
-            "leo_product_personalizer.product_personalization_page",
+            "lf_product_personalizer.product_personalization_page",
             {
                 "product": line.product_id.product_tmpl_id,
                 "edit_mode": True,

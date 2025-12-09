@@ -30,30 +30,30 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "leo_product_personalizer/static/src/js/design_area_widget.js",
-            "leo_product_personalizer/static/src/xml/design_area_widget.xml",
+            "lf_product_personalizer/static/src/js/design_area_widget.js",
+            "lf_product_personalizer/static/src/xml/design_area_widget.xml",
             "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js",
         ],
         "web.assets_frontend": [
-            "leo_product_personalizer/static/src/css/customizer.css",
+            "lf_product_personalizer/static/src/css/customizer.css",
             # Core modules
-            "leo_product_personalizer/static/src/js/core/canvas_manager.js",
-            "leo_product_personalizer/static/src/js/core/history_manager.js",
-            "leo_product_personalizer/static/src/js/core/state_manager.js",
+            "lf_product_personalizer/static/src/js/core/canvas_manager.js",
+            "lf_product_personalizer/static/src/js/core/history_manager.js",
+            "lf_product_personalizer/static/src/js/core/state_manager.js",
             # Handlers
-            "leo_product_personalizer/static/src/js/handlers/text_handler.js",
-            "leo_product_personalizer/static/src/js/handlers/image_handler.js",
-            "leo_product_personalizer/static/src/js/handlers/shape_handler.js",
-            "leo_product_personalizer/static/src/js/handlers/layer_handler.js",
+            "lf_product_personalizer/static/src/js/handlers/text_handler.js",
+            "lf_product_personalizer/static/src/js/handlers/image_handler.js",
+            "lf_product_personalizer/static/src/js/handlers/shape_handler.js",
+            "lf_product_personalizer/static/src/js/handlers/layer_handler.js",
             # UI
-            "leo_product_personalizer/static/src/js/ui/menu_controller.js",
-            "leo_product_personalizer/static/src/js/ui/controls_updater.js",
+            "lf_product_personalizer/static/src/js/ui/menu_controller.js",
+            "lf_product_personalizer/static/src/js/ui/controls_updater.js",
             # Utils
-            "leo_product_personalizer/static/src/js/utils/object_utils.js",
-            "leo_product_personalizer/static/src/js/utils/preview_generator.js",
+            "lf_product_personalizer/static/src/js/utils/object_utils.js",
+            "lf_product_personalizer/static/src/js/utils/preview_generator.js",
             # Main
-            "leo_product_personalizer/static/src/js/product_customizer.js",
-            "leo_product_personalizer/static/src/js/cart_personalization.js",
+            "lf_product_personalizer/static/src/js/product_customizer.js",
+            "lf_product_personalizer/static/src/js/cart_personalization.js",
             "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js",
         ],
     },
