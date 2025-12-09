@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Preview Modal -->
-    <template id="personalization_preview_modal" inherit_id="leo_product_personalizer.product_personalization_page" name="Personalization Preview Modal">
+    <template id="personalization_preview_modal" inherit_id="lf_product_personalizer.product_personalization_page" name="Personalization Preview Modal">
         <xpath expr="//div[@id='wrap']" position="inside">
             <div class="modal fade" id="preview_personalization_modal" tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-xl" style="max-width: 1200px;">
@@ -27,7 +27,7 @@
     </template>
 
     <!-- Download Modal -->
-    <template id="personalization_download_modal" inherit_id="leo_product_personalizer.product_personalization_page" name="Personalization Download Modal">
+    <template id="personalization_download_modal" inherit_id="lf_product_personalizer.product_personalization_page" name="Personalization Download Modal">
         <xpath expr="//div[@id='wrap']" position="inside">
             <div class="modal fade" id="download_personalization_modal" tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-xl" style="max-width: 1200px;">

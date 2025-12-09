@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-name="leo_product_personalizer.DesignAreaWidget" owl="1">
+    <t t-name="lf_product_personalizer.DesignAreaWidget" owl="1">
         <div class="o_design_area_widget">
             <t t-if="!state.hasImage">
                 <div class="alert alert-warning">

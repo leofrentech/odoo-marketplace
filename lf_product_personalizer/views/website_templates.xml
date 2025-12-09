@@ -290,8 +290,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <t t-call="leo_product_personalizer.personalization_preview_modal"/>
-            <t t-call="leo_product_personalizer.personalization_download_modal"/> -->
         </t>
     </template>
 </odoo>
