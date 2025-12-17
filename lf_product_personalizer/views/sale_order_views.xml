@@ -3,14 +3,14 @@
     <record id="view_order_form" model="ir.ui.view">
         <field name="name">sale.order.form.personalization</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='order_line']/list" position="inside">
                 <button name="action_view_personalizations"
                     string="View Design"
                     type="object"
                     class="oe_highlight"
-                    invisible="not personalization_ids"/>
+                    invisible="not personalization_ids" />
             </xpath>
         </field>
     </record>

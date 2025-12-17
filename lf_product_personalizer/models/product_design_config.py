@@ -8,6 +8,7 @@ class ProductDesignConfig(models.Model):
 
     _name = "product.design.config"
     _description = "Product Design Config (sides/areas for personalization)"
+    _rec_name = "design_type"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get

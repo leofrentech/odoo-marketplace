@@ -44,7 +44,6 @@ class DesignAreaWidget extends Component {
             
             // Check if image or restriction state changed
             if (this.previousImageId !== recordId || this.previousRestricted !== isRestricted) {
-                console.log('Field changed, re-initializing canvas');
                 this.previousImageId = recordId;
                 this.previousRestricted = isRestricted;
                 await this.initCanvas();
@@ -78,7 +77,6 @@ class DesignAreaWidget extends Component {
 
         // Dispose existing canvas
         if (this.fabricCanvas) {
-            console.log('Disposing existing canvas');
             this.fabricCanvas.dispose();
             this.fabricCanvas = null;
             this.restrictedRect = null;
@@ -119,7 +117,6 @@ class DesignAreaWidget extends Component {
 
     async loadBackgroundImage(imageUrl) {
         return new Promise((resolve, reject) => {
-            console.log('Attempting to load image from:', imageUrl);
             fabric.Image.fromURL(imageUrl, (img) => {
                 if (!img || !img.width || !img.height) {
                     reject(new Error('Image load failed'));
@@ -260,8 +257,6 @@ class DesignAreaWidget extends Component {
             currentBounds.height !== this.previousBounds.height;
 
         if (!hasChanged) return;
-
-        console.log('Field values changed, updating rectangle');
 
         // Validate values
         const canvasW = this.fabricCanvas.getWidth();

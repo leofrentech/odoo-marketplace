@@ -752,8 +752,8 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
     },
 
     /**
- * Undo last action
- */
+     * Undo last action
+     */
     _onClickUndo: function () {
         const self = this;
         this.historyManager.undo(() => {
