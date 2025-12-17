@@ -72,7 +72,7 @@ class ProductPersonalizerController(http.Controller):
     def _get_variants_data(self, product_template):
         """Get list of variants with their images."""
         variants_data = []
-        for variant in product_template.product_variant_ids:
+        for variant in product_template.product_variant_ids.filtered(lambda p: p.design_config_ids):
             image_url = (
                 f"/web/image/product.product/{variant.id}/image_1920"
                 if variant.image_1920

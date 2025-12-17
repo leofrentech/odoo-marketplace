@@ -5,7 +5,7 @@
         name="Product Personalization Button">
         <xpath expr="//a[@id='add_to_cart']" position="before">
             <a role="button" id="customize_product_button" class="btn btn-primary mt-2 mb-2"
-                t-if="product.is_product_personalization"
+                t-if="product.is_product_personalization and any(product.product_variant_ids.design_config_ids)"
                 t-att-href="'/shop/personalize/%s' % product.id">
                 <i class="fa fa-paint-brush" /> Customize Product </a>
             <input type="hidden" name="product_template_id" t-att-value="product.id" />
