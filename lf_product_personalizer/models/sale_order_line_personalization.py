@@ -24,7 +24,9 @@ class SaleOrderLinePersonalization(models.Model):
         ondelete="cascade",
         index=True,
     )
-    order_id = fields.Many2one(related="sale_order_line_id.order_id", store=True)
+    order_id = fields.Many2one(
+        related="sale_order_line_id.order_id", store=True
+    )
     design_type = fields.Char(
         string="Design Type",
         required=True,

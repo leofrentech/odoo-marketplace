@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
 import json
 import logging
+
+from werkzeug.exceptions import NotFound
+
 from odoo import http
 from odoo.http import request
-from werkzeug.exceptions import NotFound
 
 _logger = logging.getLogger(__name__)
 
 
 class ProductPersonalizerController(http.Controller):
-
     @http.route(
         "/shop/personalize/<int:product_id>",
         type="http",
@@ -33,17 +33,22 @@ class ProductPersonalizerController(http.Controller):
         methods=["POST"],
         csrf=False,
     )
-    def product_personalization_data(self, product_id=None, variant_id=None, **kwargs):
+    def product_personalization_data(
+        self, product_id=None, variant_id=None, **kwargs
+    ):
         if not product_id:
             return {"error": "Missing product_id"}
 
-        product_template = request.env["product.template"].sudo().browse(int(product_id))
+        product_template = (
+            request.env["product.template"].sudo().browse(int(product_id))
+        )
         if not product_template:
             return {"error": "Product not found"}
 
         variants_data = self._get_variants_data(product_template)
         active_variant_id = (
-            int(variant_id) if variant_id
+            int(variant_id)
+            if variant_id
             else variants_data[0]["id"] if variants_data else None
         )
 
@@ -69,13 +74,17 @@ class ProductPersonalizerController(http.Controller):
         for variant in product_template.product_variant_ids:
             image_url = (
                 f"/web/image/product.product/{variant.id}/image_1920"
-                if variant.image_1920 else None
+                if variant.image_1920
+                else None
             )
-            variants_data.append({
-                "id": variant.id,
-                "name": variant.display_name,
-                "image_url": image_url,
-            })
+            variants_data.append(
+                {
+                    "id": variant.id,
+                    "name": variant.display_name,
+                    "image_url": image_url,
+                }
+            )
+
         return variants_data
 
     def _get_variant_designs(self, variant_id):
@@ -100,6 +109,7 @@ class ProductPersonalizerController(http.Controller):
                 "bound_height": float(config.bound_height or 0.0),
             }
             design_types.append(design_type)
+
         return designs, design_types
 
     def _get_image_url(self, config, variant_id):
@@ -110,6 +120,7 @@ class ProductPersonalizerController(http.Controller):
         variant = request.env["product.product"].sudo().browse(variant_id)
         if variant.exists() and variant.image_1920:
             return f"/web/image/product.product/{variant_id}/image_1920"
+
         return None
 
     def _parse_designs_payload(self, designs):
@@ -119,6 +130,7 @@ class ProductPersonalizerController(http.Controller):
                 return json.loads(designs)
             except Exception:
                 return {}
+
         return designs or {}
 
     def _save_personalization(self, line, variant, designs):
@@ -128,18 +140,32 @@ class ProductPersonalizerController(http.Controller):
             d_type = config.design_type
             d_data = designs.get(d_type, {})
 
-            personalized_json = d_data.get("json") if isinstance(d_data, dict) else None
-            preview_dataurl = d_data.get("preview") if isinstance(d_data, dict) else None
-            background_url = d_data.get("background_url") if isinstance(d_data, dict) else None
+            personalized_json = (
+                d_data.get("json") if isinstance(d_data, dict) else None
+            )
+            preview_dataurl = (
+                d_data.get("preview") if isinstance(d_data, dict) else None
+            )
+            background_url = (
+                d_data.get("background_url")
+                if isinstance(d_data, dict)
+                else None
+            )
 
             # Convert base64 preview to binary
             preview_bin = False
             if preview_dataurl and "data:image" in str(preview_dataurl):
                 # It's a data URL from canvas, extract base64 part
                 try:
-                    preview_bin = preview_dataurl.split(",", 1)[1].encode("utf-8")
+                    preview_bin = preview_dataurl.split(",", 1)[1].encode(
+                        "utf-8"
+                    )
                 except Exception as e:
-                    _logger.warning("Could not decode preview dataURL for design type %s: %s", d_type, e)
+                    _logger.warning(
+                        "Could not decode preview dataURL for design type %s: %s",
+                        d_type,
+                        e,
+                    )
             # Fallback to config image if no custom preview
             if not preview_bin and config.design_image:
                 preview_bin = config.design_image
@@ -151,21 +177,36 @@ class ProductPersonalizerController(http.Controller):
                     json_data["background_url"] = background_url
                     personalized_json = json.dumps(json_data)
                 except Exception as e:
-                    _logger.warning("Failed to add background_url to JSON: %s", e)
+                    _logger.warning(
+                        "Failed to add background_url to JSON: %s", e
+                    )
 
             vals = {
                 "sale_order_line_id": line.id,
                 "design_type": d_type,
                 "design_config_id": config.id,
-                "personalized_json": personalized_json or json.dumps({"version": "5.3.0", "objects": [], "background_url": background_url}),
+                "personalized_json": personalized_json
+                or json.dumps(
+                    {
+                        "version": "5.3.0",
+                        "objects": [],
+                        "background_url": background_url,
+                    }
+                ),
                 "product_image": preview_bin,
             }
 
             try:
-                rec = request.env["sale.order.line.personalization"].sudo().create(vals)
+                rec = (
+                    request.env["sale.order.line.personalization"]
+                    .sudo()
+                    .create(vals)
+                )
                 created.append(rec.id)
             except Exception as e:
-                _logger.exception("Error saving personalization for %s: %s", d_type, e)
+                _logger.exception(
+                    "Error saving personalization for %s: %s", d_type, e
+                )
 
         return created
 
@@ -177,7 +218,9 @@ class ProductPersonalizerController(http.Controller):
         csrf=False,
         website=True,
     )
-    def update_personalization(self, variant_id=None, designs=None, add_qty=1, **kwargs):
+    def update_personalization(
+        self, variant_id=None, designs=None, add_qty=1, **kwargs
+    ):
         """Add product with personalization to cart."""
         if not variant_id:
             return {"error": "Missing variant_id"}
@@ -190,7 +233,9 @@ class ProductPersonalizerController(http.Controller):
             website = request.env["website"].sudo().get_current_website()
             order_sudo = request.website.sale_get_order(force_create=True)
 
-            values = order_sudo.with_context(skip_cart_verification=True)._cart_update(
+            values = order_sudo.with_context(
+                skip_cart_verification=True
+            )._cart_update(
                 product_id=int(variant_id),
                 add_qty=float(add_qty),
             )
@@ -200,7 +245,9 @@ class ProductPersonalizerController(http.Controller):
                 return {"error": "Could not create cart line"}
 
             line = request.env["sale.order.line"].sudo().browse(int(line_id))
-            variant = request.env["product.product"].sudo().browse(int(variant_id))
+            variant = (
+                request.env["product.product"].sudo().browse(int(variant_id))
+            )
             created = self._save_personalization(line, variant, designs)
 
             return {
@@ -233,7 +280,8 @@ class ProductPersonalizerController(http.Controller):
         for personalization in line.personalization_ids:
             preview_data = {
                 "design_type": personalization.design_type,
-                "design_title": personalization.design_title or personalization.design_type,
+                "design_title": personalization.design_title
+                or personalization.design_type,
             }
 
             if personalization.product_image:
@@ -300,11 +348,13 @@ class ProductPersonalizerController(http.Controller):
                     try:
                         personalized_json = json.loads(personalized_json)
                     except json.JSONDecodeError as e:
-                        _logger.error(f"Failed to parse personalized_json: {e}")
-                
+                        _logger.error(
+                            f"Failed to parse personalized_json: {e}"
+                        )
+
                 if not isinstance(personalized_json, dict):
                     personalized_json = {"version": "5.3.0", "objects": []}
-                
+
                 if "objects" not in personalized_json:
                     personalized_json["objects"] = []
 
@@ -315,13 +365,18 @@ class ProductPersonalizerController(http.Controller):
                     "personalized_json": personalized_json,
                     "json": personalized_json,
                     "background_url": background_url,
-                    "is_customized": len(personalized_json.get("objects", [])) > 0,
+                    "is_customized": len(personalized_json.get("objects", []))
+                    > 0,
                 }
-                
-                _logger.info(f"Loaded design type '{design_type}' with {len(personalized_json.get('objects', []))} objects")
-                
+
+                _logger.info(
+                    f"Loaded design type '{design_type}' with {len(personalized_json.get('objects', []))} objects"
+                )
+
             except Exception as e:
-                _logger.exception("Error loading personalization for %s: %s", design_type, e)
+                _logger.exception(
+                    "Error loading personalization for %s: %s", design_type, e
+                )
                 designs[design_type] = {
                     "personalized_json": {"version": "5.3.0", "objects": []},
                     "json": {"version": "5.3.0", "objects": []},
@@ -333,8 +388,8 @@ class ProductPersonalizerController(http.Controller):
             "success": True,
             "line_id": line.id,
             "designs": designs,
-        }    
-    
+        }
+
     @http.route(
         ["/shop/cart/update_line_personalization"],
         type="json",
@@ -343,7 +398,9 @@ class ProductPersonalizerController(http.Controller):
         csrf=False,
         website=True,
     )
-    def update_line_personalization(self, line_id=None, designs=None, add_qty=1, **kwargs):
+    def update_line_personalization(
+        self, line_id=None, designs=None, add_qty=1, **kwargs
+    ):
         """Update personalization records for an existing cart line."""
         if not line_id:
             return {"error": "Missing line_id", "success": False}
@@ -356,22 +413,27 @@ class ProductPersonalizerController(http.Controller):
             line = request.env["sale.order.line"].sudo().browse(int(line_id))
             if not line.exists():
                 return {"error": "Cart line not found", "success": False}
-            
+
             # Update quantity
             line.sudo().write({"product_uom_qty": float(add_qty)})
-            
+
             # Delete old personalization records
-            _logger.info(f"Deleting {len(line.personalization_ids)} old personalization records for line {line_id}")
+            _logger.info(
+                f"Deleting {len(line.personalization_ids)} old personalization records for line {line_id}"
+            )
             line.personalization_ids.unlink()
-            
+
             # Create new personalization records with updated data
-            created = self._save_personalization(line, line.product_id, designs)
+            created = self._save_personalization(
+                line, line.product_id, designs
+            )
 
             return {
                 "success": True,
                 "line_id": line.id,
                 "updated_personalization_ids": created,
             }
+
         except Exception as e:
             _logger.exception("Update line personalization error: %s", e)
             return {"error": str(e), "success": False}
