@@ -24,25 +24,6 @@ import { PreviewGenerator } from './utils/preview_generator';
 
 
 /**
- * Shows "Customize Product" button on product page.
- */
-publicWidget.registry.ProductPagePersonalization = publicWidget.Widget.extend({
-    selector: '.oe_website_sale:not(.o_product_personalize_page)',
-
-    events: {
-        'click #customize_product_button': '_onClickCustomizeProduct',
-    },
-
-    /** Redirect to personalization editor */
-    _onClickCustomizeProduct(ev) {
-        ev.preventDefault();
-        const productId = this.$('input[name="product_template_id"]').val();
-        window.location.href = `/shop/personalize/${productId}`;
-    },
-});
-
-
-/**
  * Main Editor Controller for Product Personalization Page
  */
 publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend({
@@ -196,10 +177,10 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                             } else if (typeof design.json === 'string') {
                                 design.json = JSON.parse(design.json);
                             } else {
-                                design.json = { version: "5.3.0", objects: [] };
+                                design.json = { objects: [] };
                             }
                         } catch {
-                            design.json = { version: "5.3.0", objects: [] };
+                            design.json = { objects: [] };
                         }
 
                         // Map background image url
@@ -710,7 +691,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             const saved = this.stateManager.getDesignState(dt);
             const json = saved?.json?.objects?.length
                 ? saved.json
-                : { version: "5.3.0", objects: [] };
+                : { objects: [] };
 
             const preview = await PreviewGenerator.generatePreview(dt, allData, pdata);
 

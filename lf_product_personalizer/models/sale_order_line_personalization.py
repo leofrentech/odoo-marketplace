@@ -32,7 +32,6 @@ class SaleOrderLinePersonalization(models.Model):
         required=True,
         help="Identifier of the side/area (e.g. front, back)",
     )
-    design_title = fields.Char(string="Design Title")
     design_config_id = fields.Many2one(
         "product.design.config", string="Design Config"
     )

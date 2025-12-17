@@ -189,7 +189,6 @@ class ProductPersonalizerController(http.Controller):
                 "personalized_json": personalized_json
                 or json.dumps(
                     {
-                        "version": "5.3.0",
                         "objects": [],
                         "background_url": background_url,
                     }
@@ -282,8 +281,6 @@ class ProductPersonalizerController(http.Controller):
         for personalization in line.personalization_ids:
             preview_data = {
                 "design_type": personalization.design_type,
-                "design_title": personalization.design_title
-                or personalization.design_type,
             }
 
             if personalization.product_image:
@@ -355,7 +352,7 @@ class ProductPersonalizerController(http.Controller):
                         )
 
                 if not isinstance(personalized_json, dict):
-                    personalized_json = {"version": "5.3.0", "objects": []}
+                    personalized_json = {"objects": []}
 
                 if "objects" not in personalized_json:
                     personalized_json["objects"] = []

@@ -64,7 +64,6 @@ export class ObjectUtils {
         );
 
         return {
-            version: "5.3.0",
             objects: objs.map(obj => obj.toObject())
         };
     }
@@ -82,7 +81,6 @@ export class ObjectUtils {
         }
 
         const filtered = {
-            version: json.version || "5.3.0",
             objects: (json.objects || []).filter(
                 obj => obj.isZoneRect !== true && obj.name !== "zoneRect"
             )
