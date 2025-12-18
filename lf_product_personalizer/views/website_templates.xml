@@ -156,22 +156,13 @@
                                             class="btn btn-primary w-100 mb-3"><i class="fa fa-plus" />
                                             Add Text</button>
 
-                                        <!-- Text Edit Sub-Menus (shown when text is selected) -->
+                                        <!-- Text Edit Sub-Menus -->
                                         <div id="text_controls" style="display: none;">
                                             <!-- Font Style Sub-Menu -->
                                             <div class="text-submenu mb-3">
-                                                <button
-                                                    class="btn btn-outline-secondary w-100 text-submenu-toggle"
-                                                    data-submenu="font-style"
-                                                    style="text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                                                    <span><i class="fa fa-font"
-                                                            style="margin-right: 8px; width: 20px;"></i>Font
-                                                        Style</span>
-                                                    <i class="fa fa-chevron-down"></i>
-                                                </button>
                                                 <div class="text-submenu-content"
                                                     id="font-style-content"
-                                                    style="display: none; margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                                    style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
                                                     <div class="form-group mb-2">
                                                         <label class="small">Font Family</label>
                                                         <select id="text_font_family"
@@ -236,17 +227,8 @@
 
                                             <!-- Color Sub-Menu -->
                                             <div class="text-submenu mb-3">
-                                                <button
-                                                    class="btn btn-outline-secondary w-100 text-submenu-toggle"
-                                                    data-submenu="color"
-                                                    style="text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                                                    <span><i class="fa fa-palette"
-                                                            style="margin-right: 8px; width: 20px;"></i>
-                                                        Color</span>
-                                                    <i class="fa fa-chevron-down"></i>
-                                                </button>
                                                 <div class="text-submenu-content" id="color-content"
-                                                    style="display: none; margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                                    style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
                                                     <div class="form-group mb-2">
                                                         <label class="small">Text Color</label>
                                                         <input type="color" id="text_color"

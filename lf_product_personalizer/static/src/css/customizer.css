@@ -135,30 +135,6 @@
     overflow: hidden;
 }
 
-.o_product_personalize_page .text-submenu-toggle {
-    border-radius: 6px;
-    font-weight: 500;
-    padding: 8px 12px !important;
-    transition: all 0.2s ease;
-}
-
-.o_product_personalize_page .text-submenu-toggle:hover {
-    background-color: #e2e8f0 !important;
-}
-
-.o_product_personalize_page .text-submenu-toggle.active {
-    background-color: #cbd5e1 !important;
-    color: #1a202c !important;
-}
-
-.o_product_personalize_page .text-submenu-toggle i:last-child {
-    transition: transform 0.3s ease;
-}
-
-.o_product_personalize_page .text-submenu-toggle.active i:last-child {
-    transform: rotate(180deg);
-}
-
 .o_product_personalize_page .text-submenu-content {
     border-top: 1px solid #e2e8f0;
 }

@@ -53,7 +53,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
         // Navigation
         'click .menu-item': '_onMenuItemClick',
-        'click .text-submenu-toggle': '_onToggleTextSubmenu',
 
         // Design Type Switching
         'change #design_type_selector': '_onDesignTypeChange',
@@ -450,21 +449,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         const type = $(ev.currentTarget).data('menu');
         this.menuController.switchToPanel(type);
         this.controlsUpdater.hideControls();
-    },
-
-    /** Toggle text style submenu */
-    _onToggleTextSubmenu(ev) {
-        const $btn = $(ev.currentTarget);
-        const $content = $btn.closest('.text-submenu').find('.text-submenu-content');
-        const open = $content.is(':visible');
-
-        $('.text-submenu-content').slideUp(200);
-        $('.text-submenu-toggle').removeClass('active');
-
-        if (!open) {
-            $content.slideDown(200);
-            $btn.addClass('active');
-        }
     },
 
     /** Build selector + load initial design type */
