@@ -47,9 +47,13 @@ class DesignAreaWidget extends Component {
                 this.previousImageId = recordId;
                 this.previousRestricted = isRestricted;
                 await this.initCanvas();
-            } else if (this.fabricCanvas && this.restrictedRect && !this.isUpdatingFromRect) {
-                // Check if bound values changed manually
-                this.updateRectFromFields();
+                return;
+            }
+            
+            if (this.fabricCanvas && this.restrictedRect && this.state.initialized) {
+                if (!this.isUpdatingFromRect) {
+                    this.updateRectFromFields();
+                }
             }
         });
 
@@ -180,7 +184,6 @@ class DesignAreaWidget extends Component {
         this.fabricCanvas.on("object:modified", () => this.onRectModified());
         this.fabricCanvas.on("object:moving", () => this.clampRect());
         this.fabricCanvas.on("object:scaling", () => this.clampRect());
-        console.log('Canvas events registered');
     }
 
     clampRect() {
@@ -276,7 +279,9 @@ class DesignAreaWidget extends Component {
             left: x,
             top: y,
             width: w,
-            height: h
+            height: h,
+            scaleX: 1,
+            scaleY: 1
         });
 
         this.restrictedRect.setCoords();
