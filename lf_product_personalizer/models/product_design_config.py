@@ -19,17 +19,10 @@ class ProductDesignConfig(models.Model):
     # ------------------------------------------------------------------
 
     product_variant_id = fields.Many2one(
-        "product.product",
-        string="Product Variant",
-        help="Leave empty to apply to all variants",
-        required=True,
-        ondelete="cascade",
+        "product.product", string="Product Variant", ondelete="cascade"
     )
     product_tmpl_id = fields.Many2one(
-        "product.template",
-        related="product_variant_id.product_tmpl_id",
-        store=True,
-        readonly=True,
+        "product.template", string="Product Template", ondelete="cascade"
     )
 
     design_type = fields.Char(
