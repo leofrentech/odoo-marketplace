@@ -27,7 +27,9 @@ export class CanvasManager {
 
         wrapper.appendChild(canvasEl);
 
-        this.fabricCanvas = new fabric.Canvas("personalization_canvas");
+        this.fabricCanvas = new fabric.Canvas('personalization_canvas', {
+            preserveObjectStacking: true,
+        });
         return this.fabricCanvas;
     }
 

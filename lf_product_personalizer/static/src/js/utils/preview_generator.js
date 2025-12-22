@@ -41,7 +41,6 @@ export class PreviewGenerator {
 
                 const loadObjects = () => {
                     const filtered = {
-                        version: json.version || "5.3.0",
                         objects: (json.objects || []).filter(
                             o => !o.isZoneRect && o.name !== "zoneRect"
                         )

@@ -20,6 +20,11 @@ class ProductTemplate(models.Model):
         string="Is Product Personalization",
         help="Enables personalization features for this product.",
     )
+    design_config_ids = fields.One2many(
+        "product.design.config",
+        "product_tmpl_id",
+        string="Design Configurations",
+    )
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS

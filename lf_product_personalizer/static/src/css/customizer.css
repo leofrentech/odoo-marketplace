@@ -5,27 +5,22 @@
     height: 800px !important;
 }
 
-.personalization-boundary {
-    border: 2px solid green;
-    position: absolute;
-    box-sizing: border-box;
-}
-
-.modal-xl {
+#preview_personalization_modal .modal-dialog.modal-xl,
+#download_personalization_modal .modal-dialog.modal-xl {
     max-width: 90%;
 }
 
-.menu-item:hover {
+.o_product_personalize_page .menu-item:hover {
     background-color: #4a5568 !important;
     color: white !important;
 }
 
-.menu-item.active {
+.o_product_personalize_page .menu-item.active {
     background-color: #4a5568 !important;
     color: white !important;
 }
 
-.menu-panel {
+.o_product_personalize_page .menu-panel {
     animation: fadeIn 0.3s;
     max-height: calc(100vh - 300px);
     overflow-y: auto;
@@ -34,21 +29,21 @@
 }
 
 /* Custom scrollbar styling */
-.menu-panel::-webkit-scrollbar {
+.o_product_personalize_page .menu-panel::-webkit-scrollbar {
     width: 8px;
 }
 
-.menu-panel::-webkit-scrollbar-track {
+.o_product_personalize_page .menu-panel::-webkit-scrollbar-track {
     background: #f1f5f9;
     border-radius: 4px;
 }
 
-.menu-panel::-webkit-scrollbar-thumb {
+.o_product_personalize_page .menu-panel::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 4px;
 }
 
-.menu-panel::-webkit-scrollbar-thumb:hover {
+.o_product_personalize_page .menu-panel::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
 
@@ -57,7 +52,7 @@
     to { opacity: 1; }
 }
 
-.variant-item {
+.o_product_personalize_page .variant-item {
     cursor: pointer;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -67,32 +62,21 @@
     margin: 8px;
 }
 
-.variant-item:hover {
+.o_product_personalize_page .variant-item:hover {
     border-color: #4a5568;
     transform: scale(1.02);
 }
 
-.variant-item.active {
+.o_product_personalize_page .variant-item.active {
     border-color: #0d6efd;
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
 }
 
-.variant-item img {
+.o_product_personalize_page .variant-item img {
     width: 100%;
     height: 140px;
     object-fit: cover;
     display: block;
-}
-
-.variant-item-name {
-    text-align: center;
-    padding: 8px;
-    font-size: 12px;
-    font-weight: 500;
-    background-color: #f8f9fa;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .shape-item {
@@ -145,92 +129,35 @@
 }
 
 /* Text Sub-Menu Styling */
-.text-submenu {
+.o_product_personalize_page .text-submenu {
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     overflow: hidden;
 }
 
-.text-submenu-toggle {
-    border-radius: 6px;
-    font-weight: 500;
-    padding: 8px 12px !important;
-    transition: all 0.2s ease;
-}
-
-.text-submenu-toggle:hover {
-    background-color: #e2e8f0 !important;
-}
-
-.text-submenu-toggle.active {
-    background-color: #cbd5e1 !important;
-    color: #1a202c !important;
-}
-
-.text-submenu-toggle i:last-child {
-    transition: transform 0.3s ease;
-}
-
-.text-submenu-toggle.active i:last-child {
-    transform: rotate(180deg);
-}
-
-.text-submenu-content {
+.o_product_personalize_page .text-submenu-content {
     border-top: 1px solid #e2e8f0;
 }
 
-.text-submenu-content .form-control,
-.text-submenu-content .form-range,
-.text-submenu-content .form-select {
+.o_product_personalize_page .text-submenu-content .form-control,
+.o_product_personalize_page .text-submenu-content .form-range,
+.o_product_personalize_page .text-submenu-content .form-select {
     font-size: 13px;
     height: 36px;
 }
 
-.text-submenu-content label {
+.o_product_personalize_page .text-submenu-content label {
     font-size: 12px;
     font-weight: 600;
     color: #4a5568;
     margin-bottom: 6px;
 }
 
-.text-submenu-content .btn-group {
+.o_product_personalize_page .text-submenu-content .btn-group {
     gap: 4px;
 }
 
-.text-submenu-content .btn-group .btn {
+.o_product_personalize_page .text-submenu-content .btn-group .btn {
     padding: 6px 10px;
     font-size: 12px;
-}
-
-/* Form Range (Slider) Styling */
-.form-range {
-    height: 5px;
-    border-radius: 5px;
-}
-
-.form-range::-webkit-slider-thumb {
-    width: 18px;
-    height: 18px;
-    background: #4a5568;
-    border: 2px solid white;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.form-range::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: #4a5568;
-    border: 2px solid white;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-body.modal-open {
-    overflow-y: scroll !important;
-    padding-right: 0 !important;
-}
-
-.modal {
-    padding-right: 0 !important;
 }

@@ -4,7 +4,7 @@
     <template id="cart_line_personalization_buttons" inherit_id="website_sale.cart_lines"
         name="Cart Line Personalization Buttons">
         <xpath expr="//a[hasclass('js_delete_product')]" position="before">
-            <div t-if="line.personalization_ids" class="d-flex gap-2">
+            <div t-if="line.personalization_ids" class="d-flex gap-2 ms-2">
                 <!-- Edit Design Button -->
                 <a href="#"
                     class="btn btn-sm btn-warning edit-design-btn"

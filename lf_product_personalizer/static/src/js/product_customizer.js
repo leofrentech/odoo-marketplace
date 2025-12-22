@@ -24,25 +24,6 @@ import { PreviewGenerator } from './utils/preview_generator';
 
 
 /**
- * Shows "Customize Product" button on product page.
- */
-publicWidget.registry.ProductPagePersonalization = publicWidget.Widget.extend({
-    selector: '.oe_website_sale:not(.o_product_personalize_page)',
-
-    events: {
-        'click #customize_product_button': '_onClickCustomizeProduct',
-    },
-
-    /** Redirect to personalization editor */
-    _onClickCustomizeProduct(ev) {
-        ev.preventDefault();
-        const productId = this.$('input[name="product_template_id"]').val();
-        window.location.href = `/shop/personalize/${productId}`;
-    },
-});
-
-
-/**
  * Main Editor Controller for Product Personalization Page
  */
 publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend({
@@ -61,6 +42,18 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         // Images
         'click #add_image_button': '_onClickAddImage',
 
+        // Image editor
+        'click #flip_x_btn': '_onImageOperation',
+        'click #flip_y_btn': '_onImageOperation',
+        'input #img_blur': '_onImageOperation',
+        'input #img_brightness': '_onImageOperation',
+        'input #img_contrast': '_onImageOperation',
+        'input #img_saturation': '_onImageOperation',
+        'click #grayscale_btn': '_onImageOperation',
+        'click #sepia_btn': '_onImageOperation',
+        'click #reset_filters_btn': '_onImageOperation',
+        'click #crop_image_btn': '_onImageOperation',
+
         // Shapes
         'click .shape-item': '_onShapeSelect',
         'change #shape_fill_color': '_onChangeShapeProperty',
@@ -72,7 +65,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
 
         // Navigation
         'click .menu-item': '_onMenuItemClick',
-        'click .text-submenu-toggle': '_onToggleTextSubmenu',
 
         // Design Type Switching
         'change #design_type_selector': '_onDesignTypeChange',
@@ -196,10 +188,10 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
                             } else if (typeof design.json === 'string') {
                                 design.json = JSON.parse(design.json);
                             } else {
-                                design.json = { version: "5.3.0", objects: [] };
+                                design.json = { objects: [] };
                             }
                         } catch {
-                            design.json = { version: "5.3.0", objects: [] };
+                            design.json = { objects: [] };
                         }
 
                         // Map background image url
@@ -253,11 +245,22 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         const isShape = !isText && !isImage;
 
         this.menuController.autoSwitchPanel(isText, isImage, isShape);
+
+        if (isImage) {
+            $('#image_editor_panel').slideDown(150);
+            this.imageHandler.syncFiltersToUI(obj);
+        } else {
+            $('#image_editor_panel').slideUp(150);
+        }
     },
 
     /** Clear control visibility */
     _onSelectionCleared() {
         this.controlsUpdater.hideControls();
+
+        $('#image_editor_panel').slideUp(150);
+        $('#img_blur, #img_brightness, #img_contrast, #img_saturation').val(0);
+        
         this.layerHandler.renderLayersList(
             this.$('#layers_list'),
             obj => this._selectObject(obj)
@@ -426,6 +429,41 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         this.imageHandler.addImages(files);
         $('#personalization_image_upload').val('');
     },
+    
+    /**
+     * Unified handler for all image operations
+     * @param {Event} ev - Event object
+     */
+    _onImageOperation(ev) {
+        const operationMap = {
+            'flip_x_btn': { operation: 'flipX' },
+            'flip_y_btn': { operation: 'flipY' },
+            'img_blur': { operation: 'blur', useValue: true },
+            'img_brightness': { operation: 'brightness', useValue: true },
+            'img_contrast': { operation: 'contrast', useValue: true },
+            'img_saturation': { operation: 'saturation', useValue: true },
+            'grayscale_btn': { operation: 'grayscale' },
+            'sepia_btn': { operation: 'sepia' },
+            'reset_filters_btn': { operation: 'resetFilters' },
+            'crop_image_btn': { operation: 'crop' },
+        };
+
+        const elementId = ev.target.id;
+        const config = operationMap[elementId];
+
+        if (!config) {
+            console.warn(`No operation mapping found for: ${elementId}`);
+            return;
+        }
+
+        const value = config.useValue ? ev.target.value : null;
+        this.imageHandler.handleImageOperation(config.operation, value);
+
+        // Special handling for reset filters - reset UI sliders
+        if (config.operation === 'resetFilters') {
+            $('#img_brightness, #img_contrast, #img_saturation').val(0);
+        }
+    },
 
     /** Add shape to canvas */
     _onShapeSelect(ev) {
@@ -469,21 +507,6 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         const type = $(ev.currentTarget).data('menu');
         this.menuController.switchToPanel(type);
         this.controlsUpdater.hideControls();
-    },
-
-    /** Toggle text style submenu */
-    _onToggleTextSubmenu(ev) {
-        const $btn = $(ev.currentTarget);
-        const $content = $btn.closest('.text-submenu').find('.text-submenu-content');
-        const open = $content.is(':visible');
-
-        $('.text-submenu-content').slideUp(200);
-        $('.text-submenu-toggle').removeClass('active');
-
-        if (!open) {
-            $content.slideDown(200);
-            $btn.addClass('active');
-        }
     },
 
     /** Build selector + load initial design type */
@@ -710,7 +733,7 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
             const saved = this.stateManager.getDesignState(dt);
             const json = saved?.json?.objects?.length
                 ? saved.json
-                : { version: "5.3.0", objects: [] };
+                : { objects: [] };
 
             const preview = await PreviewGenerator.generatePreview(dt, allData, pdata);
 
@@ -752,8 +775,8 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
     },
 
     /**
- * Undo last action
- */
+     * Undo last action
+     */
     _onClickUndo: function () {
         const self = this;
         this.historyManager.undo(() => {

@@ -3,6 +3,9 @@ import logging
 
 from werkzeug.exceptions import NotFound
 
+
+from werkzeug.exceptions import NotFound
+
 from odoo import http
 from odoo.http import request
 
@@ -26,6 +29,7 @@ class ProductPersonalizerController(http.Controller):
     # ---------------------------------------------------------------------------
     # Product metadata endpoint
     # ---------------------------------------------------------------------------
+
     @http.route(
         ["/shop/product_personalization_data"],
         type="json",
@@ -71,7 +75,7 @@ class ProductPersonalizerController(http.Controller):
     def _get_variants_data(self, product_template):
         """Get list of variants with their images."""
         variants_data = []
-        for variant in product_template.product_variant_ids:
+        for variant in product_template.product_variant_ids.filtered(lambda p: p.design_config_ids):
             image_url = (
                 f"/web/image/product.product/{variant.id}/image_1920"
                 if variant.image_1920
@@ -110,6 +114,7 @@ class ProductPersonalizerController(http.Controller):
             }
             design_types.append(design_type)
 
+
         return designs, design_types
 
     def _get_image_url(self, config, variant_id):
@@ -121,6 +126,7 @@ class ProductPersonalizerController(http.Controller):
         if variant.exists() and variant.image_1920:
             return f"/web/image/product.product/{variant_id}/image_1920"
 
+
         return None
 
     def _parse_designs_payload(self, designs):
@@ -130,6 +136,7 @@ class ProductPersonalizerController(http.Controller):
                 return json.loads(designs)
             except Exception:
                 return {}
+
 
         return designs or {}
 
@@ -256,6 +263,7 @@ class ProductPersonalizerController(http.Controller):
                 "created_personalization_ids": created,
                 "cart_quantity": order_sudo.cart_quantity,
             }
+
         except Exception as e:
             _logger.exception("Cart update error: %s", e)
             return {"error": str(e)}
@@ -280,8 +288,6 @@ class ProductPersonalizerController(http.Controller):
         for personalization in line.personalization_ids:
             preview_data = {
                 "design_type": personalization.design_type,
-                "design_title": personalization.design_title
-                or personalization.design_type,
             }
 
             if personalization.product_image:
@@ -378,8 +384,6 @@ class ProductPersonalizerController(http.Controller):
                     "Error loading personalization for %s: %s", design_type, e
                 )
                 designs[design_type] = {
-                    "personalized_json": {"version": "5.3.0", "objects": []},
-                    "json": {"version": "5.3.0", "objects": []},
                     "background_url": None,
                     "is_customized": False,
                 }
@@ -414,14 +418,17 @@ class ProductPersonalizerController(http.Controller):
             if not line.exists():
                 return {"error": "Cart line not found", "success": False}
 
+
             # Update quantity
             line.sudo().write({"product_uom_qty": float(add_qty)})
+
 
             # Delete old personalization records
             _logger.info(
                 f"Deleting {len(line.personalization_ids)} old personalization records for line {line_id}"
             )
             line.personalization_ids.unlink()
+
 
             # Create new personalization records with updated data
             created = self._save_personalization(
@@ -433,6 +440,7 @@ class ProductPersonalizerController(http.Controller):
                 "line_id": line.id,
                 "updated_personalization_ids": created,
             }
+
 
         except Exception as e:
             _logger.exception("Update line personalization error: %s", e)

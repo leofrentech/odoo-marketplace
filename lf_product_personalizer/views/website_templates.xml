@@ -4,8 +4,9 @@
     <template id="product_personalization_button" inherit_id="website_sale.product_quantity"
         name="Product Personalization Button">
         <xpath expr="//a[@id='add_to_cart']" position="before">
-            <a role="button" id="customize_product_button" class="btn btn-primary m-3"
-                t-if="product.is_product_personalization">
+            <a role="button" id="customize_product_button" class="btn btn-primary m-2"
+                t-if="product.is_product_personalization and product.design_config_ids"
+                t-att-href="'/shop/personalize/%s' % product.id">
                 <i class="fa fa-paint-brush" /> Customize Product </a>
             <input type="hidden" name="product_template_id" t-att-value="product.id" />
         </xpath>
@@ -23,12 +24,12 @@
                     <button type="button" id="preview_designs_button"
                         class="btn btn-info d-flex align-items-center"
                         style="height: 48px;">
-                        <i class="fa fa-eye" style="margin-right:5px;"></i> Preview Designs </button>
+                        <i class="fa fa-eye" style="margin-right:5px;"/> Preview Designs </button>
 
                     <button type="button" id="download_designs_button"
                         class="btn btn-success d-flex align-items-center"
                         style="height: 48px;">
-                        <i class="fa fa-download" style="margin-right:5px;"></i> Download Designs </button>
+                        <i class="fa fa-download" style="margin-right:5px;"/> Download Designs </button>
 
                     <div class="form-group mb-3">
                         <label>
@@ -43,14 +44,14 @@
                     <button type="button" id="add_to_cart_personalized"
                         class="btn btn-primary d-flex align-items-center"
                         style="height: 48px;">
-                        <i class="fa fa-shopping-cart" style="margin-right:5px;"></i>
+                        <i class="fa fa-shopping-cart" style="margin-right:5px;"/>
                         <t t-if="edit_mode">Update Design</t>
                         <t t-else="">Add to Cart</t>
                     </button>
                     <a t-attf-href="/shop/product/#{product.id}"
                         class="btn btn-outline-secondary d-flex align-items-center"
                         style="height: 48px;">
-                        <i class="fa fa-times" style="margin-right:5px;"></i> Cancel </a>
+                        <i class="fa fa-times" style="margin-right:5px;"/> Cancel </a>
                 </div>
 
                 <div class="container-fluid mt-4">
@@ -155,22 +156,13 @@
                                             class="btn btn-primary w-100 mb-3"><i class="fa fa-plus" />
                                             Add Text</button>
 
-                                        <!-- Text Edit Sub-Menus (shown when text is selected) -->
+                                        <!-- Text Edit Sub-Menus -->
                                         <div id="text_controls" style="display: none;">
                                             <!-- Font Style Sub-Menu -->
                                             <div class="text-submenu mb-3">
-                                                <button
-                                                    class="btn btn-outline-secondary w-100 text-submenu-toggle"
-                                                    data-submenu="font-style"
-                                                    style="text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                                                    <span><i class="fa fa-font"
-                                                            style="margin-right: 8px; width: 20px;"></i>Font
-                                                        Style</span>
-                                                    <i class="fa fa-chevron-down"></i>
-                                                </button>
                                                 <div class="text-submenu-content"
                                                     id="font-style-content"
-                                                    style="display: none; margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                                    style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
                                                     <div class="form-group mb-2">
                                                         <label class="small">Font Family</label>
                                                         <select id="text_font_family"
@@ -235,17 +227,8 @@
 
                                             <!-- Color Sub-Menu -->
                                             <div class="text-submenu mb-3">
-                                                <button
-                                                    class="btn btn-outline-secondary w-100 text-submenu-toggle"
-                                                    data-submenu="color"
-                                                    style="text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                                                    <span><i class="fa fa-palette"
-                                                            style="margin-right: 8px; width: 20px;"></i>
-                                                        Color</span>
-                                                    <i class="fa fa-chevron-down"></i>
-                                                </button>
                                                 <div class="text-submenu-content" id="color-content"
-                                                    style="display: none; margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                                    style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
                                                     <div class="form-group mb-2">
                                                         <label class="small">Text Color</label>
                                                         <input type="color" id="text_color"
@@ -321,6 +304,116 @@
                                         </div>
                                         <button id="add_image_button" class="btn btn-primary w-100"><i
                                                 class="fa fa-plus" /> Add Image</button>
+                                    </div>
+
+                                    <!-- Image Panel -->
+                                    <div id="image_panel" class="menu-panel"
+                                        style="display: none; margin-top: 10px;">
+                                        <h5 class="mb-3">Add Image</h5>
+                                        <div class="form-group mb-2">
+                                            <input type="file" id="personalization_image_upload"
+                                                class="form-control mb-2" accept="image/*"
+                                                multiple="multiple" />
+                                        </div>
+                                        <button id="add_image_button" class="btn btn-primary w-100"><i
+                                                class="fa fa-plus" /> Add Image</button>
+
+                                        <!-- Image Editor Panel -->
+                                        <div id="image_editor_panel" style="margin-top:20px; display:none;">
+                                            <!-- <h5 class="mb-3">Image Editor</h5> -->
+                                            
+                                            <div class="mb-3">
+                                                <h6 class="text-uppercase text-muted small mb-2">
+                                                    <i class="fa fa-arrows"/> Transform
+                                                </h6>
+                                                <div class="btn-group w-100 mb-2" role="group">
+                                                    <button class="btn btn-outline-secondary" id="flip_x_btn" title="Mirror Horizontally">
+                                                        <i class="fa fa-arrows-h"/> Flip H
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary" id="flip_y_btn" title="Mirror Vertically">
+                                                        <i class="fa fa-arrows-v"/> Flip V
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Adjustments Section -->
+                                            <div class="mb-2">
+                                                <h6 class="text-uppercase text-muted small mb-3">
+                                                    <i class="fa fa-sliders"/> Adjustments
+                                                </h6>
+                                                
+                                                <!-- Blur -->
+                                                <div class="mb-3">
+                                                    <label class="form-label d-flex justify-content-between">
+                                                        <strong><i class="fa fa-circle-o-notch"/> Blur</strong>
+                                                    </label>
+                                                    <input type="range" class="w-100" id="img_blur" 
+                                                        min="0" max="1" step="0.1" value="0"/>
+                                                </div>
+                                                
+                                                <!-- Brightness -->
+                                                <div class="mb-3">
+                                                    <label class="form-label d-flex justify-content-between">
+                                                        <strong><i class="fa fa-sun-o"/> Brightness</strong>
+                                                    </label>
+                                                    <input type="range" class="w-100" id="img_brightness" 
+                                                        min="-1" max="1" step="0.05" value="0"/>
+                                                </div>
+
+                                                <!-- Contrast -->
+                                                <div class="mb-3">
+                                                    <label class="form-label d-flex justify-content-between">
+                                                        <strong><i class="fa fa-adjust"/> Contrast</strong>
+                                                    </label>
+                                                    <input type="range" class="w-100" id="img_contrast" 
+                                                        min="-1" max="1" step="0.05" value="0"/>
+                                                </div>
+
+                                                <!-- Saturation -->
+                                                <div class="mb-3">
+                                                    <label class="form-label d-flex justify-content-between">
+                                                        <strong><i class="fa fa-tint"/> Saturation</strong>
+                                                    </label>
+                                                    <input type="range" class="w-100" id="img_saturation" 
+                                                        min="-1" max="1" step="0.05" value="0"/>
+                                                </div>
+                                            </div>
+
+                                            <!-- Filters Section -->
+                                            <div class="mb-3">
+                                                <h6 class="text-uppercase text-muted small mb-2">
+                                                    <i class="fa fa-magic"/> Filters
+                                                </h6>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <button class="btn btn-outline-dark flex-fill" id="grayscale_btn">
+                                                        <i class="fa fa-adjust"/> Grayscale
+                                                    </button>
+                                                    <button class="btn btn-outline-warning flex-fill" id="sepia_btn">
+                                                        <i class="fa fa-picture-o"/> Sepia
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Actions Section -->
+                                            <div class="mb-2">
+                                                <h6 class="text-uppercase text-muted small mb-2">
+                                                    <i class="fa fa-cog"/> Actions
+                                                </h6>
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <button class="btn btn-warning w-100 action-btn" id="crop_image_btn">
+                                                            <i class="fa fa-crop action-icon"/> Crop
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="col-6">
+                                                        <button class="btn btn-danger w-100 action-btn" id="reset_filters_btn">
+                                                            <i class="fa fa-refresh action-icon"/> Reset
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Shape Panel -->

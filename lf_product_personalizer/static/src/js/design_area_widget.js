@@ -44,13 +44,16 @@ class DesignAreaWidget extends Component {
             
             // Check if image or restriction state changed
             if (this.previousImageId !== recordId || this.previousRestricted !== isRestricted) {
-                console.log('Field changed, re-initializing canvas');
                 this.previousImageId = recordId;
                 this.previousRestricted = isRestricted;
                 await this.initCanvas();
-            } else if (this.fabricCanvas && this.restrictedRect && !this.isUpdatingFromRect) {
-                // Check if bound values changed manually
-                this.updateRectFromFields();
+                return;
+            }
+            
+            if (this.fabricCanvas && this.restrictedRect && this.state.initialized) {
+                if (!this.isUpdatingFromRect) {
+                    this.updateRectFromFields();
+                }
             }
         });
 
@@ -78,7 +81,6 @@ class DesignAreaWidget extends Component {
 
         // Dispose existing canvas
         if (this.fabricCanvas) {
-            console.log('Disposing existing canvas');
             this.fabricCanvas.dispose();
             this.fabricCanvas = null;
             this.restrictedRect = null;
@@ -119,7 +121,6 @@ class DesignAreaWidget extends Component {
 
     async loadBackgroundImage(imageUrl) {
         return new Promise((resolve, reject) => {
-            console.log('Attempting to load image from:', imageUrl);
             fabric.Image.fromURL(imageUrl, (img) => {
                 if (!img || !img.width || !img.height) {
                     reject(new Error('Image load failed'));
@@ -183,7 +184,6 @@ class DesignAreaWidget extends Component {
         this.fabricCanvas.on("object:modified", () => this.onRectModified());
         this.fabricCanvas.on("object:moving", () => this.clampRect());
         this.fabricCanvas.on("object:scaling", () => this.clampRect());
-        console.log('Canvas events registered');
     }
 
     clampRect() {
@@ -261,8 +261,6 @@ class DesignAreaWidget extends Component {
 
         if (!hasChanged) return;
 
-        console.log('Field values changed, updating rectangle');
-
         // Validate values
         const canvasW = this.fabricCanvas.getWidth();
         const canvasH = this.fabricCanvas.getHeight();
@@ -281,7 +279,9 @@ class DesignAreaWidget extends Component {
             left: x,
             top: y,
             width: w,
-            height: h
+            height: h,
+            scaleX: 1,
+            scaleY: 1
         });
 
         this.restrictedRect.setCoords();

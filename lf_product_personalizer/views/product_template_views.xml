@@ -11,14 +11,6 @@
                     <label for="is_product_personalization" />
                 </span>
             </xpath>
-        </field>
-    </record>
-
-    <record id="product_normal_form_view_personalization" model="ir.ui.view">
-        <field name="name">product.product.form.personalization</field>
-        <field name="model">product.product</field>
-        <field name="inherit_id" ref="product.product_normal_form_view" />
-        <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="Design Personalization" invisible="not is_product_personalization">
                     <group>
