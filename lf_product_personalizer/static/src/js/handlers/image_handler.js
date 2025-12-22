@@ -203,12 +203,12 @@ export class ImageHandler {
         this.cropRect._targetImage = img;
 
         // Handle crop rectangle modification events
-        const resetTimer = function () {
+        const resetTimer = () => {
             if (this.cropTimer) {
                 clearTimeout(this.cropTimer);
             }
 
-            this.cropTimer = setTimeout(function () {
+            this.cropTimer = setTimeout(() => {
                 this._applyCrop(img, this.cropRect);
             }, 2000);
         };
