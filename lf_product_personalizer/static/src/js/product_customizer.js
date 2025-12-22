@@ -42,6 +42,18 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         // Images
         'click #add_image_button': '_onClickAddImage',
 
+        // Image editor
+        'click #flip_x_btn': '_onImageOperation',
+        'click #flip_y_btn': '_onImageOperation',
+        'input #img_blur': '_onImageOperation',
+        'input #img_brightness': '_onImageOperation',
+        'input #img_contrast': '_onImageOperation',
+        'input #img_saturation': '_onImageOperation',
+        'click #grayscale_btn': '_onImageOperation',
+        'click #sepia_btn': '_onImageOperation',
+        'click #reset_filters_btn': '_onImageOperation',
+        'click #crop_image_btn': '_onImageOperation',
+
         // Shapes
         'click .shape-item': '_onShapeSelect',
         'change #shape_fill_color': '_onChangeShapeProperty',
@@ -233,11 +245,22 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         const isShape = !isText && !isImage;
 
         this.menuController.autoSwitchPanel(isText, isImage, isShape);
+
+        if (isImage) {
+            $('#image_editor_panel').slideDown(150);
+            this.imageHandler.syncFiltersToUI(obj);
+        } else {
+            $('#image_editor_panel').slideUp(150);
+        }
     },
 
     /** Clear control visibility */
     _onSelectionCleared() {
         this.controlsUpdater.hideControls();
+
+        $('#image_editor_panel').slideUp(150);
+        $('#img_blur, #img_brightness, #img_contrast, #img_saturation').val(0);
+        
         this.layerHandler.renderLayersList(
             this.$('#layers_list'),
             obj => this._selectObject(obj)
@@ -405,6 +428,41 @@ publicWidget.registry.ProductPersonalizationEditor = publicWidget.Widget.extend(
         const files = $('#personalization_image_upload')[0].files;
         this.imageHandler.addImages(files);
         $('#personalization_image_upload').val('');
+    },
+    
+    /**
+     * Unified handler for all image operations
+     * @param {Event} ev - Event object
+     */
+    _onImageOperation(ev) {
+        const operationMap = {
+            'flip_x_btn': { operation: 'flipX' },
+            'flip_y_btn': { operation: 'flipY' },
+            'img_blur': { operation: 'blur', useValue: true },
+            'img_brightness': { operation: 'brightness', useValue: true },
+            'img_contrast': { operation: 'contrast', useValue: true },
+            'img_saturation': { operation: 'saturation', useValue: true },
+            'grayscale_btn': { operation: 'grayscale' },
+            'sepia_btn': { operation: 'sepia' },
+            'reset_filters_btn': { operation: 'resetFilters' },
+            'crop_image_btn': { operation: 'crop' },
+        };
+
+        const elementId = ev.target.id;
+        const config = operationMap[elementId];
+
+        if (!config) {
+            console.warn(`No operation mapping found for: ${elementId}`);
+            return;
+        }
+
+        const value = config.useValue ? ev.target.value : null;
+        this.imageHandler.handleImageOperation(config.operation, value);
+
+        // Special handling for reset filters - reset UI sliders
+        if (config.operation === 'resetFilters') {
+            $('#img_brightness, #img_contrast, #img_saturation').val(0);
+        }
     },
 
     /** Add shape to canvas */
