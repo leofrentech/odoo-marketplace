@@ -10,7 +10,7 @@
         "security/ir.model.access.csv",
         "views/product_product_views.xml",
         "views/product_qr_visit_views.xml",
-        "reports/product_product_templates.xml",
+        "reports/product_qr_report.xml",
     ],
     "images": ["static/description/icon.png"],
     "license": "OPL-1",
