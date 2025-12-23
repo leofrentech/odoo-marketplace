@@ -47,16 +47,26 @@ publicWidget.registry.CartPersonalizationButtons = publicWidget.Widget.extend({
     _showPreviewModal: function (data) {
         const previews = data.previews || [];
         const $grid = $('#preview_grid');
-
-        $grid.find('.design-title').each((i, el) => {
-            if (previews[i]?.design_type) {
-                $(el).text(previews[i].design_type);
-            }
-        });
-        $grid.find('.preview-item img').each((i, el) => {
-            if (previews[i]?.preview_url) {
-                $(el).attr('src', previews[i].preview_url);
-            }
+        
+        $grid.empty();
+        
+        previews.forEach(preview => {
+            const $card = $(`
+                <div class="col-12 col-md-6 mb-3 preview-item">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <strong class="card-title mb-2">${preview.design_type || ''}</strong>
+                            <div class="flex-fill d-flex align-items-center justify-content-center">
+                                <img class="img-fluid rounded"
+                                    style="max-height:260px; width:100%; object-fit:contain;"
+                                    src="${preview.preview_url || ''}"
+                                    alt="Design" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            $grid.append($card);
         });
 
         $('#preview_personalization_modal').modal('show');
