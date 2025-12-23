@@ -22,7 +22,6 @@ class ProductProduct(models.Model):
         inverse_name="product_variant_id",
         compute="_compute_design_config_ids",
         inverse="_inverse_design_config_ids",
-        readonly=False,
     )
 
     # ------------------------------------------------------------------
