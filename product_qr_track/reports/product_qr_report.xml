@@ -6,20 +6,13 @@
                 <t t-if="quantity and products">
                     <t t-foreach="products" t-as="product">
                         <t t-foreach="range(quantity)" t-as="iter">
-                            <div class="o_label_sheet o_label_dymo">
+                            <div class="o_label_sheet o_label_dymo h-auto">
                                 <div class="o_label_full">
-                                    <div
-                                        class="d-flex align-items-center justify-content-center w-100 h-100 p-0 m-0">
-                                        <img
-                                            t-att-src="'%s/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s'
-                                            % (base_url, 'QR', product['qr_url'], 50, 50)"
-                                            class="object-fit-cover"
-                                            style="margin: 0 !important; padding: 0 !important; width:25mm; height:25mm; image-rendering: pixelated;" />
-                                    </div>
-                                    <div class="o_label_name"
-                                        style="line-height: 100%;background-color: transparent; padding-top: 1px;">
-                                        <span t-esc="product['name']" />
-                                    </div>
+                                    <img
+                                        t-att-src="'%s/report/barcode/?barcode_type=%s&amp;value=%s&amp;width=%s&amp;height=%s'
+                                            % (base_url, 'QR', product['qr_url'], 25, 25)"
+                                        class="object-fit-cover"
+                                        style="width:25mm; height:25mm; image-rendering: pixelated;" />
                                 </div>
                             </div>
                         </t>
@@ -35,6 +28,6 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">product_qr_track.report_product_qr</field>
         <field name="report_file">product_qr_track.report_product_qr</field>
-        <field name="paperformat_id" ref="product.paperformat_label_sheet_dymo" />
+        <field name="paperformat_id" ref="product_qr_paperformat" />
     </record>
 </odoo>

@@ -8,6 +8,7 @@
     "depends": ["stock", "website_sale"],
     "data": [
         "security/ir.model.access.csv",
+        "data/report_paperformat_data.xml",
         "views/product_template_views.xml",
         "views/product_qr_visit_views.xml",
         "reports/product_qr_report.xml",
