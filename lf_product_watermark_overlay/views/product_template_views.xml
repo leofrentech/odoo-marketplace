@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="product_template_form_view" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.product.watermark.overlay</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="watermark_config" string="Watermark Configuration">
+                    <group colspan="4">
+                        <field name="is_watermark_override" />
+                    </group>
+                    <group string="Watermark Settings" invisible="not is_watermark_override">
+                        <group>
+                            <field name="watermark_type_custom" />
+                            <field name="watermark_size_custom" />
+                            <field name="watermark_position_custom" />
+                            <field name="watermark_opacity_custom" />
+                        </group>
+                        <group>
+                            <field name="watermark_logo_custom" invisible="watermark_type_custom != 'image'" />
+                            <field name="watermark_text_custom" invisible="watermark_type_custom != 'text'" />
+                            <field name="watermark_font_custom" invisible="watermark_type_custom != 'text'" />
+                            <field name="watermark_color_custom" invisible="watermark_type_custom != 'text'" />
+                        </group>
+                    </group>                
+                    <div class="col-4 mt-3">
+                        <label for="watermarked_image_1920" />
+                        <field name="watermarked_image_1920" widget="image" options="{'preview_image': 'watermarked_image_1920'}" class="w-300"/>
+                    </div> 
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

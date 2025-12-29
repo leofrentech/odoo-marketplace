@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.product.watermark.overlay</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='languages']" position="before">
+                <div id="product_image_watermark_overlay">
+                    <block title="Watermark Overlay" name="watermark_overlay_setting_container">
+                        <setting string="Watermark Type" name="watermark_type" 
+                            help="Select Watermark Type" id="watermark_type_selection">
+                            <field name="watermark_type"/>
+                            <div class="mt-2">
+                                <button name="regenerate_all_images" type="object" string="Regenerate All Image" invisible="watermark_type == 'none'" />
+                            </div>
+                        </setting>
+                        <setting id="watermark_logo" string="Watermark Image" help="Add/upload image for watermark" 
+                            invisible="watermark_type != 'image'" name="watermark_logo">
+                            <field name="watermark_logo" widget="image" 
+                                class="oe_avatar" options="{'accepted_file_extensions': '.png,.jpg,.jpeg'}" />
+                        </setting>
+                        <setting id="watermark_text" string="Watermark Text" help="Add text to be used as watermark" 
+                            name="watermark_text" invisible="watermark_type != 'text'" >
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label class="col-lg-4" string="Watermark Text" for="watermark_text"/>
+                                    <field name="watermark_text" />
+                                </div>
+                                <div class="row mt8">
+                                    <label class="col-lg-4" string="Font Style" for="watermark_font"/>
+                                    <field name="watermark_font" />
+                                </div>
+                                <div class="row mt8">
+                                    <label class="col-lg-4" string="Font Color" for="watermark_color"/>
+                                    <field name="watermark_color" />
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="watermark_size_position_setting" string="Size &amp; Position" name="watermark_size_position"
+                            help="Configure Watermark's Size &amp; Position" invisible="watermark_type == 'none'" >
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label class="col-lg-4" string="Watermark Size" for="watermark_size"/>
+                                    <field name="watermark_size" />
+                                </div>
+                                <div class="row mt8">
+                                    <label class="col-lg-4" string="Watermark Position" for="watermark_position"/>
+                                    <field name="watermark_position" />
+                                </div>
+                                <div class="row mt8">
+                                    <label class="col-lg-4" string="Watermark Opacity" for="watermark_opacity"/>
+                                    <field name="watermark_opacity" />
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="watermark_enable_permissions" string="Watermark Enable Permissions" name="watermark_enable_permissions"
+                            help="Select whether you need to enable it on websitr, report, email or not" invisible="watermark_type == 'none'">
+                            <div class="mt-16">
+                                <div>
+                                    <field name="enable_website" />
+                                    <label for="enable_website"/>
+                                </div>
+                                <div>
+                                    <field name="enable_reports" />
+                                    <label for="enable_reports"/>
+                                </div>
+                                <div>
+                                    <field name="enable_emails" />
+                                    <label for="enable_emails"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="Watermark Preview" name="watermark_preview" 
+                            invisible="watermark_type == 'none'" id="watermark_preview">
+                            <div class="mt-3 w-300">
+                                <field name="watermark_preview" widget="image" options="{'preview_image': 'watermark_preview'}" />
+                            </div>
+                        </setting>
+                    </block>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
