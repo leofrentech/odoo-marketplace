@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_access_rule_common,access.access.rule.common,model_access_rule,base.group_user,1,0,0,0
+access_access_rule_user,access.access.rule.user,model_access_rule,access_management.access_management_group_user,1,1,1,0
+access_access_rule_admin,access.access.rule.admin,model_access_rule,access_management.access_management_group_admin,1,1,1,1
+
+access_field_access_user,access.field.access.user,model_field_access,base.group_user,1,0,0,0
+access_field_access,access.field.access,model_field_access,access_management.access_management_group_user,1,1,1,1
+
+access_view_node,access.view.node,model_view_node,access_management.access_management_group_user,1,1,1,1
+
+access_hide_view_node,access.hide.view.node,model_access_hide_view_node,access_management.access_management_group_user,1,1,1,0
+access_hide_view_node_admin,access.hide.view.node.admin,model_access_hide_view_node,access_management.access_management_group_admin,1,1,1,1
