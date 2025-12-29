@@ -39,7 +39,8 @@
             <!-- Features -->
             <li class="nav-item"
                 style="border-top-right-radius:10px; border-top-left-radius:10px; background-color:#e6f6ff; border:1px solid #ddd; border-bottom:0">
-                <a id="lf_features" href="#lf_features" data-bs-toggle="tab" aria-expanded="true" class="show active"
+                <a href="#lf_features" id="features_link" data-bs-toggle="tab" role="tab" aria-controls="lf_features"
+                    aria-selected="true" class="show active"
                     style="font-family:Roboto; text-transform:uppercase; font-weight:600; font-size:18px; letter-spacing:1px; padding:11px 20px; border-top-left-radius:10px; border-top-right-radius:10px; color:#2b2b2b; border:1px solid transparent">
                     <img src="key_feature.svg" style="width:18px; margin-top:-4px; margin-right:6px" />
                     Features
@@ -48,7 +49,8 @@
             <!-- Screenshots -->
             <li class="nav-item"
                 style="border-top-right-radius:10px; border-top-left-radius:10px; background-color:#e6f6ff; border:1px solid #ddd; border-bottom:0">
-                <a id="screenshots" href="#screenshots" data-bs-toggle="tab" aria-expanded="true" class="show"
+                <a href="#screenshots" id="screenshots_link" data-bs-toggle="tab" role="tab" aria-controls="screenshots"
+                    aria-selected="false" class="show"
                     style="font-family:Roboto; text-transform:uppercase; font-weight:600; font-size:18px; letter-spacing:1px; padding:11px 20px; border-top-left-radius:10px; border-top-right-radius:10px; color:#2b2b2b; border:1px solid transparent">
                     <img src="screen_shot.svg" style="width:18px; margin-top:-4px; margin-right:6px" />
                     Screenshots
@@ -76,126 +78,126 @@
         <div class="container-fluid" style="border:1px solid #eee; border-radius:10px">
             <div class="tab-content container pt-3" id="tabs_content">
                 <!-- Features Tabs -->
-                <div class="tab-pane show active" id="lf_features" role="tabpanel" aria-labelledby="lf_features">
+                <div class="tab-pane show active" id="lf_features" role="tabpanel" aria-labelledby="features_link">
                     <div class="container mt48">
                         <section id="other-legal-references">
-                            <h2 class="text-center alert"
+                            <h3 class="text-center alert"
                                 style="font-family: 'Inter', sans-serif; color: #fff; background-color: #fa781a; border-radius: 10px;">
                                 Access control
-                            </h2>
+                            </h3>
                             <div class="row">
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Show/Hide Menus/Sub-menus</h3>
+                                        <h5 class="text-light m-0">Show/Hide Menus/Sub-menus</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Model read-only</h3>
+                                        <h5 class="text-light m-0">Model read-only</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Restrict developer mode</h3>
+                                        <h5 class="text-light m-0">Restrict developer mode</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Domain access rules</h3>
+                                        <h5 class="text-light m-0">Domain access rules</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide actions</h3>
+                                        <h5 class="text-light m-0">Hide actions</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide reports</h3>
+                                        <h5 class="text-light m-0">Hide reports</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide views</h3>
+                                        <h5 class="text-light m-0">Hide views</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide import</h3>
+                                        <h5 class="text-light m-0">Hide import</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide export</h3>
+                                        <h5 class="text-light m-0">Hide export</h5>
                                     </div>
                                 </div>
                             </div>
                             <hr>
-                            <h2 class="text-center alert my-3"
+                            <h3 class="text-center alert my-3"
                                 style="font-family: 'Inter', sans-serif; color: #fff; background-color: #fa781a; border-radius: 10px;">
                                 View control
-                            </h2>
+                            </h3>
                             <div class="row">
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Show/Hide Field</h3>
+                                        <h5 class="text-light m-0">Show/Hide Field</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Make field required</h3>
+                                        <h5 class="text-light m-0">Make field required</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Make field read-only</h3>
+                                        <h5 class="text-light m-0">Make field read-only</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide buttons</h3>
+                                        <h5 class="text-light m-0">Hide buttons</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide external-links</h3>
+                                        <h5 class="text-light m-0">Hide external-links</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide pages</h3>
+                                        <h5 class="text-light m-0">Hide pages</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide chatter</h3>
+                                        <h5 class="text-light m-0">Hide chatter</h5>
                                     </div>
                                 </div>
                             </div>
                             <hr>
-                            <h2 class="text-center alert my-3"
+                            <h3 class="text-center alert my-3"
                                 style="font-family: 'Inter', sans-serif; color: #fff;background-color: #fa781a;border-radius: 10px;">
                                 Chatter control
-                            </h2>
+                            </h3>
                             <div class="row">
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide send message</h3>
+                                        <h5 class="text-light m-0">Hide send message</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide log note</h3>
+                                        <h5 class="text-light m-0">Hide log note</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide activities</h3>
+                                        <h5 class="text-light m-0">Hide activities</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-sm-12 my-2">
                                     <div class="text-center shadow p-3 rounded-3 bg-info">
-                                        <h3 class="text-light">Hide attachments</h3>
+                                        <h5 class="text-light m-0">Hide attachments</h5>
                                     </div>
                                 </div>
                             </div>
@@ -203,7 +205,7 @@
                     </div>
                 </div>
                 <!-- Screenshots -->
-                <div class="tab-pane" id="screenshots" role="tabpanel" aria-labelledby="screenshots">
+                <div class="tab-pane" id="screenshots" role="tabpanel" aria-labelledby="screenshots_link">
                     <section class="oe_container mt48">
                         <div style="margin-bottom:4%;">
                             <h3 class="text-center mb32"
@@ -232,7 +234,7 @@
                         <div class="mt32 mb32">
                             <div style="display:block; margin:0 auto; text-align:center">
                                 <div style="vertical-align:middle" class="d-inline-block mx-3 my-3">
-                                    <p class="fw-bold" style="font-family:roboto; line-height:1.8; color:#0f1e40">
+                                    <p class="fw-bold h4" style="font-family:roboto; line-height:1.8; color:#0f1e40">
                                         Leofren Contact
                                     </p>
                                     <div class="text-center d-flex justify-content-center p-2">
@@ -263,7 +265,7 @@
                                         style="height:150px;">
                                 </div>
                                 <div style="vertical-align:middle" class="d-inline-block mx-3 my-3">
-                                    <p class="fw-bold" style="font-family:roboto; line-height:1.8; color:#0f1e40">
+                                    <p class="fw-bold h4" style="font-family:roboto; line-height:1.8; color:#0f1e40">
                                         Connect with us on email:
                                     </p>
                                     <div class="d-flex justify-content-center align-items-center">
