@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="product_qr_visit_view_tree" model="ir.ui.view">
+        <field name="name">product.qr.visit.view.tree</field>
+        <field name="model">product.qr.visit</field>
+        <field name="arch" type="xml">
+            <tree create="0">
+                <field name="create_date" />
+                <field name="product_id" />
+                <field name="country_id" />
+                <field name="os" />
+                <field name="geoip" />
+                <field name="browser" />
+                <button type="object" name="action_open_product" string="Open Product" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="product_qr_visit_view_form" model="ir.ui.view">
+        <field name="name">product.qr.visit.view.form</field>
+        <field name="model">product.qr.visit</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <sheet>
+                    <h1>
+                        <field name="product_id" options="{'no_create': True}" />
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="create_date" />
+                            <field name="geoip" />
+                            <field name="country_id" />
+                        </group>
+                        <group>
+                            <field name="os" />
+                            <field name="browser" />
+                            <field name="city" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="product_qr_visit_view_graph" model="ir.ui.view">
+        <field name="name">product.qr.visit.view.graph</field>
+        <field name="model">product.qr.visit</field>
+        <field name="arch" type="xml">
+            <graph type="line">
+                <field name="os" />
+                <field name="country_id" />
+            </graph>
+        </field>
+    </record>
+
+    <record id="product_qr_visit_view_search" model="ir.ui.view">
+        <field name="name">product.qr.visit.view.search</field>
+        <field name="model">product.qr.visit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id" />
+                <field name="country_id" />
+                <field name="os" />
+                <field name="browser" />
+                <filter string="Visited Today" name="filter_today"
+                    domain="[('create_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('create_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]" />
+                <separator />
+                <filter name="create_date" string="Date" date="create_date" />
+                <group>
+                    <filter name="groupby_country" string="Country" domain="[]"
+                        context="{'group_by': 'country_id'}" />
+                    <filter name="groupby_os" string="OS" domain="[]" context="{'group_by': 'os'}" />
+                    <filter name="groupby_browser" string="Browser" domain="[]"
+                        context="{'group_by': 'browser'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="product_qr_visit_action_show" model="ir.actions.act_window">
+        <field name="name">QR Visits</field>
+        <field name="res_model">product.qr.visit</field>
+        <field name="view_mode">list,graph,form</field>
+        <field name="context">{'search_default_filter_today': 1}</field>
+    </record>
+
+    <menuitem id="product_qr_visit_menu_main" name="Product QR Visits"
+        groups="base.group_no_one,base.group_system"
+        web_icon="product_qr_track,static/description/icon.png">
+
+        <menuitem id="product_qr_visit_menu_open" name="QR Visits"
+            action="product_qr_visit_action_show" sequence="1" />
+
+        <menuitem id="product_menu_catalog"
+            name="Products"
+            groups="sales_team.group_sale_salesman"
+            sequence="2">
+            <menuitem id="menu_product_template_action"
+                action="sale.product_template_action"
+                sequence="1" />
+            <menuitem id="menu_products"
+                action="product.product_normal_action_sell"
+                groups="product.group_product_variant"
+                sequence="2" />
+        </menuitem>
+    </menuitem>
+</odoo>
