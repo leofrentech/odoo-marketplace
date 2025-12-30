@@ -12,7 +12,7 @@
                             help="Select Watermark Type" id="watermark_type_selection">
                             <field name="watermark_type"/>
                             <div class="mt-2">
-                                <button name="regenerate_all_images" type="object" string="Regenerate All Image" invisible="watermark_type == 'none'" />
+                                <button name="regenerate_all_images" type="object" string="Regenerate All Images" invisible="watermark_type == 'none'" />
                             </div>
                         </setting>
                         <setting id="watermark_logo" string="Watermark Image" help="Add/upload image for watermark" 
@@ -32,18 +32,18 @@
                                     <field name="watermark_font" />
                                 </div>
                                 <div class="row mt8">
+                                    <label class="col-lg-4" string="Font Size" for="watermark_size"/>
+                                    <field name="watermark_size" />
+                                </div>
+                                <div class="row mt8">
                                     <label class="col-lg-4" string="Font Color" for="watermark_color"/>
                                     <field name="watermark_color" />
                                 </div>
                             </div>
                         </setting>
-                        <setting id="watermark_size_position_setting" string="Size &amp; Position" name="watermark_size_position"
-                            help="Configure Watermark's Size &amp; Position" invisible="watermark_type == 'none'" >
+                        <setting id="watermark_size_position_setting" string="Position &amp; Opacity" name="watermark_size_position"
+                            help="Configure Watermark's Position &amp; Opacity" invisible="watermark_type == 'none'" >
                             <div class="content-group">
-                                <div class="row mt8">
-                                    <label class="col-lg-4" string="Watermark Size" for="watermark_size"/>
-                                    <field name="watermark_size" />
-                                </div>
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Watermark Position" for="watermark_position"/>
                                     <field name="watermark_position" />

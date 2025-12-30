@@ -62,10 +62,15 @@ def _draw_text_watermark(overlay, settings):
     draw = ImageDraw.Draw(overlay)
     text = settings.get("text", "WATERMARK")
 
+    img_w, img_h = overlay.size
+    diagonal = (img_w**2 + img_h**2) ** 0.5
+    size_percent = settings.get("size", 4) 
+    font_size = max(12, int(diagonal * size_percent / 100))
+
     try:
         font = ImageFont.truetype(
             f"{settings.get('font', 'Arial')}.ttf",
-            settings.get("size", 24),
+            font_size,
         )
 
     except Exception:
@@ -103,7 +108,7 @@ def _draw_image_watermark(overlay, settings):
 def _calculate_position(image_size, watermark_size, position):
     img_width, img_height = image_size
     wm_width, wm_height = watermark_size
-    padding = 20
+    padding = int(min(img_width, img_height) * 0.05)  # Padding as 5% of the image size
 
     positions = {
         "top_left": (padding, padding),
