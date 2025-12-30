@@ -208,15 +208,9 @@ class ResConfigSettings(models.TransientModel):
                 "watermark_opacity": float(
                     params.get_param("lf_product_watermark_overlay.watermark_opacity", 50.0)
                 ),
-                "enable_website": params.get_param(
-                    "lf_product_watermark_overlay.enable_website", True
-                ),
-                "enable_reports": params.get_param(
-                    "lf_product_watermark_overlay.enable_reports", False
-                ),
-                "enable_emails": params.get_param(
-                    "lf_product_watermark_overlay.enable_emails", False
-                ),
+                "enable_website": params.get_param("lf_product_watermark_overlay.enable_website"),
+                "enable_reports": params.get_param("lf_product_watermark_overlay.enable_reports"),
+                "enable_emails": params.get_param("lf_product_watermark_overlay.enable_emails"),
             }
         )
         return res

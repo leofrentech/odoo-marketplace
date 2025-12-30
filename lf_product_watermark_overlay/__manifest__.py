@@ -8,6 +8,7 @@
     "data": [
         "views/res_config_settings_views.xml",
         "views/product_template_views.xml",
+        "views/website_sale_product_templates.xml",
     ],
     "installable": True,
     "application": False,
