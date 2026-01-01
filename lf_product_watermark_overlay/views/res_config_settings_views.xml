@@ -17,7 +17,7 @@
                         </setting>
                         <setting id="watermark_logo" string="Watermark Image" help="Add/upload image for watermark" 
                             invisible="watermark_type != 'image'" name="watermark_logo">
-                            <field name="watermark_logo" widget="image" 
+                            <field name="watermark_logo" widget="image" required="watermark_type == 'image'"
                                 class="oe_avatar" options="{'accepted_file_extensions': '.png,.jpg,.jpeg'}" />
                         </setting>
                         <setting id="watermark_text" string="Watermark Text" help="Add text to be used as watermark" 
@@ -25,19 +25,19 @@
                             <div class="content-group">
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Watermark Text" for="watermark_text"/>
-                                    <field name="watermark_text" />
+                                    <field name="watermark_text" required="watermark_type == 'text'"/>
                                 </div>
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Font Style" for="watermark_font"/>
-                                    <field name="watermark_font" />
+                                    <field name="watermark_font" required="watermark_type == 'text'" />
                                 </div>
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Font Size" for="watermark_size"/>
-                                    <field name="watermark_size" />
+                                    <field name="watermark_size" required="watermark_type == 'text'" />
                                 </div>
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Font Color" for="watermark_color"/>
-                                    <field name="watermark_color" />
+                                    <field name="watermark_color" widget="color" required="watermark_type == 'text'" />
                                 </div>
                             </div>
                         </setting>
@@ -46,28 +46,11 @@
                             <div class="content-group">
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Watermark Position" for="watermark_position"/>
-                                    <field name="watermark_position" />
+                                    <field name="watermark_position" required="watermark_type != 'none'"/>
                                 </div>
                                 <div class="row mt8">
                                     <label class="col-lg-4" string="Watermark Opacity" for="watermark_opacity"/>
-                                    <field name="watermark_opacity" />
-                                </div>
-                            </div>
-                        </setting>
-                        <setting id="watermark_enable_permissions" string="Watermark Enable Permissions" name="watermark_enable_permissions"
-                            help="Select whether you need to enable it on websitr, report, email or not" invisible="watermark_type == 'none'">
-                            <div class="mt-16">
-                                <div>
-                                    <field name="enable_website" />
-                                    <label for="enable_website"/>
-                                </div>
-                                <div>
-                                    <field name="enable_reports" />
-                                    <label for="enable_reports"/>
-                                </div>
-                                <div>
-                                    <field name="enable_emails" />
-                                    <label for="enable_emails"/>
+                                    <field name="watermark_opacity" required="watermark_type != 'none'"/>
                                 </div>
                             </div>
                         </setting>

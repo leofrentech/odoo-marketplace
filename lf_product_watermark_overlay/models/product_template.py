@@ -1,6 +1,7 @@
 import logging
 
 from odoo import fields, models, api
+from odoo.exceptions import ValidationError
 from .watermark_utils import decode_image, encode_image, apply_watermark
 
 
@@ -26,28 +27,39 @@ class ProductTemplate(models.Model):
         string="Is Product Watermark Override",
         help="Enables watermark override features for this product.",
     )
-    watermark_type_custom = fields.Selection(
-        [("image", "Image"), ("text", "Text"), ("none", "None")],
+    watermark_type = fields.Selection(
+        [("image", "Image"), ("text", "Text")],
         string="Custom Watermark Type",
-        default="none",
     )
-    watermark_logo_custom = fields.Image(
+    watermark_logo = fields.Image(
         string="Watermark Logo",
     )
-    watermark_text_custom = fields.Char(
+    watermark_text = fields.Char(
         string="Watermark Text",
         translate=True,
     )
-    watermark_font_custom = fields.Char(
+    watermark_font = fields.Selection(
+        [
+            ("Arial", "Arial"),
+            ("Times New Roman", "Times New Roman"),
+            ("Courier New", "Courier New"),
+            ("Verdana", "Verdana"),
+            ("Georgia", "Georgia"),
+            ("Comic Sans MS", "Comic Sans MS"),
+            ("Impact", "Impact"),
+        ],
         string="Watermark Font",
+        default="Arial",
     )
-    watermark_size_custom = fields.Integer(
+    watermark_size = fields.Integer(
         string="Watermark Size",
+        default=6,
     )
-    watermark_color_custom = fields.Char(
+    watermark_color = fields.Char(
         string="Watermark Color",
+        default="#000000",
     )
-    watermark_position_custom = fields.Selection(
+    watermark_position = fields.Selection(
         [
             ("top_left", "Top Left"),
             ("top_right", "Top Right"),
@@ -56,10 +68,11 @@ class ProductTemplate(models.Model):
             ("bottom_right", "Bottom Right"),
         ],
         string="Watermark Position",
+        default="bottom_right",
     )
-    watermark_opacity_custom = fields.Float(
+    watermark_opacity = fields.Float(
         string="Watermark Opacity",
-        default=50.0
+        default=0.5
     )
     
     watermarked_image_1920 = fields.Image(
@@ -115,6 +128,14 @@ class ProductTemplate(models.Model):
     # 6. CONSTRAINTS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
 
+    @api.constrains('watermark_opacity')
+    def _check_watermark_opacity(self):
+        for rec in self:
+            if rec.watermark_opacity < 0 or rec.watermark_opacity > 1:
+                raise ValidationError(
+                    "Watermark Opacity must be between 0 and 1."
+                )
+
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
     # ------------------------------------------------------------------
@@ -133,17 +154,17 @@ class ProductTemplate(models.Model):
         watermark_fields = {
             "image_1920",
             "is_watermark_override",
-            "watermark_type_custom",
-            "watermark_logo_custom",
-            "watermark_text_custom",
-            "watermark_font_custom",
-            "watermark_size_custom",
-            "watermark_color_custom",
-            "watermark_position_custom",
-            "watermark_opacity_custom",
+            "watermark_type",
+            "watermark_logo",
+            "watermark_text",
+            "watermark_font",
+            "watermark_size",
+            "watermark_color",
+            "watermark_position",
+            "watermark_opacity",
         }
 
-        if watermark_fields & vals.keys():
+        if watermark_fields & vals.keys(): # Used set intersection 
             self._generate_watermarked_images()
 
         return res
@@ -163,14 +184,14 @@ class ProductTemplate(models.Model):
 
         if self.is_watermark_override:
             return {
-                "type": self.watermark_type_custom,
-                "logo": self.watermark_logo_custom,
-                "text": self.watermark_text_custom,
-                "font": self.watermark_font_custom,
-                "size": self.watermark_size_custom,
-                "color": self.watermark_color_custom,
-                "position": self.watermark_position_custom,
-                "opacity": self.watermark_opacity_custom,
+                "type": self.watermark_type,
+                "logo": self.watermark_logo,
+                "text": self.watermark_text,
+                "font": self.watermark_font,
+                "size": self.watermark_size,
+                "color": self.watermark_color,
+                "position": self.watermark_position,
+                "opacity": self.watermark_opacity,
             }
 
         company = self.env.company

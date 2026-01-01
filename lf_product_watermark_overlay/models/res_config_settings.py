@@ -4,6 +4,7 @@ import logging
 
 from odoo import models, fields, api
 from odoo.tools import file_open
+from odoo.exceptions import ValidationError
 
 from .watermark_utils import apply_watermark, encode_image
 
@@ -42,19 +43,28 @@ class ResConfigSettings(models.TransientModel):
         translate=True,
         config_parameter="lf_product_watermark_overlay.watermark_text",
     )
-    watermark_font = fields.Char(
+    watermark_font = fields.Selection(
+        [
+            ("Arial", "Arial"),
+            ("Times New Roman", "Times New Roman"),
+            ("Courier New", "Courier New"),
+            ("Verdana", "Verdana"),
+            ("Georgia", "Georgia"),
+            ("Comic Sans MS", "Comic Sans MS"),
+            ("Impact", "Impact"),
+        ],
         string="Watermark Font",
         default="Arial",
         config_parameter="lf_product_watermark_overlay.watermark_font",
     )
     watermark_size = fields.Integer(
         string="Watermark Size",
-        default=30,
+        default=6,
         config_parameter="lf_product_watermark_overlay.watermark_size",
     )
     watermark_color = fields.Char(
         string="Watermark Color",
-        default="#FFFFFF",
+        default="#000000",
         config_parameter="lf_product_watermark_overlay.watermark_color",
     )
     watermark_position = fields.Selection(
@@ -71,21 +81,8 @@ class ResConfigSettings(models.TransientModel):
     )
     watermark_opacity = fields.Float(
         string="Watermark Opacity",
-        default=50.0,
+        default=0.5,
         config_parameter="lf_product_watermark_overlay.watermark_opacity",
-    )
-
-    enable_website = fields.Boolean(
-        string="Enable For Website",
-        config_parameter="lf_product_watermark_overlay.enable_website",
-    )
-    enable_reports = fields.Boolean(
-        string="Enable For Reports",
-        config_parameter="lf_product_watermark_overlay.enable_reports",
-    )
-    enable_emails = fields.Boolean(
-        string="Enable For Emails",
-        config_parameter="lf_product_watermark_overlay.enable_emails",
     )
 
     watermark_preview = fields.Image(
@@ -98,15 +95,6 @@ class ResConfigSettings(models.TransientModel):
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
-    # 5. SELECTION METHODS
-    # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
-    # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
-    # ------------------------------------------------------------------
-
     @api.depends(
         "watermark_type",
         "watermark_logo",
@@ -154,6 +142,22 @@ class ResConfigSettings(models.TransientModel):
 
         except Exception as e:
             _logger.warning("Watermark generation failed: %s", str(e))
+
+    # ------------------------------------------------------------------
+    # 5. SELECTION METHODS
+    # ------------------------------------------------------------------
+
+    # ------------------------------------------------------------------
+    # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
+    # ------------------------------------------------------------------
+
+    @api.constrains('watermark_opacity')
+    def _check_watermark_opacity(self):
+        for rec in self:
+            if rec.watermark_opacity < 0 or rec.watermark_opacity > 1:
+                raise ValidationError(
+                    "Watermark Opacity must be between 0 and 1."
+                )
 
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
@@ -208,9 +212,6 @@ class ResConfigSettings(models.TransientModel):
                 "watermark_opacity": float(
                     params.get_param("lf_product_watermark_overlay.watermark_opacity", 50.0)
                 ),
-                "enable_website": params.get_param("lf_product_watermark_overlay.enable_website"),
-                "enable_reports": params.get_param("lf_product_watermark_overlay.enable_reports"),
-                "enable_emails": params.get_param("lf_product_watermark_overlay.enable_emails"),
             }
         )
         return res
@@ -229,9 +230,6 @@ class ResConfigSettings(models.TransientModel):
             "lf_product_watermark_overlay.watermark_position", self.watermark_position
         )
         params.set_param("lf_product_watermark_overlay.watermark_opacity", self.watermark_opacity)
-        params.set_param("lf_product_watermark_overlay.enable_website", self.enable_website)
-        params.set_param("lf_product_watermark_overlay.enable_reports", self.enable_reports)
-        params.set_param("lf_product_watermark_overlay.enable_emails", self.enable_emails)
 
         # Save Image logo as attachment 
         company = self.env.company

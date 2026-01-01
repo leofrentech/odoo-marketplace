@@ -49,7 +49,7 @@ def apply_watermark(base_image, settings):
         return img
 
     # Apply opacity
-    alpha = int(255 * (settings.get("opacity", 50.0) / 100.0))
+    alpha = int(255 * settings.get("opacity", 0.5))
     overlay_alpha = overlay.getchannel("A")
     overlay.putalpha(
         overlay_alpha.point(lambda x: min(x, alpha) if x > 0 else 0)
@@ -64,17 +64,15 @@ def _draw_text_watermark(overlay, settings):
 
     img_w, img_h = overlay.size
     diagonal = (img_w**2 + img_h**2) ** 0.5
-    size_percent = settings.get("size", 4) 
+    size_percent = settings.get("size", 6) 
     font_size = max(12, int(diagonal * size_percent / 100))
 
     try:
-        font = ImageFont.truetype(
-            f"{settings.get('font', 'Arial')}.ttf",
-            font_size,
-        )
+        font_name = settings.get('font')
+        font = ImageFont.truetype(f"{font_name}.ttf", font_size)
 
     except Exception:
-        font = ImageFont.load_default()
+        font = ImageFont.truetype("Arial.ttf", font_size)
 
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]

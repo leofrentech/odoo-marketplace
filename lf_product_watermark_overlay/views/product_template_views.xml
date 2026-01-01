@@ -9,25 +9,22 @@
                 <page name="watermark_config" string="Watermark Configuration">
                     <group colspan="4">
                         <field name="is_watermark_override" />
+                        <field name="watermarked_image_1920" widget="image" class="oe_avatar"/>
                     </group>
                     <group string="Watermark Settings" invisible="not is_watermark_override">
                         <group>
-                            <field name="watermark_type_custom" />
-                            <field name="watermark_size_custom" />
-                            <field name="watermark_position_custom" />
-                            <field name="watermark_opacity_custom" />
+                            <field name="watermark_type" required="is_watermark_override" />
+                            <field name="watermark_position" required="is_watermark_override" />
+                            <field name="watermark_opacity" required="is_watermark_override" />
                         </group>
                         <group>
-                            <field name="watermark_logo_custom" invisible="watermark_type_custom != 'image'" />
-                            <field name="watermark_text_custom" invisible="watermark_type_custom != 'text'" />
-                            <field name="watermark_font_custom" invisible="watermark_type_custom != 'text'" />
-                            <field name="watermark_color_custom" invisible="watermark_type_custom != 'text'" />
+                            <field name="watermark_logo" required="watermark_type == 'image'" invisible="watermark_type != 'image'" />
+                            <field name="watermark_text" required="watermark_type == 'text'" invisible="watermark_type != 'text'" />
+                            <field name="watermark_font" required="watermark_type == 'text'" invisible="watermark_type != 'text'" />
+                            <field name="watermark_color" widget="color" required="watermark_type == 'text'" invisible="watermark_type != 'text'" />
+                            <field name="watermark_size" required="watermark_type == 'text'" invisible="watermark_type != 'text'" />
                         </group>
-                    </group>                
-                    <div class="col-4 mt-3">
-                        <label for="watermarked_image_1920" />
-                        <field name="watermarked_image_1920" widget="image" options="{'preview_image': 'watermarked_image_1920'}" class="w-300"/>
-                    </div> 
+                    </group>
                 </page>
             </xpath>
         </field>
