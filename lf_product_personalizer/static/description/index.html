@@ -1,625 +1,723 @@
-<section class="oe_container">
-    <div class="product-personalizer"
-        style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; color:#1d1d1f; background:#fff; line-height:1.6; padding:0; margin:0;">
-        <div class="container" style="max-width:1200px; margin:0 auto; padding:0 20px;">
-            
-            <!-- Nav tabs -->
-            <ul class="nav nav-tabs" role="tablist"
-                style="display:flex; justify-content:center; gap:10px; margin:40px 0; flex-wrap:wrap; border-bottom:0;">
-                <li class="nav-item active">
-                    <a class="show active" area-expanded="true" data-bs-toggle="tab" href="#overview" role="tab"
-                        style="display:inline-block; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; 
-                            padding:14px 28px; border-radius:10px; font-weight:600; font-size:14px; text-transform:uppercase; 
-                            letter-spacing:0.5px; box-shadow:0 4px 15px rgba(102,126,234,0.3); border:0; cursor:pointer; transition:all .3s ease; text-decoration:none;">
-                        <i class="fa fa-info-circle" style="margin-right:8px;"></i>Overview</a>
-                </li>
+<section class="oe_container mt32 mb32" style="margin-left:calc(-42vw + 50%); width:84vw">
+    <div id="loempia_tabs" class="row" style="max-width:1540px; margin:0 auto; padding-bottom:64px; border-radius:15px">
+        <ul role="tablist" class="nav nav-tabs justify-content-center" data-tabs="tabs"
+            style="border:none;background-color:unset;margin:0 auto;">
 
-                <li class="nav-item">
-                    <a class="show" area-expanded="true" data-bs-toggle="tab" href="#setup" role="tab"
-                        style="display:inline-block; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; 
-                            padding:14px 28px; border-radius:10px; font-weight:600; font-size:14px; text-transform:uppercase; 
-                            letter-spacing:0.5px; box-shadow:0 4px 15px rgba(102,126,234,0.3); border:0; cursor:pointer; transition:all .3s ease; text-decoration:none;">
-                        <i class="fa fa-cog" style="margin-right:8px;"></i>Setup</a>
-                </li>
+            <!-- OVERVIEW -->
+            <li class="nav-item"
+                style="width:180px;border-radius:10px;padding:10px;background-color:#667eea;color:#ffffff;margin-right:10px;border:1px solid #ddd;">
+                <a href="#overview" data-bs-toggle="tab" aria-expanded="true" class="show active" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+                   text-transform:uppercase;font-weight:bold;font-size:14px;letter-spacing:1px;color:#FFFFFF;">
+                    <i class="fa fa-info-circle" style="font-size:14px;"></i>
+                    Overview
+                </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="show" area-expanded="true" data-bs-toggle="tab" href="#screenshots" role="tab"
-                        style="display:inline-block; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; 
-                            padding:14px 28px; border-radius:10px; font-weight:600; font-size:14px; text-transform:uppercase; 
-                            letter-spacing:0.5px; box-shadow:0 4px 15px rgba(102,126,234,0.3); border:0; cursor:pointer; transition:all .3s ease; text-decoration:none;">
-                        <i class="fa fa-camera" style="margin-right:8px;"></i>Screenshots</a>
-                </li>
+            <!-- SETUP -->
+            <li class="nav-item"
+                style="width:180px;border-radius:10px;padding:10px;background-color:#667eea;color:#ffffff;margin-right:10px;border:1px solid #ddd;">
+                <a href="#setup" data-bs-toggle="tab" aria-expanded="true" class="show" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+                   text-transform:uppercase;font-weight:bold;font-size:14px;letter-spacing:1px;color:#FFFFFF;">
+                    <i class="fa fa-cog" style="font-size:14px;"></i>
+                    Setup
+                </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="show" area-expanded="true" data-bs-toggle="tab" href="#support" role="tab"
-                        style="display:inline-block; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; 
-                            padding:14px 28px; border-radius:10px; font-weight:600; font-size:14px; text-transform:uppercase; 
-                            letter-spacing:0.5px; box-shadow:0 4px 15px rgba(102,126,234,0.3); border:0; cursor:pointer; transition:all .3s ease; text-decoration:none;">
-                        <i class="fa fa-life-ring" style="margin-right:8px;"></i>Support</a>
-                </li>
+            <!-- SCREENSHOTS -->
+            <li class="nav-item"
+                style="width:180px;border-radius:10px;padding:10px;background-color:#667eea;color:#ffffff;margin-right:10px;border:1px solid #ddd;">
+                <a href="#screenshots" data-bs-toggle="tab" aria-expanded="true" class="show" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+                   text-transform:uppercase;font-weight:bold;font-size:14px;letter-spacing:1px;color:#FFFFFF;">
+                    <i class="fa fa-camera" style="font-size:14px;"></i>
+                    Screenshots
+                </a>
+            </li>
 
-                <li class="nav-item">
-                    <a class="show" area-expanded="true" data-bs-toggle="tab" href="#faq" role="tab" 
-                        style="display:inline-block; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; 
-                            padding:14px 28px; border-radius:10px; font-weight:600; font-size:14px; text-transform:uppercase; 
-                            letter-spacing:0.5px; box-shadow:0 4px 15px rgba(102,126,234,0.3); border:0; cursor:pointer; transition:all .3s ease; text-decoration:none;">
-                        <i class="fa fa-question-circle" style="margin-right:8px;"></i>FAQ</a>
-                </li>
-            </ul>
+            <!-- SUPPORT -->
+            <li class="nav-item"
+                style="width:180px;border-radius:10px;padding:10px;background-color:#667eea;color:#ffffff;margin-right:10px;border:1px solid #ddd;">
+                <a href="#support" data-bs-toggle="tab" aria-expanded="true" class="show" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+                   text-transform:uppercase;font-weight:bold;font-size:14px;letter-spacing:1px;color:#FFFFFF;">
+                    <i class="fa fa-life-ring" style="font-size:14px;"></i>
+                    Support
+                </a>
+            </li>
 
-            <!-- Tab panes -->
-            <div class="tab-content container" style="padding-top:20px;">
-                <!-- OVERVIEW -->
-                <div class="tab-pane fade show active" id="overview">
-                    <div class="hero"
-                        style="position: relative; text-align:center; padding:80px 20px; background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); border-radius:20px; margin-bottom:40px;">
-                        <a href="https://leofren.com/" target="_blank"
-                        style="display:inline-block; position:absolute; top:20px; left:20px; z-index:10;">
-                            <img src="leofren_logo.svg"
-                                alt="Company Logo"
-                                style="height:70px; width:80px;" />
-                        </a>
-                        <h1 style="font-size:56px; font-weight:700; margin-bottom:20px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
-                            Make Every Product Uniquely Yours
-                        </h1>
-                        <p style="font-size:24px; color:#6e6e73; max-width:800px; margin:0 auto;">
-                            Transform ordinary products into personalized masterpieces. Your customers design. You
-                            deliver perfection.
-                        </p>
-                    </div>
+            <!-- FAQ -->
+            <li class="nav-item"
+                style="width:180px;border-radius:10px;padding:10px;background-color:#667eea;color:#ffffff;margin-right:10px;border:1px solid #ddd;">
+                <a href="#faq" data-bs-toggle="tab" aria-expanded="true" class="show" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+                   text-transform:uppercase;font-weight:bold;font-size:14px;letter-spacing:1px;color:#FFFFFF;">
+                    <i class="fa fa-question-circle" style="font-size:14px;"></i>
+                    FAQ
+                </a>
+            </li>
 
-                    <section style="padding:80px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:50px; color:#1d1d1f;">
-                            What Makes It Special
-                        </h2>
-                        <p class="section-subtitle"
-                            style="text-align:center; font-size:18px; color:#6e6e73; max-width:800px; margin:-30px auto 50px;">
-                            Everything you need to offer personalized products, built right into Odoo
-                        </p>
-
-                        <div class="features-grid"
-                            style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:40px; margin-top:50px;">
-                            <!-- Feature 1 -->
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08); transition:all .3s ease;">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-paint-brush" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Design Your Way</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Let customers customize products exactly how they envision. Upload images or edit
-                                    designs with an intuitive visual editor.
+        </ul>
+        <div id="loempia_tabs_content_ept" class="container-fluid">
+            <div class="tab-content container pt-3" id="tabs_content">
+                <!-- Overview Tab -->
+                <div class="tab-pane active show" id="overview">
+                    <div class="container mt48" style="width:80%;margin:0 auto;">
+                        <section id="overview-content">
+                            <!-- HERO -->
+                            <div
+                                style="text-align:center;padding:30px;width:100%;height:270px;background-color:#c3cfe2;border-radius:20px;margin:0 auto 40px;position:relative;">
+                                <a href="https://leofren.com/" target="_blank"
+                                    style="display:inline-block;position:absolute;top:20px;left:20px;">
+                                    <img src="leofren_logo.svg" alt="Company Logo" style="height:70px;width:80px;" />
+                                </a>
+                                <h1 style="font-size:42px;font-weight:700;margin-bottom:20px;color:#1d1d1f;">
+                                    Make Every Product Uniquely Yours
+                                </h1>
+                                <p style="font-size:18px;color:#6e6e73;max-width:800px;margin:0 auto;">
+                                    Transform ordinary products into personalized masterpieces. Your customers design.
+                                    You deliver perfection.
                                 </p>
                             </div>
 
-                            <!-- Feature 2 -->
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08); transition:all .3s ease;">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-eye" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">See It Live</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Watch designs come to life in real-time. Every change appears instantly on the
-                                    product preview.
-                                </p>
-                            </div>
-
-                            <!-- Feature 3 -->
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08); transition:all .3s ease;">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-bullseye" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Perfect Placement</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Define exactly where designs can go. Front, back, sleeves—you control the creative
-                                    canvas.
-                                </p>
-                            </div>
-
-                            <!-- Feature 4 -->
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08); transition:all .3s ease;">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-download" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Download Ready</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Get production-ready files instantly. Every design downloads in perfect quality for
-                                    printing.
-                                </p>
-                            </div>
-
-                            <!-- Feature 5 -->
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08); transition:all .3s ease;">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-link" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Seamlessly Connected</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Works naturally with your sales flow. Designs automatically attach to orders—no
-                                    extra steps.
-                                </p>
-                            </div>
-
-                            <!-- Feature 6 -->
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08); transition:all .3s ease;">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-mobile" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Works Everywhere</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Desktop, tablet, mobile—flawless experience on any device your customers use.
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section
-                        style="background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); border-radius:20px; margin:40px 0; padding:40px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:30px; color:#1d1d1f;">
-                            Why It Changes Everything</h2>
-
-                        <div class="benefits-list" style="max-width:900px; margin:0 auto;">
-                            <div class="benefit-item"
-                                style="background:white; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
-                                <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">One Platform. Everything
-                                    Connected.</h3>
-                                <p style="color:#6e6e73;">Stop juggling multiple tools. Designs flow directly into your
-                                    sales orders, keeping your entire team in sync.</p>
-                            </div>
-
-                            <div class="benefit-item"
-                                style="background:white; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
-                                <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">Your Rules. Your Canvas.
-                                </h3>
-                                <p style="color:#6e6e73;">Set boundaries that make sense for your products. Protect
-                                    logos, define print areas, maintain brand consistency.</p>
-                            </div>
-
-                            <div class="benefit-item"
-                                style="background:white; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
-                                <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">No Surprises. Ever.</h3>
-                                <p style="color:#6e6e73;">What customers see is what you print. Live previews eliminate
-                                    misunderstandings and reduce returns.</p>
-                            </div>
-
-                            <div class="benefit-item"
-                                style="background:white; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
-                                <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">Speed That Matters</h3>
-                                <p style="color:#6e6e73;">From design to production file in seconds. Your team moves
-                                    faster. Your customers get products sooner.</p>
-                            </div>
-
-                            <div class="benefit-item"
-                                style="background:white; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
-                                <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">Built for Growth</h3>
-                                <p style="color:#6e6e73;">Whether you're printing 10 shirts or 10,000 mugs, the system
-                                    scales effortlessly with your business.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section style="padding:80px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:50px; color:#1d1d1f;">
-                            Perfect For
-                        </h2>
-
-                        <div class="features-grid" 
-                            style="display: grid;  grid-template-columns: 1fr 1fr;  gap: 40px;  max-width: 1100px;  margin: 0 auto;">
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-tshirt" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Custom Apparel</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    T-shirts, hoodies, caps—let customers create designs that express who they are.
-                                </p>
-                            </div>
-
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-gift" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Corporate Gifts</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Branded merchandise that impresses. Perfect for events, employee gifts, and client
-                                    appreciation.
-                                </p>
-                            </div>
-
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-image" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Print on Demand</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Posters, canvas prints, phone cases—unlimited possibilities for creative products.
-                                </p>
-                            </div>
-
-                            <div class="feature-card"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="feature-icon"
-                                    style="width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:30px; color:#fff;">
-                                    <i class="fa fa-briefcase" aria-hidden="true"></i>
-                                </div>
-                                <h3 style="font-size:24px; margin-bottom:15px; color:#1d1d1f;">Business Essentials</h3>
-                                <p style="color:#6e6e73; font-size:16px; line-height:1.8;">
-                                    Business cards, stationery, promotional materials—professionalism meets
-                                    personalization.
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
-                <!-- SETUP -->
-                <div class="tab-pane fade" id="setup">
-                    <section style="padding:80px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:20px; color:#1d1d1f;">
-                            Get Started in Minutes</h2>
-                        <p class="section-subtitle"
-                            style="text-align:center; font-size:18px; color:#6e6e73; max-width:800px; margin:-10px auto 40px;">
-                            Simple setup. Powerful results. No technical expertise required.
-                        </p>
-
-                        <div class="steps-container"
-                            style="display:flex; flex-direction:column; gap:40px; max-width:1000px; margin:0 auto;">
-                            <div class="step"
-                                style="display:flex; align-items:flex-start; gap:30px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-number"
-                                    style="min-width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;">
-                                    1</div>
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Install and Activate
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Find the module in your Odoo Apps menu and
-                                        click install. That's it—you're ready to go.</p>
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="display:flex; align-items:flex-start; gap:30px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-number"
-                                    style="min-width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;">
-                                    2</div>
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Choose Your Products
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Go to any product and enable
-                                        personalization. It's a simple checkbox that unlocks unlimited creativity.</p>
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="display:flex; align-items:flex-start; gap:30px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-number"
-                                    style="min-width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;">
-                                    3</div>
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Define Design Areas
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Decide where customers can customize. Front
-                                        of a shirt? Side of a mug? Both sides of a business card? You're in control.</p>
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="display:flex; align-items:flex-start; gap:30px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-number"
-                                    style="min-width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;">
-                                    4</div>
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Set Your Boundaries
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Protect areas that should stay untouched.
-                                        Keep your logo safe. Ensure designs fit perfectly within print zones.</p>
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="display:flex; align-items:flex-start; gap:30px; background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-number"
-                                    style="min-width:60px; height:60px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;">
-                                    5</div>
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Go Live</h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Your customers can now start creating. The
-                                        design button appears automatically on your product pages.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- SCREENSHOTS -->
-                <div class="tab-pane fade" id="screenshots">
-                    <section style="padding:80px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:20px; color:#1d1d1f;">
-                            See It In Action</h2>
-                        <p class="section-subtitle"
-                            style="text-align:center; font-size:18px; color:#6e6e73; max-width:800px; margin:-10px auto 40px;">
-                            A visual journey through the personalization experience
-                        </p>
-
-                        <div class="steps-container"
-                            style="display:flex; flex-direction:column; gap:40px; max-width:900px; margin:0 auto;">
-                            <div class="step"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Enable Personalization
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Simply check the personalization option on
-                                        any product. A new world of customization opens up.</p>
-                                    <img src="screenshots/Product_Config.png"
-                                        alt="Enable Personalization" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Configure Design Areas
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Add design zones for front, back, or any
-                                        side of your product. Each area can have its own settings.</p>
-                                    <img src="screenshots/Design_Config.png"
-                                        alt="Configure Design Areas" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Set Protected Areas
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Define zones where designs cannot go. Keep
-                                        logos, care labels, and important information untouched.</p>
-                                    <img src="screenshots/Restrict_Area.png"
-                                        alt="Set Protected Areas" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Customer Design
-                                        Experience</h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Your customers see an intuitive editor.
-                                        Upload images, adjust placement, preview instantly.</p>
-                                    <img src="screenshots/Product_Page.png"
-                                        alt="Product Page Customize Button" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-
-                                    <img src="screenshots/Product_Canvas.png"
-                                        alt="Product Personalizer Page" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Live Preview Magic</h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Customers see exactly how their design
-                                        looks. Multiple angles. Real-time updates. Download any view and also can see preview from cart view.</p>
-                                    <img src="screenshots/Product_Preview.png"
-                                        alt="Live Preview" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                    <img src="screenshots/Download_Preview.png"
-                                        alt="Live Preview" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                    <img src="screenshots/Cart_Preview.png"
-                                        alt="Live Preview" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                </div>
-                            </div>
-
-                            <div class="step"
-                                style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.08);">
-                                <div class="step-content">
-                                    <h3 style="font-size:24px; margin-bottom:10px; color:#1d1d1f;">Sales Order Integration
-                                    </h3>
-                                    <p style="color:#6e6e73; font-size:16px;">Sales team sees all designs right in the
-                                        order line. One click to view. One click to download production files.</p>
-                                    <img src="screenshots/Sale_Order_View.png"
-                                        alt="Sales Order Integration" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                    <img src="screenshots/Personalization_Line.png"
-                                        alt="Sales Order Integration" class="screenshot"
-                                        style="width:100%; max-width:800px; margin:30px auto; border-radius:15px; box-shadow:0 15px 50px rgba(0,0,0,0.15); display:block;" />
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- SUPPORT -->
-                <div class="tab-pane fade" id="support">
-                    <section style="padding:80px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:20px; color:#1d1d1f;">
-                            We're Here to Help</h2>
-                        <p class="section-subtitle"
-                            style="text-align:center; font-size:18px; color:#6e6e73; max-width:800px; margin:-10px auto 40px;">
-                            Expert support when you need it
-                        </p>
-
-                        <div class="support-grid"
-                            style="display: grid;  grid-template-columns: 1fr 1fr;  gap: 40px;  max-width: 1100px;  margin: 0 auto;">
-                            <div class="support-card"
-                                style="background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.08); text-align:center;">
-                                <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
-                                        class="fa fa-shield" aria-hidden="true"></i></div>
-                                <h3 style="margin:0 0 10px 0;">90 Days Free</h3>
-                                <p style="color:#6e6e73;">Bug-free guarantee with three months of included support</p>
-                            </div>
-
-                            <div class="support-card"
-                                style="background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.08); text-align:center;">
-                                <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
-                                        class="fa fa-clock-o" aria-hidden="true"></i></div>
-                                <h3 style="margin:0 0 10px 0;">When You Need Us</h3>
-                                <p style="color:#6e6e73;">Monday–Friday<br />9:00 AM – 7:00 PM IST</p>
-                            </div>
-
-                            <div class="support-card"
-                                style="background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.08); text-align:center;">
-                                <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
-                                        class="fa fa-envelope" aria-hidden="true"></i></div>
-                                <h3 style="margin:0 0 10px 0;">Quick Response</h3>
-                                <p style="color:#6e6e73;">Email us anytime at<br /><a
-                                        href="mailto:contact@leofren.com"
-                                        style="color:#667eea; text-decoration:none;">contact@leofren.com</a></p>
-                            </div>
-
-                            <div class="support-card"
-                                style="background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.08); text-align:center;">
-                                <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
-                                        class="fa fa-bullseye" aria-hidden="true"></i></div>
-                                <h3 style="margin:0 0 10px 0;">Expert Guidance</h3>
-                                <p style="color:#6e6e73;">Need a demo or setup help? We'll walk you through every step
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- FAQ -->
-                <div class="tab-pane fade" id="faq">
-                    <section style="padding:80px 20px;">
-                        <h2 style="font-size:42px; font-weight:700; text-align:center; margin-bottom:20px; color:#1d1d1f;">
-                            Questions Answered
-                        </h2>
-                        <p class="section-subtitle"
-                            style="text-align:center; font-size:18px; color:#6e6e73; max-width:800px; margin:-10px auto 40px;">
-                            Everything you want to know
-                        </p>
-                        
-                        <div class="tab-pane" id="faqs" role="tabpanel" aria-labelledby="faqs_tab">
-                            <div class="mb48"></div>
-                            <section class="oe_container px-2">
-                                <div class="s_faq mt32 mb32" style="border-radius:10px; background-color:#fff !important">
-                                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-
-                                        <!-- FAQ 1 -->
-                                        <div class="panel panel-default overflow-hidden" style="border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.06); margin-bottom:15px;">
-                                            <div class="panel-heading mt0" style="border:1px solid transparent !important;">
-                                                <h4 class="panel-title p-2" style="margin:0;">
-                                                    <a class="collapsed" style="color:#1d1d1f; font-size:18px; font-weight:600; padding:25px; display:flex; justify-content:space-between; align-items:center; text-decoration:none;"
-                                                    data-bs-toggle="collapse" href="#faq1" aria-expanded="false">
-                                                        <span>Can customers design any type of product?</span>
-                                                        <i class="fa fa-plus" style="font-size:18px; color:#6e6e73;"></i>
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="faq1" class="panel-collapse collapse" style="background-color: #fff; padding:25px;">
-                                                <p>Yes! The module works with any product you configure—from clothing and accessories to business cards and promotional items. You control which products offer personalization.</p>
-                                            </div>
+                            <!-- WHAT MAKES IT SPECIAL -->
+                            <h2 style="font-size:42px;font-weight:700;text-align:center;margin-bottom:50px;">
+                                What Makes It Special
+                            </h2>
+                            <p
+                                style="text-align:center;font-size:18px;color:#6e6e73;max-width:800px;margin:-30px auto 50px;">
+                                Everything you need to offer personalized products, built right into Odoo
+                            </p>
+                            <!-- FEATURES GRID -->
+                            <div class="row mt32">
+                                <div class="col-md-4 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;padding:30px;border-radius:20px;height:300px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#ffffff;border-radius:15px;text-align:center;line-height:60px;margin-bottom:20px;font-size:30px;">
+                                            <i class="fa fa-paint-brush"></i>
                                         </div>
-
-                                        <!-- FAQ 2 -->
-                                        <div class="panel panel-default overflow-hidden" style="border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.06); margin-bottom:15px;">
-                                            <div class="panel-heading mt0" style="border:1px solid transparent !important;">
-                                                <h4 class="panel-title p-2" style="margin:0;">
-                                                    <a class="collapsed" style="color:#1d1d1f; font-size:18px; font-weight:600; padding:25px; display:flex; justify-content:space-between; align-items:center; text-decoration:none;"
-                                                    data-bs-toggle="collapse" href="#faq2" aria-expanded="false">
-                                                        <span>What file formats do customers need?</span>
-                                                        <i class="fa fa-plus" style="font-size:18px; color:#6e6e73;"></i>
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="faq2" class="panel-collapse collapse" style="background-color: #fff; padding:25px;">
-                                                <p>Customers can upload JPG, PNG, and SVG. The system prepares files automatically for production.</p>
-                                            </div>
+                                        <h3 style="font-size:24px;margin-bottom:15px;color:#1d1d1f;">Design Your Way
+                                        </h3>
+                                        <p style="color:#6e6e73;font-size:16px;line-height:1.8;">
+                                            Let customers customize products exactly how they envision. Upload images or
+                                            edit designs with an intuitive visual editor.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;padding:30px;border-radius:20px;height:300px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#ffffff;border-radius:15px;text-align:center;line-height:60px;margin-bottom:20px;font-size:30px;">
+                                            <i class="fa fa-eye"></i>
                                         </div>
-
-                                        <!-- FAQ 3 -->
-                                        <div class="panel panel-default overflow-hidden" style="border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.06); margin-bottom:15px;">
-                                            <div class="panel-heading mt0" style="border:1px solid transparent !important;">
-                                                <h4 class="panel-title p-2" style="margin:0;">
-                                                    <a class="collapsed" style="color:#1d1d1f; font-size:18px; font-weight:600; padding:25px; display:flex; justify-content:space-between; align-items:center; text-decoration:none;"
-                                                    data-bs-toggle="collapse" href="#faq3" aria-expanded="false">
-                                                        <span>How do I prevent designs in certain areas?</span>
-                                                        <i class="fa fa-plus" style="font-size:18px; color:#6e6e73;"></i>
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="faq3" class="panel-collapse collapse" style="background-color: #fff; padding:25px;">
-                                                <p>You can define restricted zones in product setup. These areas stay protected for brand elements.</p>
-                                            </div>
+                                        <h3 style="font-size:24px;margin-bottom:15px;color:#1d1d1f;">See It Live</h3>
+                                        <p style="color:#6e6e73;font-size:16px;line-height:1.8;">
+                                            Watch designs come to life in real-time. Every change appears instantly on
+                                            the product preview.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;padding:30px;border-radius:20px;height:300px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#ffffff;border-radius:15px;text-align:center;line-height:60px;margin-bottom:20px;font-size:30px;">
+                                            <i class="fa fa-bullseye"></i>
                                         </div>
-
-                                        <!-- FAQ 4 -->
-                                        <div class="panel panel-default overflow-hidden" style="border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.06); margin-bottom:15px;">
-                                            <div class="panel-heading mt0" style="border:1px solid transparent !important;">
-                                                <h4 class="panel-title p-2" style="margin:0;">
-                                                    <a class="collapsed" style="color:#1d1d1f; font-size:18px; font-weight:600; padding:25px; display:flex; justify-content:space-between; align-items:center; text-decoration:none;"
-                                                    data-bs-toggle="collapse" href="#faq4" aria-expanded="false">
-                                                        <span>Can sales team see the designs?</span>
-                                                        <i class="fa fa-plus" style="font-size:18px; color:#6e6e73;"></i>
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="faq4" class="panel-collapse collapse" style="background-color: #fff; padding:25px;">
-                                                <p>Yes — every design appears in the sales order with a preview and downloadable production files.</p>
-                                            </div>
+                                        <h3 style="font-size:24px;margin-bottom:15px;color:#1d1d1f;">Perfect Placement
+                                        </h3>
+                                        <p style="color:#6e6e73;font-size:16px;line-height:1.8;">
+                                            Define exactly where designs can go. Front, back, sleeves—you control the
+                                            creative canvas.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;padding:30px;border-radius:20px;height:300px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#ffffff;border-radius:15px;text-align:center;line-height:60px;margin-bottom:20px;font-size:30px;">
+                                            <i class="fa fa-download"></i>
                                         </div>
-
-                                        <!-- FAQ 5 -->
-                                        <div class="panel panel-default overflow-hidden" style="border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.06); margin-bottom:15px;">
-                                            <div class="panel-heading mt0" style="border:1px solid transparent !important;">
-                                                <h4 class="panel-title p-2" style="margin:0;">
-                                                    <a class="collapsed" style="color:#1d1d1f; font-size:18px; font-weight:600; padding:25px; display:flex; justify-content:space-between; align-items:center; text-decoration:none;"
-                                                    data-bs-toggle="collapse" href="#faq5" aria-expanded="false">
-                                                        <span>Does it work on mobile devices?</span>
-                                                        <i class="fa fa-plus" style="font-size:18px; color:#6e6e73;"></i>
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="faq5" class="panel-collapse collapse" style="background-color: #fff; padding:25px;">
-                                                <p>Yes! The interface is fully responsive for phones, tablets, and desktop devices.</p>
-                                            </div>
+                                        <h3 style="font-size:24px;margin-bottom:15px;color:#1d1d1f;">Download Ready</h3>
+                                        <p style="color:#6e6e73;font-size:16px;line-height:1.8;">
+                                            Get production-ready files instantly. Every design downloads in perfect
+                                            quality for printing.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;padding:30px;border-radius:20px;height:300px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#ffffff;border-radius:15px;text-align:center;line-height:60px;margin-bottom:20px;font-size:30px;">
+                                            <i class="fa fa-link"></i>
                                         </div>
-
-                                        <!-- FAQ 6 -->
-                                        <div class="panel panel-default overflow-hidden" style="border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.06); margin-bottom:15px;">
-                                            <div class="panel-heading mt0" style="border:1px solid transparent !important;">
-                                                <h4 class="panel-title p-2" style="margin:0;">
-                                                    <a class="collapsed" style="color:#1d1d1f; font-size:18px; font-weight:600; padding:25px; display:flex; justify-content:space-between; align-items:center; text-decoration:none;"
-                                                    data-bs-toggle="collapse" href="#faq6" aria-expanded="false">
-                                                        <span>What happens after a customer designs a product?</span>
-                                                        <i class="fa fa-plus" style="font-size:18px; color:#6e6e73;"></i>
-                                                    </a>
-                                                </h4>
-                                            </div>
-                                            <div id="faq6" class="panel-collapse collapse" style="background-color: #fff; padding:25px;">
-                                                <p>The design attaches to the cart item and flows into the sales order. Production receives high-resolution print-ready files automatically.</p>
-                                            </div>
+                                        <h3 style="font-size:24px;margin-bottom:15px;color:#1d1d1f;">Seamlessly
+                                            Connected</h3>
+                                        <p style="color:#6e6e73;font-size:16px;line-height:1.8;">
+                                            Works naturally with your sales flow. Designs automatically attach to
+                                            orders—no extra steps.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;padding:30px;border-radius:20px;height:300px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#ffffff;border-radius:15px;text-align:center;line-height:60px;margin-bottom:20px;font-size:30px;">
+                                            <i class="fa fa-mobile"></i>
                                         </div>
+                                        <h3 style="font-size:24px;margin-bottom:15px;color:#1d1d1f;">Works Everywhere
+                                        </h3>
+                                        <p style="color:#6e6e73;font-size:16px;line-height:1.8;">
+                                            Desktop, tablet, mobile—flawless experience on any device your customers
+                                            use.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <section
+                                style="background-color:#c3cfe2; border-radius:20px; margin:40px 0; padding:40px 20px;">
+                                <h2
+                                    style="font-size:42px; font-weight:700; text-align:center; margin-bottom:30px; color:#1d1d1f;">
+                                    Why It Changes Everything</h2>
+
+                                <div class="benefits-list" style="max-width:900px; margin:0 auto;">
+                                    <div class="benefit-item"
+                                        style="background-color:#FFFFFF; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
+                                        <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">One Platform.
+                                            Everything
+                                            Connected.</h3>
+                                        <p style="color:#6e6e73;">Stop juggling multiple tools. Designs flow directly
+                                            into your
+                                            sales orders, keeping your entire team in sync.</p>
+                                    </div>
+
+                                    <div class="benefit-item"
+                                        style="background-color:#FFFFFF; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
+                                        <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">Your Rules. Your
+                                            Canvas.
+                                        </h3>
+                                        <p style="color:#6e6e73;">Set boundaries that make sense for your products.
+                                            Protect
+                                            logos, define print areas, maintain brand consistency.</p>
+                                    </div>
+
+                                    <div class="benefit-item"
+                                        style="background-color:#FFFFFF; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
+                                        <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">No Surprises.
+                                            Ever.</h3>
+                                        <p style="color:#6e6e73;">What customers see is what you print. Live previews
+                                            eliminate
+                                            misunderstandings and reduce returns.</p>
+                                    </div>
+
+                                    <div class="benefit-item"
+                                        style="background-color:#FFFFFF; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
+                                        <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">Speed That
+                                            Matters</h3>
+                                        <p style="color:#6e6e73;">From design to production file in seconds. Your team
+                                            moves
+                                            faster. Your customers get products sooner.</p>
+                                    </div>
+
+                                    <div class="benefit-item"
+                                        style="background-color:#FFFFFF; padding:30px; margin-bottom:20px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.06); border-left:5px solid #667eea;">
+                                        <h3 style="font-size:20px; margin-bottom:10px; color:#667eea;">Built for Growth
+                                        </h3>
+                                        <p style="color:#6e6e73;">Whether you're printing 10 shirts or 10,000 mugs, the
+                                            system
+                                            scales effortlessly with your business.</p>
                                     </div>
                                 </div>
                             </section>
+
+                            <!-- PERFECT FOR -->
+                            <h3 class="text-center alert mt48"
+                                style="font-weight:500;color:#1d1d1f;border-radius:10px;">
+                                Perfect For
+                            </h3>
+
+                            <div class="row mt32">
+                                <div class="col-md-6 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;border-radius:15px;padding:30px;text-align:center;height:260px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#FFFFFF;border-radius:15px;line-height:60px;margin:0 auto 15px;font-size:30px;">
+                                            <i class="fa fa-tshirt"></i>
+                                        </div>
+                                        <h4 style="font-size:18px;color:#1d1d1f;">Custom Apparel</h4>
+                                        <p style="color:#6e6e73;font-size:14px;">T-shirts, hoodies, caps—let customers
+                                            create designs that express who they are.</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;border-radius:15px;padding:30px;text-align:center;height:260px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#FFFFFF;border-radius:15px;line-height:60px;margin:0 auto 15px;font-size:30px;">
+                                            <i class="fa fa-gift"></i>
+                                        </div>
+                                        <h4 style="font-size:18px;color:#1d1d1f;">Corporate Gifts</h4>
+                                        <p style="color:#6e6e73;font-size:14px;">Branded merchandise that impresses.
+                                            Perfect for events, employee gifts, and client appreciation.</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;border-radius:15px;padding:30px;text-align:center;height:260px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#FFFFFF;border-radius:15px;line-height:60px;margin:0 auto 15px;font-size:30px;">
+                                            <i class="fa fa-image"></i>
+                                        </div>
+                                        <h4 style="font-size:18px;color:#1d1d1f;">Print on Demand</h4>
+                                        <p style="color:#6e6e73;font-size:14px;">Posters, canvas prints, phone
+                                            cases—unlimited possibilities for creative products.</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-sm-12 mb16">
+                                    <div class="container shadow"
+                                        style="background-color:#ffffff;border-radius:15px;padding:30px;text-align:center;height:260px;">
+                                        <div
+                                            style="width:60px;height:60px;background-color:#667eea;color:#FFFFFF;border-radius:15px;line-height:60px;margin:0 auto 15px;font-size:30px;">
+                                            <i class="fa fa-briefcase"></i>
+                                        </div>
+                                        <h4 style="font-size:18px;color:#1d1d1f;">Business Essentials</h4>
+                                        <p style="color:#6e6e73;font-size:14px;">Business cards, stationery, promotional
+                                            materials—professionalism meets personalization.</p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Setup Tab -->
+                <div class="tab-pane" id="setup">
+                    <section style="padding:80px 20px;">
+                        <h2 style="font-size:42px;font-weight:700;text-align:center;margin-bottom:20px;color:#1d1d1f;">
+                            Get Started in Minutes
+                        </h2>
+                        <p
+                            style="text-align:center;font-size:18px;color:#6e6e73;max-width:800px;margin:-10px auto 40px;">
+                            Simple setup. Powerful results. No technical expertise required.
+                        </p>
+                        <div class="row mt32">
+                            <div class="col-md-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; padding:20px; background-color:#FFFFFF; display:flex; align-items:flex-start; gap:30px;">
+                                    <div class="step-number"
+                                        style="width:60px;height:60px;line-height:60px;background-color:#667eea;color:#ffffff;border-radius:50%;text-align:center;font-size:24px;font-weight:700;">
+                                        1</div>
+                                    <div class="px-3">
+                                        <h4 style="font-size:18px; margin-bottom:10px; color:#1d1d1f;">Install and
+                                            Activate</h4>
+                                        <p style="color:#6e6e73; font-size:14px;">Find the module in your Odoo Apps
+                                            menu and click install.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; padding:20px; background-color:#FFFFFF; display:flex; align-items:flex-start; gap:30px;">
+                                    <div class="step-number"
+                                        style="width:60px;height:60px;line-height:60px;background-color:#667eea;color:#ffffff;border-radius:50%;text-align:center;font-size:24px;font-weight:700;">
+                                        2</div>
+                                    <div class="px-3">
+                                        <h4 style="font-size:18px; margin-bottom:10px; color:#1d1d1f;">Choose Your
+                                            Products</h4>
+                                        <p style="color:#6e6e73; font-size:14px;">Enable personalization with a
+                                            simple checkbox.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; padding:20px; background-color:#FFFFFF; display:flex; align-items:flex-start; gap:30px;">
+                                    <div class="step-number"
+                                        style="width:60px;height:60px;line-height:60px;background-color:#667eea;color:#ffffff;border-radius:50%;text-align:center;font-size:24px;font-weight:700;">
+                                        3</div>
+                                    <div class="px-3">
+                                        <h4 style="font-size:18px; margin-bottom:10px; color:#1d1d1f;">Define Design
+                                            Areas</h4>
+                                        <p style="color:#6e6e73; font-size:14px;">Decide where customers can
+                                            customize.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; padding:20px; background-color:#FFFFFF;display:flex; align-items:flex-start; gap:30px;">
+                                    <div class="step-number"
+                                        style="width:60px;height:60px;line-height:60px;background-color:#667eea;color:#ffffff;border-radius:50%;text-align:center;font-size:24px;font-weight:700;">
+                                        4</div>
+                                    <div class="px-3">
+                                        <h4 style="font-size:18px; margin-bottom:10px; color:#1d1d1f;">Set Your
+                                            Boundaries</h4>
+                                        <p style="color:#6e6e73; font-size:14px;">Protect areas that should stay
+                                            untouched.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; padding:20px; background-color:#FFFFFF; display:flex; align-items:flex-start; gap:30px;">
+                                    <div class="step-number"
+                                        style="width:60px;height:60px;line-height:60px;background-color:#667eea;color:#ffffff;border-radius:50%;text-align:center;font-size:24px;font-weight:700;">
+                                        5</div>
+                                    <div class="px-3">
+                                        <h4 style="font-size:18px; margin-bottom:10px; color:#1d1d1f;">Go Live</h4>
+                                        <p style="color:#6e6e73; font-size:14px;">The design button appears
+                                            automatically.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- Screenshots Tab -->
+                <div class="tab-pane" id="screenshots">
+                    <section style="padding:80px 20px;">
+
+                        <h2 style="font-size:42px;font-weight:700;text-align:center;margin-bottom:20px;color:#1d1d1f;">
+                            See It In Action
+                        </h2>
+
+                        <p
+                            style="text-align:center;font-size:18px;color:#6e6e73;max-width:800px;margin:-10px auto 40px;">
+                            A visual journey through the personalization experience
+                        </p>
+
+                        <!-- STEP CARD -->
+                        <div class="container shadow"
+                            style="background-color:#f5f6fa;border-radius:22px;padding:2px;margin-bottom:40px;">
+                            <div class="step" style="background-color:#ffffff;padding:30px;border-radius:20px;">
+                                <h3 style="font-size:24px;margin-bottom:10px;color:#1d1d1f;">
+                                    Enable Personalization
+                                </h3>
+                                <p style="color:#6e6e73;font-size:16px;">
+                                    Simply check the personalization option on any product.
+                                    A new world of customization opens up.
+                                </p>
+                                <img src="screenshots/Product_Config.png" alt="Enable Personalization" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                            </div>
+                        </div>
+
+                        <!-- STEP CARD -->
+                        <div class="container shadow"
+                            style="background-color:#f5f6fa;border-radius:22px;padding:2px;margin-bottom:40px;">
+                            <div class="step" style="background-color:#ffffff;padding:30px;border-radius:20px;">
+                                <h3 style="font-size:24px;margin-bottom:10px;color:#1d1d1f;">
+                                    Configure Design Areas
+                                </h3>
+                                <p style="color:#6e6e73;font-size:16px;">
+                                    Add design zones for front, back, or any side of your product.
+                                </p>
+                                <img src="screenshots/Design_Config.png" alt="Configure Design Areas" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                            </div>
+                        </div>
+
+                        <!-- STEP CARD -->
+                        <div class="container shadow"
+                            style="background-color:#f5f6fa;border-radius:22px;padding:2px;margin-bottom:40px;">
+                            <div class="step" style="background-color:#ffffff;padding:30px;border-radius:20px;">
+                                <h3 style="font-size:24px;margin-bottom:10px;color:#1d1d1f;">
+                                    Set Protected Areas
+                                </h3>
+                                <p style="color:#6e6e73;font-size:16px;">
+                                    Define zones where designs cannot go and protect key areas.
+                                </p>
+                                <img src="screenshots/Restrict_Area.png" alt="Set Protected Areas" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                            </div>
+                        </div>
+
+                        <!-- STEP CARD -->
+                        <div class="container shadow"
+                            style="background-color:#f5f6fa;border-radius:22px;padding:2px;margin-bottom:40px;">
+                            <div class="step" style="background-color:#ffffff;padding:30px;border-radius:20px;">
+                                <h3 style="font-size:24px;margin-bottom:10px;color:#1d1d1f;">
+                                    Customer Design Experience
+                                </h3>
+                                <p style="color:#6e6e73;font-size:16px;">
+                                    Upload images, adjust placement, and preview instantly.
+                                </p>
+                                <img src="screenshots/Product_Page.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                                <img src="screenshots/Product_Canvas.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                            </div>
+                        </div>
+
+                        <!-- STEP CARD -->
+                        <div class="container shadow"
+                            style="background-color:#f5f6fa;border-radius:22px;padding:2px;margin-bottom:40px;">
+                            <div class="step" style="background-color:#ffffff;padding:30px;border-radius:20px;">
+                                <h3 style="font-size:24px;margin-bottom:10px;color:#1d1d1f;">
+                                    Live Preview Magic
+                                </h3>
+                                <p style="color:#6e6e73;font-size:16px;">
+                                    Multiple angles, real-time updates, and cart preview support.
+                                </p>
+                                <img src="screenshots/Product_Preview.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                                <img src="screenshots/Download_Preview.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                                <img src="screenshots/Cart_Preview.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                            </div>
+                        </div>
+
+                        <!-- STEP CARD -->
+                        <div class="container shadow" style="background-color:#f5f6fa;border-radius:22px;padding:2px;">
+                            <div class="step" style="background-color:#ffffff;padding:30px;border-radius:20px;">
+                                <h3 style="font-size:24px;margin-bottom:10px;color:#1d1d1f;">
+                                    Sales Order Integration
+                                </h3>
+                                <p style="color:#6e6e73;font-size:16px;">
+                                    Designs appear directly on the sales order with downloads.
+                                </p>
+                                <img src="screenshots/Sale_Order_View.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                                <img src="screenshots/Personalization_Line.png" style="width:100%;max-width:800px;margin:30px auto;
+                                    border-radius:15px;display:block;" />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Support Tab -->
+                <div class="tab-pane" id="support" role="tabpanel" aria-labelledby="support_tab">
+                    <section style="padding:80px 20px;">
+                        <h2 style="font-size:42px;font-weight:700;text-align:center;margin-bottom:20px;color:#1d1d1f;">
+                            We're Here to Help
+                        </h2>
+                        <p
+                            style="text-align:center;font-size:18px;color:#6e6e73;max-width:800px;margin:-10px auto 40px;">
+                            Expert support when you need it
+                        </p>
+                        <div class="row mt32 px-6">
+                            <div class="col-md-6 col-sm-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; height: 250px;width:520px;padding:30px; text-align:center; background-color:#FFFFFF">
+                                    <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
+                                            class="fa fa-shield"></i></div>
+                                    <h4 style="margin:0 0 10px 0; color:#1d1d1f;">90 Days Free</h4>
+                                    <p style="color:#6e6e73; font-size:14px;">Bug-free guarantee with three months of
+                                        included support</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; height: 250px;width:520px;padding:30px; text-align:center; background-color:#FFFFFF">
+                                    <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
+                                            class="fa fa-clock-o"></i></div>
+                                    <h4 style="margin:0 0 10px 0; color:#1d1d1f;">When You Need Us</h4>
+                                    <p style="color:#6e6e73;">Monday - Friday<br />9:00 AM - 7:00 PM IST</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; height: 250px;width:520px;padding:30px; text-align:center; background-color:#FFFFFF">
+                                    <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
+                                            class="fa fa-envelope"></i></div>
+                                    <h4 style="margin:0 0 10px 0; color:#1d1d1f;">Quick Response</h4>
+                                    <p style="color:#6e6e73; font-size:14px;">Email us anytime at<br /><a
+                                            href="mailto:contact@leofren.com"
+                                            style="color:#667eea;">contact@leofren.com</a></p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12 mb16">
+                                <div class="container shadow"
+                                    style="border-radius:10px; height: 250px;width:520px;padding:30px; text-align:center; background-color:#FFFFFF">
+                                    <div class="icon" style="font-size:40px; margin-bottom:15px; color:#667eea;"><i
+                                            class="fa fa-bullseye"></i></div>
+                                    <h4 style="margin:0 0 10px 0; color:#1d1d1f;">Expert Guidance</h4>
+                                    <p style="color:#6e6e73; font-size:14px;">Need a demo or setup help? <br />We'll
+                                        walk you
+                                        through every step</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- FAQ Tab -->
+                <div class="tab-pane" id="faq" role="tabpanel" aria-labelledby="faq_tab">
+                    <div class="mb48"></div>
+                    <section class="oe_container px-5" style="width: 90%">
+                        <div class="s_faq mt32 mb32" style="border-radius:10px; background-color:#fff !important">
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel-group container shadow"
+                                    style="margin-bottom:20px; border-radius: 10px;">
+                                    <div class="panel panel-default overflow-hidden" style="border-radius: 10px;">
+                                        <div class="panel-heading mt0" style="border:1px solid transparent !important;">
+                                            <h4 class="panel-title p-3" style="margin: 0;">
+                                                <a class="collapsed"
+                                                    style="color: #1d1d1f;font-size: 20px;font-weight: 500;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; padding:15px 15px 15px 50px; line-height:158%;"
+                                                    data-bs-toggle="collapse" href="#faq1" aria-expanded="false">
+                                                    <span class="panelcontent">
+                                                        Can customers design any type of product?
+                                                    </span>
+                                                    <span style="float:right;">+</span>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="faq1" class="panel-collapse collapse"
+                                            style="background-color: #FFFFFF; padding: 15px;">
+                                            <div>
+                                                <p class="mb0"
+                                                    style="height: auto;padding-left: 2%;margin-left: 2%;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                                                    Yes! The module works with any product you configure—from clothing
+                                                    and accessories to business cards and promotional items. You control
+                                                    which products offer personalization.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-group container shadow"
+                                    style="margin-bottom:20px; border-radius: 10px;">
+                                    <div class="panel panel-default overflow-hidden" style="border-radius: 10px;">
+                                        <div class="panel-heading mt0" style="border:1px solid transparent !important;">
+                                            <h4 class="panel-title p-3" style="margin: 0;">
+                                                <a class="collapsed"
+                                                    style="color: #1d1d1f;font-size: 20px;font-weight: 500;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; padding:15px 15px 15px 50px; line-height:158%;"
+                                                    data-bs-toggle="collapse" href="#faq2" aria-expanded="false">
+                                                    <span class="panelcontent">
+                                                        What file formats do customers need?
+                                                    </span>
+                                                    <span style="float:right;">+</span>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="faq2" class="panel-collapse collapse"
+                                            style="background-color: #FFFFFF; padding: 15px;">
+                                            <div>
+                                                <p class="mb0"
+                                                    style="height: auto;padding-left: 2%;margin-left: 2%;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                                                    Customers can upload JPG, PNG, and SVG. The system prepares files
+                                                    automatically for production.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-group container shadow"
+                                    style="margin-bottom:20px; border-radius: 10px;">
+                                    <div class="panel panel-default overflow-hidden" style="border-radius: 10px;">
+                                        <div class="panel-heading mt0" style="border:1px solid transparent !important;">
+                                            <h4 class="panel-title p-3" style="margin: 0;">
+                                                <a class="collapsed"
+                                                    style="color: #1d1d1f;font-size: 20px;font-weight: 500;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; padding:15px 15px 15px 50px; line-height:158%;"
+                                                    data-bs-toggle="collapse" href="#faq3" aria-expanded="false">
+                                                    <span class="panelcontent">
+                                                        How do I prevent designs in certain areas?
+                                                    </span>
+                                                    <span style="float:right;">+</span>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="faq3" class="panel-collapse collapse"
+                                            style="background-color: #FFFFFF; padding: 15px;">
+                                            <div>
+                                                <p class="mb0"
+                                                    style="height: auto;padding-left: 2%;margin-left: 2%;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                                                    You can define restricted zones in product setup. These areas stay
+                                                    protected for brand elements.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-group container shadow"
+                                    style="margin-bottom:20px; border-radius: 10px;">
+                                    <div class="panel panel-default overflow-hidden" style="border-radius: 10px;">
+                                        <div class="panel-heading mt0" style="border:1px solid transparent !important;">
+                                            <h4 class="panel-title p-3" style="margin: 0;">
+                                                <a class="collapsed"
+                                                    style="color: #1d1d1f;font-size: 20px;font-weight: 500;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; padding:15px 15px 15px 50px; line-height:158%;"
+                                                    data-bs-toggle="collapse" href="#faq4" aria-expanded="false">
+                                                    <span class="panelcontent">
+                                                        Can sales team see the designs?
+                                                    </span>
+                                                    <span style="float:right;">+</span>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="faq4" class="panel-collapse collapse"
+                                            style="background-color: #FFFFFF; padding: 15px;">
+                                            <div>
+                                                <p class="mb0"
+                                                    style="height: auto;padding-left: 2%;margin-left: 2%;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                                                    Yes — every design appears in the sales order with a preview and
+                                                    downloadable production files.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-group container shadow"
+                                    style="margin-bottom:20px; border-radius: 10px;">
+                                    <div class="panel panel-default overflow-hidden" style="border-radius: 10px;">
+                                        <div class="panel-heading mt0" style="border:1px solid transparent !important;">
+                                            <h4 class="panel-title p-3" style="margin: 0;">
+                                                <a class="collapsed"
+                                                    style="color: #1d1d1f;font-size: 20px;font-weight: 500;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; padding:15px 15px 15px 50px; line-height:158%;"
+                                                    data-bs-toggle="collapse" href="#faq5" aria-expanded="false">
+                                                    <span class="panelcontent">
+                                                        Does it work on mobile devices?
+                                                    </span>
+                                                    <span style="float:right;">+</span>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="faq5" class="panel-collapse collapse"
+                                            style="background-color: #FFFFFF; padding: 15px;">
+                                            <div>
+                                                <p class="mb0"
+                                                    style="height: auto;padding-left: 2%;margin-left: 2%;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                                                    Yes! The interface is fully responsive for phones, tablets, and
+                                                    desktop devices.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-group container shadow"
+                                    style="margin-bottom:20px; border-radius: 10px;">
+                                    <div class="panel panel-default overflow-hidden" style="border-radius: 10px;">
+                                        <div class="panel-heading mt0" style="border:1px solid transparent !important;">
+                                            <h4 class="panel-title p-3" style="margin: 0;">
+                                                <a class="collapsed"
+                                                    style="color: #1d1d1f;font-size: 20px;font-weight: 500;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; padding:15px 15px 15px 50px; line-height:158%;"
+                                                    data-bs-toggle="collapse" href="#faq6" aria-expanded="false">
+                                                    <span class="panelcontent">
+                                                        What happens after a customer designs a product?
+                                                    </span>
+                                                    <span style="float:right;">+</span>
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="faq6" class="panel-collapse collapse"
+                                            style="background-color: #FFFFFF; padding: 15px;">
+                                            <div>
+                                                <p class="mb0"
+                                                    style="height: auto;padding-left: 2%;margin-left: 2%;font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+                                                    The design attaches to the cart and flows into the sales order with
+                                                    print-ready files.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
