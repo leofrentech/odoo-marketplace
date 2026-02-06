@@ -58,7 +58,7 @@ class AccessHideViewNode(models.Model):
 
         if self.model_id and self.model:
 
-            view_list = ["form", "tree", "kanban"]
+            view_list = ["form", "list", "kanban"]
             for view in view_list:
                 for views in view_obj.search(
                     [("model", "=", self.model), ("type", "=", view)]

@@ -104,11 +104,8 @@ class Base(models.AbstractModel):
         ).view_node_id
         for node in nodes_to_hide:
             if node.node_option == "button":
-                if node.button_type == "object":
-                    xpath = f"//button[@name='{node.name}']"
-                else:
-                    xpath = f"//button[@name='%({node.name})d']"
-
+                xpath = f"//button[@name='{node.name}']"
+                
                 for button in arch.xpath(xpath):
                     button.attrib["invisible"] = "1"
             elif node.node_option == "page":
