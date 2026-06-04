@@ -1,12 +1,13 @@
 from odoo import fields, models
 
 
-class IrUiView(models.Model):
+class AccessRuleChatterSetting(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
-    _inherit = "ir.ui.view"
+    _name = "access.rule.chatter.setting"
+    _description = "Access Rule Chatter Setting"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -16,14 +17,15 @@ class IrUiView(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
-    rule_ids = fields.Many2many(
-        comodel_name="access.rule",
-        relation="access_rule_restricted_views_rel",
-        column1="view_id",
-        column2="access_rule_id",
-        string="Rules",
-        copy=False,
-    )
+    rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade", required=True)
+    model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
+    hide_chatter = fields.Boolean("Hide Chatter?")
+    hide_send_message = fields.Boolean("Hide Send Message?")
+    hide_search_message = fields.Boolean("Hide Search Message?")
+    hide_lognote = fields.Boolean("Hide Log Note?")
+    hide_activity = fields.Boolean("Hide Activity")
+    hide_attachments = fields.Boolean("Hide Attachments")
+    hide_followers = fields.Boolean("Hide Followers?")
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
@@ -34,7 +36,7 @@ class IrUiView(models.Model):
     # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------
-    # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
+    # 6. CONSTRAINTS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
 
     # ------------------------------------------------------------------

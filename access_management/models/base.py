@@ -58,18 +58,33 @@ class Base(models.AbstractModel):
                 )
                 view["arch"] = etree.tostring(arch)
 
+        # Record rules: control New/Edit/Delete buttons per model based on perm checkboxes
+        if not any(model_rules.mapped("readonly")):
+            record_rules = model_rules.record_rule_ids.filtered(
+                lambda r: r.model_id.model == self._name
+            )
+            if record_rules:
+                restrict_create = any(r.perm_create for r in record_rules)
+                restrict_write = any(r.perm_write for r in record_rules)
+                restrict_unlink = any(r.perm_unlink for r in record_rules)
+                for view_type, view in result["views"].items():
+                    arch = etree.fromstring(view.get("arch"))
+                    modified = False
+                    if restrict_create:
+                        arch.attrib["create"] = "False"
+                        modified = True
+                    if restrict_write:
+                        arch.attrib["edit"] = "False"
+                        modified = True
+                    if restrict_unlink:
+                        arch.attrib["delete"] = "False"
+                        modified = True
+                    if modified:
+                        view["arch"] = etree.tostring(arch)
+
         # Restrict debug mode
         if any(model_rules.mapped("restrict_debug_mode")):
             request.session.debug = ""
-
-        # Remove restricted views
-        if model_rules.sudo().restrict_view_ids:
-            view_dict = {key: value for value, key in views}
-            for restricted_view in model_rules.sudo().restrict_view_ids:
-                result["views"].pop(restricted_view.type, False)
-                view_dict.pop(restricted_view.type, False)
-
-            views = [(v, k) for k, v in view_dict.items()]
 
         return result
 
@@ -78,15 +93,15 @@ class Base(models.AbstractModel):
         arch, view = super(Base, self)._get_view(view_id, view_type, **options)
 
         # Fetch rules for the model
-        model_rules = (
-            self.env["access.rule"].get_model_rules(self._name).sudo()
+        model_rules = self.env["access.rule"].get_model_rules(self._name).sudo()
+
+        # Filter field access by current model
+        field_access_ids = model_rules.field_access_ids.filtered(
+            lambda fa: fa.model_id.model == self._name
         )
-        if model_rules and model_rules.field_access_ids:
+        if field_access_ids:
             field_access_map = dict(
-                [
-                    (fa.field_id.name, fa.access)
-                    for fa in model_rules.field_access_ids
-                ]
+                [(fa.field_id.name, fa.access) for fa in field_access_ids]
             )
             # Make fields readonly/hidden
             for field, access in field_access_map.items():
@@ -96,16 +111,20 @@ class Base(models.AbstractModel):
 
                     f.attrib[access] = "1"
 
-        # Check if any button is hidden
+        # Check if any button, page, or link is hidden (filtered by current model)
         nodes_to_hide = (
-            model_rules.hide_link_ids
-            | model_rules.hide_page_ids
-            | model_rules.hide_button_ids
+            model_rules.hide_link_ids.filtered(lambda r: r.model_id.model == self._name)
+            | model_rules.hide_page_ids.filtered(
+                lambda r: r.model_id.model == self._name
+            )
+            | model_rules.hide_button_ids.filtered(
+                lambda r: r.model_id.model == self._name
+            )
         ).view_node_id
         for node in nodes_to_hide:
             if node.node_option == "button":
                 xpath = f"//button[@name='{node.name}']"
-                
+
                 for button in arch.xpath(xpath):
                     button.attrib["invisible"] = "1"
             elif node.node_option == "page":
@@ -125,5 +144,18 @@ class Base(models.AbstractModel):
         # Hide Import records
         if self.env.user.check_import_enabled(self._name):
             arch.attrib["import"] = "0"
+
+        # Record rules: control New/Edit/Delete per model (when called directly)
+        if not any(model_rules.mapped("readonly")):
+            record_rules = model_rules.record_rule_ids.filtered(
+                lambda r: r.model_id.model == self._name
+            )
+            if record_rules:
+                if any(r.perm_create for r in record_rules):
+                    arch.attrib["create"] = "False"
+                if any(r.perm_write for r in record_rules):
+                    arch.attrib["edit"] = "False"
+                if any(r.perm_unlink for r in record_rules):
+                    arch.attrib["delete"] = "False"
 
         return arch, view

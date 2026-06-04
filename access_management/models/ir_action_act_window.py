@@ -20,9 +20,7 @@ class IrActionsActWindow(models.Model):
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
 
-    @api.depends(
-        "view_ids.view_mode", "view_mode", "view_id.type", "view_id.rule_ids"
-    )
+    @api.depends("view_ids.view_mode", "view_mode", "view_id.type")
     def _compute_views(self):
         result = super(IrActionsActWindow, self)._compute_views()
         Rule = self.env["access.rule"]
@@ -34,7 +32,10 @@ class IrActionsActWindow(models.Model):
             # then check that specific view for restriction
             # otherwise restrict by view type
             model_rules = Rule.get_model_rules(model=act.res_model)
-            for restricted_view in model_rules.restrict_view_ids:
+            for line in model_rules.restricted_view_ids.filtered(
+                lambda r: r.model_id.model == act.res_model
+            ):
+                restricted_view = line.view_id
                 if (not views[restricted_view.type]) or (
                     views[restricted_view.type]
                     and views[restricted_view.type] == restricted_view.id

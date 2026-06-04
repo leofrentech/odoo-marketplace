@@ -1,6 +1,6 @@
 {
     "name": "Access Management",
-    "version": "18.0.1.0.0",
+    "version": "18.0.2.0.0",
     "summary": "Easily create access management rules to manage the visibility of the model views, menuitems, fields and records.",
     "category": "Tools",
     "author": "Leofren Technologies",

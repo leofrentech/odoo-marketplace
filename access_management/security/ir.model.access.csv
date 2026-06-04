@@ -10,3 +10,12 @@ access_view_node,access.view.node,model_view_node,access_management.access_manag
 
 access_hide_view_node,access.hide.view.node,model_access_hide_view_node,access_management.access_management_group_user,1,1,1,0
 access_hide_view_node_admin,access.hide.view.node.admin,model_access_hide_view_node,access_management.access_management_group_admin,1,1,1,1
+
+access_restricted_view_user,access.rule.restricted.view.user,model_access_rule_restricted_view,access_management.access_management_group_user,1,1,1,0
+access_restricted_view_admin,access.rule.restricted.view.admin,model_access_rule_restricted_view,access_management.access_management_group_admin,1,1,1,1
+
+access_hidden_report_user,access.rule.hidden.report.user,model_access_rule_hidden_report,access_management.access_management_group_user,1,1,1,0
+access_hidden_report_admin,access.rule.hidden.report.admin,model_access_rule_hidden_report,access_management.access_management_group_admin,1,1,1,1
+
+access_chatter_setting_user,access.rule.chatter.setting.user,model_access_rule_chatter_setting,access_management.access_management_group_user,1,1,1,0
+access_chatter_setting_admin,access.rule.chatter.setting.admin,model_access_rule_chatter_setting,access_management.access_management_group_admin,1,1,1,1

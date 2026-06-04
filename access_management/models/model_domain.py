@@ -20,10 +20,7 @@ class ModelDomain(models.Model):
 
     domain = fields.Char("Domain")
     access_rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade")
-    model_id = fields.Many2one(
-        "ir.model", "Model", related="access_rule_id.model_id"
-    )
-    model = fields.Char("Model", related="access_rule_id.model")
+    model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
