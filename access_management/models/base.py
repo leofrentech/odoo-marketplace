@@ -64,19 +64,19 @@ class Base(models.AbstractModel):
                 lambda r: r.model_id.model == self._name
             )
             if record_rules:
-                restrict_create = any(r.perm_create for r in record_rules)
-                restrict_write = any(r.perm_write for r in record_rules)
-                restrict_unlink = any(r.perm_unlink for r in record_rules)
+                allow_create = any(r.perm_create for r in record_rules)
+                allow_write = any(r.perm_write for r in record_rules)
+                allow_unlink = any(r.perm_unlink for r in record_rules)
                 for view_type, view in result["views"].items():
                     arch = etree.fromstring(view.get("arch"))
                     modified = False
-                    if restrict_create:
+                    if not allow_create:
                         arch.attrib["create"] = "False"
                         modified = True
-                    if restrict_write:
+                    if not allow_write:
                         arch.attrib["edit"] = "False"
                         modified = True
-                    if restrict_unlink:
+                    if not allow_unlink:
                         arch.attrib["delete"] = "False"
                         modified = True
                     if modified:
@@ -151,11 +151,11 @@ class Base(models.AbstractModel):
                 lambda r: r.model_id.model == self._name
             )
             if record_rules:
-                if any(r.perm_create for r in record_rules):
+                if not any(r.perm_create for r in record_rules):
                     arch.attrib["create"] = "False"
-                if any(r.perm_write for r in record_rules):
+                if not any(r.perm_write for r in record_rules):
                     arch.attrib["edit"] = "False"
-                if any(r.perm_unlink for r in record_rules):
+                if not any(r.perm_unlink for r in record_rules):
                     arch.attrib["delete"] = "False"
 
         return arch, view

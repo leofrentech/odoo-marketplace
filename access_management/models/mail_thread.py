@@ -74,7 +74,7 @@ class MailThread(models.AbstractModel):
                 defaults[key] = True
 
         # Check per-model chatter settings for this model only
-        model_rec = self.env["ir.model"].search([("model", "=", self._name)], limit=1)
+        model_rec = self.env["ir.model"].sudo().search([("model", "=", self._name)], limit=1)
         if model_rec:
             for rule in model_rules:
                 for setting in rule.chatter_setting_ids.filtered(
