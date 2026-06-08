@@ -23,7 +23,7 @@ class AccessHideViewNode(models.Model):
     model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
     view_node_id = fields.Many2one("view.node", "View Node")
     is_smart_button = fields.Boolean(
-        "Is Smart Button?", realted="view_node_id.is_smart_button"
+        "Is Smart Button?", related="view_node_id.is_smart_button"
     )
 
     access_rule_btn_id = fields.Many2one(
