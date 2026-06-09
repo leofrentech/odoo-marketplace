@@ -40,7 +40,9 @@ class ResUser(models.Model):
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
 
-    @api.depends("access_rule_ids", "access_rule_ids.write_date")
+    @api.depends(
+        "access_rule_ids", "access_rule_ids.write_date", "access_rule_ids.active"
+    )
     def _compute_access_rule_update_at(self):
         for user in self:
             if user.access_rule_ids:
@@ -94,13 +96,15 @@ class ResUser(models.Model):
         if not self:
             self = self.env.user
 
-        return self.access_rule_ids.hide_menu_ids
+        return self.access_rule_ids.filtered("active").hide_menu_ids
 
     def _get_hidden_reports(self):
         if not self:
             self = self.env.user
 
-        return self.access_rule_ids.hidden_report_ids.mapped("report_id")
+        return self.access_rule_ids.filtered("active").hidden_report_ids.mapped(
+            "report_id"
+        )
 
     @api.model
     def check_export_enable(self, model):

@@ -125,7 +125,7 @@ class EasyAccessRole(models.Model):
     # ------------------------------------------------------------------
 
     def get_model_rules(self, model):
-        domain = [("user_ids", "in", self.env.user.ids)]
+        domain = [("user_ids", "in", self.env.user.ids), ("active", "=", True)]
 
         model_rec = self.env["ir.model"].sudo().search([("model", "=", model)], limit=1)
 

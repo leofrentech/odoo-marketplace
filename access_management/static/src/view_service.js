@@ -75,6 +75,7 @@ patch(registry.category("services").get("view"), {
                 relatedModels: result.models,
                 views: {},
             };
+            
             for (const viewType in result.views) {
                 const { arch, toolbar, id, filters, custom_view_id } = result.views[viewType];
                 const viewDescription = { arch, id, custom_view_id };
@@ -86,8 +87,10 @@ patch(registry.category("services").get("view"), {
                 }
                 viewDescriptions.views[viewType] = viewDescription;
             }
+            
             return viewDescriptions;
         }
+        
         return { loadViews }
     }
 })
