@@ -17,9 +17,7 @@ class IrModelAccess(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
-    access_rule_id = fields.Many2one(
-        "access.rule", "Access Rule", ondelete="cascade"
-    )
+    access_rule_id = fields.Many2one("access.rule", "Access Rule", ondelete="cascade")
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS

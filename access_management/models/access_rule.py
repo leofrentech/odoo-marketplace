@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.osv import expression
 
 
 class EasyAccessRole(models.Model):
@@ -18,8 +19,6 @@ class EasyAccessRole(models.Model):
     # ------------------------------------------------------------------
 
     name = fields.Char("Name", required=True)
-    model_id = fields.Many2one("ir.model", "Model")
-    model = fields.Char("Model", related="model_id.model")
     active = fields.Boolean("Active", default=True)
     company_id = fields.Many2one(
         "res.company", "Company", default=lambda self: self.env.company.id
@@ -42,17 +41,11 @@ class EasyAccessRole(models.Model):
     )
 
     hide_report_btn = fields.Boolean("Hide Reports Button?")
-    hide_report_ids = fields.Many2many(
-        "ir.actions.report",
-        "ear_hidden_report_rel",
-        "ear_id",
-        "hidden_report_id",
-        string="Hidden Reports",
+    hidden_report_ids = fields.One2many(
+        "access.rule.hidden.report", "rule_id", "Hidden Reports"
     )
 
-    field_access_ids = fields.One2many(
-        "field.access", "rule_id", "Field Access"
-    )
+    field_access_ids = fields.One2many("field.access", "rule_id", "Field Access")
 
     # Chatter
     hide_chatter = fields.Boolean("Hide Chatter?")
@@ -80,13 +73,12 @@ class EasyAccessRole(models.Model):
 
     record_rule_ids = fields.One2many("ir.rule", "rule_id", "Model Rules")
 
-    restrict_view_ids = fields.Many2many(
-        comodel_name="ir.ui.view",
-        relation="access_rule_restricted_views_rel",
-        column1="access_rule_id",
-        column2="view_id",
-        string="Restricted Views",
-        copy=False,
+    restricted_view_ids = fields.One2many(
+        "access.rule.restricted.view", "rule_id", "Restricted Views"
+    )
+
+    chatter_setting_ids = fields.One2many(
+        "access.rule.chatter.setting", "rule_id", "Chatter Settings"
     )
 
     # ------------------------------------------------------------------
@@ -107,11 +99,6 @@ class EasyAccessRole(models.Model):
                 domain = [("id", "not in", menu_ids)]
 
             access.hide_menu_domain = domain
-
-    @api.depends("access_right_ids")
-    def _compute_model_access_count(self):
-        for rule in self:
-            rule.model_access_count = len(rule.sudo().access_right_ids)
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
@@ -138,6 +125,40 @@ class EasyAccessRole(models.Model):
     # ------------------------------------------------------------------
 
     def get_model_rules(self, model):
-        return self.search(
-            [("user_ids", "in", self.env.user.ids), ("model", "=", model)]
-        )
+        domain = [("user_ids", "in", self.env.user.ids), ("active", "=", True)]
+
+        model_rec = self.env["ir.model"].sudo().search([("model", "=", model)], limit=1)
+
+        conditions = []
+        if model_rec:
+            conditions = [
+                [("record_rule_ids.model_id", "=", model_rec.id)],
+                [("field_access_ids.model_id", "=", model_rec.id)],
+                [("hide_link_ids.model_id", "=", model_rec.id)],
+                [("hide_button_ids.model_id", "=", model_rec.id)],
+                [("hide_page_ids.model_id", "=", model_rec.id)],
+                [("restricted_view_ids.model_id", "=", model_rec.id)],
+                [("hidden_report_ids.model_id", "=", model_rec.id)],
+                [("chatter_setting_ids.model_id", "=", model_rec.id)],
+            ]
+
+        # Global conditions — these booleans apply to all models
+        conditions += [
+            [("readonly", "=", True)],
+            [("restrict_debug_mode", "=", True)],
+            [("restrict_export", "=", True)],
+            [("restrict_import_records", "=", True)],
+            [("hide_report_btn", "=", True)],
+            [("hide_chatter", "=", True)],
+            [("hide_send_message", "=", True)],
+            [("hide_search_message", "=", True)],
+            [("hide_lognote", "=", True)],
+            [("hide_activity", "=", True)],
+            [("hide_attachments", "=", True)],
+            [("hide_followers", "=", True)],
+        ]
+
+        if conditions:
+            domain = expression.AND([domain, expression.OR(conditions)])
+
+        return self.search(domain)

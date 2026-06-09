@@ -66,11 +66,22 @@ class MailThread(models.AbstractModel):
             "hide_search_message": "hideSearchMessage",
             "hide_chatter": "hideChatter",
         }
-        # Collect all rule values once
+
+        # Check global booleans on parent rules
         rule_data = model_rules.read(list(field_map.keys()))
-        # If any rule has True for a given field, mark it hidden
         for field, key in field_map.items():
             if any(rule[field] for rule in rule_data):
                 defaults[key] = True
+
+        # Check per-model chatter settings for this model only
+        model_rec = self.env["ir.model"].sudo().search([("model", "=", self._name)], limit=1)
+        if model_rec:
+            for rule in model_rules:
+                for setting in rule.chatter_setting_ids.filtered(
+                    lambda s: s.model_id == model_rec
+                ):
+                    for field, key in field_map.items():
+                        if setting[field]:
+                            defaults[key] = True
 
         return defaults

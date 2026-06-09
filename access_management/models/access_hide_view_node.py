@@ -19,16 +19,11 @@ class AccessHideViewNode(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
-    access_rule_id = fields.Many2one(
-        "access.rule", "Access Rule", ondelete="cascade"
-    )
-    model_id = fields.Many2one(
-        "ir.model", "Model", realted="access_rule_id.model_id"
-    )
-    model = fields.Char("Model name", related="model_id.model")
+    access_rule_id = fields.Many2one("access.rule", "Access Rule", ondelete="cascade")
+    model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
     view_node_id = fields.Many2one("view.node", "View Node")
     is_smart_button = fields.Boolean(
-        "Is Smart Button?", realted="view_node_id.is_smart_button"
+        "Is Smart Button?", related="view_node_id.is_smart_button"
     )
 
     access_rule_btn_id = fields.Many2one(
@@ -56,15 +51,15 @@ class AccessHideViewNode(models.Model):
         View_node = self.env["view.node"]
         view_obj = self.env["ir.ui.view"]
 
-        if self.model_id and self.model:
+        if self.model_id:
 
             view_list = ["form", "list", "kanban"]
             for view in view_list:
                 for views in view_obj.search(
-                    [("model", "=", self.model), ("type", "=", view)]
+                    [("model", "=", self.model_id.model), ("type", "=", view)]
                 ):
                     res = (
-                        self.env[self.model]
+                        self.env[self.model_id.model]
                         .sudo()
                         .get_view(view_id=views.id, view_type=view)
                     )
@@ -105,9 +100,7 @@ class AccessHideViewNode(models.Model):
                         if view == "kanban" and not string_value:
                             try:
                                 string_value = (
-                                    btn.text
-                                    if not btn.text.startswith("\n")
-                                    else False
+                                    btn.text if not btn.text.startswith("\n") else False
                                 )
                             except:
                                 pass
@@ -138,9 +131,7 @@ class AccessHideViewNode(models.Model):
                         if view == "kanban" and not string_value:
                             try:
                                 string_value = (
-                                    btn.text
-                                    if not btn.text.startswith("\n")
-                                    else False
+                                    btn.text if not btn.text.startswith("\n") else False
                                 )
                             except:
                                 pass
@@ -163,26 +154,18 @@ class AccessHideViewNode(models.Model):
                             "//div[@class='oe_button_box']"
                         )
                         if smt_button_division:
-                            smt_button_division = etree.tostring(
-                                smt_button_division[0]
-                            )
-                            smt_button_division = etree.XML(
-                                smt_button_division
-                            )
+                            smt_button_division = etree.tostring(smt_button_division[0])
+                            smt_button_division = etree.XML(smt_button_division)
 
                             smt_object_button = smt_button_division.xpath(
                                 "//button[@type='object']"
                             )
-                            self._get_smart_btn_string(
-                                smt_object_button, type="object"
-                            )
+                            self._get_smart_btn_string(smt_object_button, type="object")
 
                             smt_action_button = smt_button_division.xpath(
                                 "//button[@type='action']"
                             )
-                            self._get_smart_btn_string(
-                                smt_action_button, type="action"
-                            )
+                            self._get_smart_btn_string(smt_action_button, type="action")
 
                         ## Tab Extraction
                         page_list = arch.xpath("//page")
@@ -199,9 +182,7 @@ class AccessHideViewNode(models.Model):
                                         ("node_option", "=", "page"),
                                     ]
                                     if page.get("name"):
-                                        domain += [
-                                            ("name", "=", page.get("name"))
-                                        ]
+                                        domain += [("name", "=", page.get("name"))]
                                     store_model_nodes_id = View_node.search(
                                         domain, limit=1
                                     )
@@ -210,14 +191,12 @@ class AccessHideViewNode(models.Model):
                                             {
                                                 "model_id": self.model_id.id,
                                                 "name": page.get("name"),
-                                                "node_string": page.get(
-                                                    "string"
-                                                ),
+                                                "node_string": page.get("string"),
                                                 "node_option": "page",
                                                 "lang_code": self.env.lang,
                                             }
                                         )
-                        if self.model == "res.config.settings":
+                        if self.model_id.model == "res.config.settings":
                             for setting_page in arch.xpath("//app"):
                                 if setting_page.get("string"):
                                     domain = [
@@ -244,10 +223,7 @@ class AccessHideViewNode(models.Model):
                                         View_node.create(
                                             {
                                                 "model_id": self.model_id.id,
-                                                "name": setting_page.get(
-                                                    "name"
-                                                )
-                                                or "",
+                                                "name": setting_page.get("name") or "",
                                                 "node_string": setting_page.get(
                                                     "string"
                                                 ),
@@ -268,9 +244,7 @@ class AccessHideViewNode(models.Model):
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
 
-    def _store_btn_data(
-        self, btn, smart_button=False, smart_button_string=False
-    ):
+    def _store_btn_data(self, btn, smart_button=False, smart_button_string=False):
         # string_value is used in case of kanban view button store,
         string_value = (
             "string_value" in self._context.keys()

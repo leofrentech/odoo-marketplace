@@ -1,9 +1,6 @@
 from odoo import api, fields, models, tools
-from odoo.osv import expression
 from odoo.tools import config
 from odoo.tools.sql import create_column, table_columns
-from odoo.tools.safe_eval import safe_eval
-
 
 IGNORED_MODELS = ["access.rule"]
 
@@ -78,16 +75,28 @@ class IrRule(models.Model):
         rules = super()._get_rules(model_name, mode)
 
         self.env.cr.execute(
-            f"""
-        SELECT
-        ARRAY_AGG(rule.id)
-        FROM ir_rule rule
-        JOIN access_rule access ON rule.rule_id = access.id
-        WHERE EXISTS(SELECT * FROM ear_user_rel WHERE ear_id = access.id AND user_id != {self.env.user.id})
-        """
+            """
+            SELECT
+                ARRAY_AGG(rule.id)
+            FROM ir_rule rule
+            JOIN access_rule access ON rule.rule_id = access.id
+            WHERE access.active = TRUE
+              AND EXISTS(
+                    SELECT 1
+                    FROM ear_user_rel ear
+                    WHERE ear.ear_id = access.id
+                )
+              AND NOT EXISTS(
+                    SELECT 1
+                    FROM ear_user_rel ear
+                    WHERE ear.ear_id = access.id
+                      AND ear.user_id = %s
+                )
+            """,
+            (self.env.user.id,),
         )
         res = self.env.cr.fetchone()
-        if res and len(res) and res[0]:
+        if res and res[0]:
             rules -= self.sudo().browse(res[0])
 
         return rules

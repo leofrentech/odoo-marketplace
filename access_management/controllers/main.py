@@ -4,23 +4,17 @@ from odoo.http import request, route, Controller
 class RestrictDebugController(Controller):
     @route("/restrict_debug/check", type="jsonrpc", auth="user")
     def check_debug_restriction(self, model_name):
-        rule = (
-            request.env["access.rule"]
-            .sudo()
-            .search(
-                [
-                    ("model_id.model", "=", model_name),
-                    ("user_ids", "in", request.env.user.ids),
-                    ("restrict_debug_mode", "=", True),
-                ],
-                limit=1,
-            )
+        model_rec = (
+            request.env["ir.model"].sudo().search([("model", "=", model_name)], limit=1)
         )
-        return bool(rule)
+        if not model_rec:
+            return False
+        rules = request.env["access.rule"].sudo().get_model_rules(model_name)
+        return bool(rules.filtered("restrict_debug_mode"))
 
     @route("/check_restricted_views", type="jsonrpc", auth="user")
     def _check_restricted_views(self, model):
         model_rules = request.env["access.rule"].sudo().get_model_rules(model)
-        restricted_views = model_rules.restrict_view_ids.mapped("type")
+        restricted_views = model_rules.restricted_view_ids.mapped("view_id.type")
 
         return restricted_views

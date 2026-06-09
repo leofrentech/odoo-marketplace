@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Privilege -->
-    <record id="easy_access_role_category" model="res.groups.privilege">
+    <!-- Category -->
+    <record id="easy_access_role_category" model="ir.module.category">
         <field name="name">Easy Access Rule</field>
-        <field name="placeholder">User</field>
-        <field name="category_id" ref="base.module_category_master_data" />
+    </record>
+
+    <!-- Privileges -->
+    <record model="res.groups.privilege" id="res_groups_privilege_access_management">
+        <field name="name">Easy Access</field>
+        <field name="category_id" ref="easy_access_role_category"/>
+        <field name="sequence">7</field>
     </record>
 
     <!-- Groups -->
     <record id="access_management_group_user" model="res.groups">
         <field name="name">User</field>
-        <field name="privilege_id" ref="easy_access_role_category" />
+        <field name="privilege_id" ref="res_groups_privilege_access_management" />
     </record>
 
     <record id="access_management_group_admin" model="res.groups">
         <field name="name">Administrator</field>
         <field name="implied_ids"
             eval="[Command.link(ref('access_management.access_management_group_user'))]" />
-        <field name="privilege_id" ref="easy_access_role_category" />
+        <field name="privilege_id" ref="res_groups_privilege_access_management" />
     </record>
 </odoo>

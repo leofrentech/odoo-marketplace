@@ -1,13 +1,13 @@
 {
     "name": "Access Management",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "summary": "Easily create access management rules to manage the visibility of the model views, menuitems, fields and records.",
     "category": "Tools",
     "author": "Leofren Technologies",
     "maintainer": "Fenil Moradiya",
     "website": "https://leofren.com",
     "description": """
-    To prevent your overhaul in managing visibility of views, menuitems, actions and debug mode.
+    To prevent your overhaul in managing views and visibility of menuitems, actions, fields and debug mode.
     """,
     "depends": ["base", "mail"],
     "data": [

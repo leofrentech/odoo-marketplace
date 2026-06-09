@@ -1,11 +1,55 @@
 // @odoo-module
 
+import { DebugMenu } from "@web/core/debug/debug_menu";
 import { registry } from "@web/core/registry";
 import { patch } from "@web/core/utils/patch";
 import { rpc } from "@web/core/network/rpc";
 import { router } from "@web/core/browser/router";
-import { browser } from "@web/core/browser/browser";
 import { session } from "@web/session";
+
+const systrayRegistry = registry.category("systray");
+const DEBUG_MENU_KEY = "web.debug_mode_menu";
+const DEBUG_MENU_ITEM = { Component: DebugMenu };
+const DEBUG_MENU_SEQUENCE = 100;
+const initialDebug = odoo.debug || session.bundle_params.debug || "";
+
+function syncDebugState(env, isRestricted) {
+    const body = document.body;
+    if (isRestricted) {
+        // Keep third-party debug helpers and the webclient itself out of debug mode.
+        body.setAttribute("data-odoo-debug-mode", "");
+        body.classList.remove("o_debug");
+        router.hideKeyFromUrl("debug");
+        router.replaceState({ debug: undefined });
+        env.debug = "";
+        odoo.debug = "";
+        session.bundle_params.debug = "";
+        if (systrayRegistry.contains(DEBUG_MENU_KEY)) {
+            systrayRegistry.remove(DEBUG_MENU_KEY);
+        }
+        return;
+    }
+
+    body.removeAttribute("data-odoo-debug-mode");
+    if (!initialDebug) {
+        body.classList.remove("o_debug");
+        if (systrayRegistry.contains(DEBUG_MENU_KEY)) {
+            systrayRegistry.remove(DEBUG_MENU_KEY);
+        }
+        return;
+    }
+
+    body.classList.add("o_debug");
+    body.setAttribute("data-odoo-debug-mode", initialDebug);
+    env.debug = initialDebug;
+    odoo.debug = initialDebug;
+    session.bundle_params.debug = initialDebug;
+    if (!systrayRegistry.contains(DEBUG_MENU_KEY)) {
+        systrayRegistry.add(DEBUG_MENU_KEY, DEBUG_MENU_ITEM, {
+            sequence: DEBUG_MENU_SEQUENCE,
+        });
+    }
+}
 
 
 patch(registry.category("services").get("view"), {
@@ -14,6 +58,10 @@ patch(registry.category("services").get("view"), {
 
         async function loadViews(params, options = {}) {
             const { context, resModel, views } = params;
+            const isDebugRestricted = resModel
+                ? await rpc("/restrict_debug/check", { model_name: resModel })
+                : false;
+            syncDebugState(env, isDebugRestricted);
             const loadViewsOptions = {
                 action_id: options.actionId || false,
                 embedded_action_id: options.embeddedActionId || false,
@@ -37,7 +85,7 @@ patch(registry.category("services").get("view"), {
             if (env.isSmall) {
                 loadViewsOptions.mobile = true;
             }
-            if (env.debug) {
+            if (env.debug && !isDebugRestricted) {
                 loadViewsOptions.debug = true;
             }
             const filteredContext = Object.fromEntries(
@@ -51,24 +99,6 @@ patch(registry.category("services").get("view"), {
                 views,
                 options: loadViewsOptions,
             });
-
-            // Check debug mode restriction
-            const is_debug_restricted = await rpc("/restrict_debug/check", { model_name: resModel });
-            if (is_debug_restricted) {
-                // For Odoo-debug extension from Droggol
-                const body = document.getElementsByTagName('body')[0];
-                body.setAttribute('data-odoo-debug-mode', '')
-
-                // Keeps debug mode deactivated
-                router.hideKeyFromUrl('debug')
-                browser.location.search
-                const url = new URL(browser.location)
-                const state = router.urlToState(url)
-                state.debug = 0
-                router.replaceState(state);
-                odoo.debug = ''
-                session.bundle_params.debug = ''
-            }
 
             const viewDescriptions = {
                 fields: result.models[resModel].fields,

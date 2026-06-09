@@ -41,13 +41,18 @@ class IrUiMenu(models.Model):
     # ------------------------------------------------------------------
 
     @api.model
-    @tools.ormcache(
-        "self.env.uid",
-        "debug",
-        "self.env.lang",
-        "self.env.user.access_rule_update_at",
-    )
+    def get_user_roots(self):
+        hidden_menus = self.env.user._get_hidden_menus()
+        roots = super().get_user_roots()
+        return roots - hidden_menus
+
+    @api.model
+    # @tools.ormcache_context("self._uid", "debug", keys=("lang",))
     def load_menus(self, debug):
+        """
+        TODO: Find the solution to recheck menus when restricted menus
+            for user's access rules has been updated.
+        """
         return super(IrUiMenu, self).load_menus(debug=debug)
 
     def _load_menus_blacklist(self):
