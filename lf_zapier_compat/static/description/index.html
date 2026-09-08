@@ -1,0 +1,171 @@
+<section class="oe_container pt16 mt16" style="margin-left:calc(-42vw + 50%); width:84%;">
+    <div class="row o_equal_col_sm"
+        style="max-width:1540px; margin:0 auto; background-color:#ebf2f8; padding-bottom:92px; border-radius:15px">
+        <div class="" style="display:block; margin:0 auto; max-width:330px; width:80%;"><span
+                style="width:100%;; display:inline-block">
+                <img class="img img-responsive mt24 mb8" src="leofren_logo.png" style="display:block; margin:0 auto; max-width:280px;">
+            </span>
+        </div>
+    </div>
+</section>
+<section class="oe_container fixed-top position-relative" style="margin:-5rem 0 0">
+    <div class="o_equal_col_sm">
+        <div class="shadow bg-white pb32 pt32 px-2" style="border-radius:15px">
+            <!-- Label -->
+            <h1
+                style="color:#0f1e40; font-family: Montserrat; font-weight:700; text-align:center; text-transform:uppercase; opacity:1; font-size:24px; margin-bottom:18px; margin-top:18px">
+                Zapier RPC Compatibility
+            </h1>
+            <!-- Tag Line -->
+            <h3 class="oe_slogan">
+                Stop legacy XML-RPC clients like Zapier from breaking your search() calls
+            </h3>
+            <!-- Summary -->
+            <p class="mb16 text-center text-black-dark"
+                style="font-family: Roboto;font-weight: initial;color: #091E42;text-align:center;">
+                Zapier's "Odoo ERP Self Hosted" app - and a few other legacy XML-RPC clients - still call
+                <code>search()</code> using the pre-v8 convention, where <code>context</code> was passed as a
+                positional argument: <code>search(domain, offset, limit, order, context[, count])</code>.
+            </p>
+            <p class="mb16 text-center text-black-dark"
+                style="font-family: Roboto;font-weight: initial;color: #091E42;text-align:center;">
+                Modern Odoo no longer accepts <code>context</code> positionally at all, so that dict lands in
+                <code>search()</code>'s <code>count</code> slot and the call fails with
+                <code>TypeError: BaseModel.search() takes from 2 to 5 positional arguments but 6 were given</code>.
+                This module detects that legacy call shape and reinterprets it correctly - with zero effect on
+                any normal, modern call.
+            </p>
+            <div class="text-center d-flex justify-content-center">
+                <div class="d-flex align-items-center">
+                    <p class="text-center mt-2 mb-0" style="font-size: 16px;font-weight: 600;">
+                        <span>Connect with us on email:</span>
+                    </p>
+                    <h2 class="m-0 ms-2">
+                        <a href="mailto:support@leofren.com">support@leofren.com</a>
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Highlights -->
+<section class="oe_container pb-5">
+    <div class="mt64 mb64">
+        <h2 style="color:#091E42; font-family:&quot;Montserrat&quot;; text-align:center; margin:25px auto; text-transform:uppercase"
+            class="oe_slogan">
+            <b>Why you need this</b>
+        </h2>
+        <div class="row">
+            <div class="col-md-6 col-sm-12 mt32">
+                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
+                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
+                        No more failed Zapier polling
+                    </h3>
+                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
+                        Zapier triggers that poll a model with <code>search()</code> stop throwing
+                        <code>TypeError</code> once this module is installed - no changes needed on the Zapier
+                        side.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-12 mt32">
+                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
+                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
+                        Fully backward compatible
+                    </h3>
+                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
+                        Only the exact legacy call shape (a stray positional <code>int</code> where the domain
+                        belongs) is intercepted. Every normal <code>search()</code> call - from the web client,
+                        other modules, or modern RPC clients - passes through completely untouched.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-12 mt32">
+                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
+                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
+                        Zero configuration
+                    </h3>
+                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
+                        Install the module and it works immediately. There are no settings, menus, or views to
+                        configure.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-12 mt32">
+                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
+                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
+                        Free and open source
+                    </h3>
+                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
+                        Released under the LGPL-3 license. Use it, inspect it, and adapt it freely.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- FAQs -->
+<section class="oe_container mt32 mb32" style="margin-left:calc(-42vw + 50%); width:84vw">
+    <div class="row" style="max-width:1540px; margin:0 auto; padding-bottom:64px; border-radius:15px">
+        <div class="container-fluid" style="border:1px solid #eee; border-radius:10px">
+            <div class="mt48 mb16">
+                <h2 style="color:#091E42; font-family:&quot;Montserrat&quot;; text-align:center; margin:25px auto; text-transform:uppercase"
+                    class="oe_slogan">
+                    <b>FAQs</b>
+                </h2>
+                <div class="s_faq mt32 mb32" style="border-radius:10px; background-color:#fff !important">
+                    <div class="accordion" id="accordion">
+                        <div class="accordion-item overflow-hidden">
+                            <h2 class="accordion-header p-2" id="heading1">
+                                <a class="accordion-button bg-transparent shadow-none" data-bs-toggle="collapse"
+                                    href="#faq1" aria-expanded="true" aria-controls="faq1">
+                                    Does this module change any behavior for normal users?
+                                </a>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" aria-labelledby="heading1"
+                                data-bs-parent="#accordion" style="background-color: rgb(240, 244, 247); padding: 15px;">
+                                <p class="mb0" style="height: auto;padding-left: 2%;margin-left: 2%;font-family: Roboto;">
+                                    No. It only intercepts one specific, otherwise-invalid legacy call shape.
+                                    Every other call to <code>search()</code> is passed straight through to
+                                    Odoo's original implementation.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="accordion-item overflow-hidden">
+                            <h2 class="accordion-header p-2" id="heading2">
+                                <a class="accordion-button bg-transparent shadow-none" data-bs-toggle="collapse"
+                                    href="#faq2" aria-expanded="true" aria-controls="faq2">
+                                    Which RPC clients does this fix?
+                                </a>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" aria-labelledby="heading2"
+                                data-bs-parent="#accordion" style="background-color: rgb(240, 244, 247); padding: 15px;">
+                                <p class="mb0" style="height: auto;padding-left: 2%;margin-left: 2%;font-family: Roboto;">
+                                    It was confirmed against Zapier's "Odoo ERP Self Hosted" app, and applies to
+                                    any other XML-RPC client still using the pre-v8
+                                    <code>search(domain, offset, limit, order, context)</code> calling
+                                    convention.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="accordion-item overflow-hidden">
+                            <h2 class="accordion-header p-2" id="heading3">
+                                <a class="accordion-button bg-transparent shadow-none" data-bs-toggle="collapse"
+                                    href="#faq3" aria-expanded="true" aria-controls="faq3">
+                                    Does this work on both Community and Enterprise?
+                                </a>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" aria-labelledby="heading3"
+                                data-bs-parent="#accordion" style="background-color: rgb(240, 244, 247); padding: 15px;">
+                                <p class="mb0" style="height: auto;padding-left: 2%;margin-left: 2%;font-family: Roboto;">
+                                    Yes. It only depends on <code>base</code> and works the same way on Odoo
+                                    Community and Enterprise, on-premise or Odoo.sh.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
