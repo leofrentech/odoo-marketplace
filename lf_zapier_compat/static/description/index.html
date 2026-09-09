@@ -38,6 +38,13 @@
           rejects that shape outright. This module recognizes it and repairs the call, with
           no effect on anything that calls <code>search()</code> normally.
         </p>
+
+        <div class="d-flex flex-wrap mt-3">
+          <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-right:8px; margin-bottom:8px">LGPL-3</span>
+          <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-right:8px; margin-bottom:8px">Zero Config</span>
+          <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-right:8px; margin-bottom:8px">Odoo 19</span>
+          <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-bottom:8px">Free</span>
+        </div>
       </div>
     </div>
 
@@ -46,8 +53,7 @@
         <div style="border:1px solid #DCDFE2; border-radius:4px; padding:2px 0">
           <span style="font-size:13px; color:#2E3033; margin:0 20px">Jump to:</span>
           <a href="#why" style="font-size:13px; color:#A65C00; text-decoration:none; margin-right:20px">Why you need this</a>
-          <a href="#faq" style="font-size:13px; color:#A65C00; text-decoration:none; margin-right:20px">FAQ</a>
-          <a href="#compat" style="font-size:13px; color:#A65C00; text-decoration:none">Compatibility</a>
+          <a href="#faq" style="font-size:13px; color:#A65C00; text-decoration:none">FAQ</a>
         </div>
       </div>
     </div>
@@ -74,31 +80,32 @@
 <!-- ============ WHY YOU NEED THIS ============ -->
 <section id="why" style="background-color:#f8f9fa">
   <div class="container pt-5 pb-4">
+    <div style="width:40px; border-top:3px solid #FFA500; margin-bottom:16px"></div>
     <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:6px">Why you need this</h2>
     <p style="color:#7C8288; margin-bottom:32px">One narrow fix, installed once, and Zapier polling stops failing.</p>
 
     <div class="row">
       <div class="col-md-6 col-12 mb-4">
         <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
-          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">No more failed Zapier polling</h3>
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; No more failed Zapier polling</h3>
           <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Triggers that poll a model with <code>search()</code> stop throwing <code>TypeError</code> the moment this module is installed. Nothing changes on the Zapier side.</p>
         </div>
       </div>
       <div class="col-md-6 col-12 mb-4">
         <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
-          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Fully backward compatible</h3>
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; Fully backward compatible</h3>
           <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Only the exact legacy shape &mdash; a stray positional integer where the domain belongs &mdash; gets intercepted. Every other caller passes straight through untouched.</p>
         </div>
       </div>
       <div class="col-md-6 col-12 mb-4">
         <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
-          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Zero configuration</h3>
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; Zero configuration</h3>
           <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Install it and it works. There is nothing to set up: no settings page, no menu, no view.</p>
         </div>
       </div>
       <div class="col-md-6 col-12 mb-4">
         <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
-          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Free and open source</h3>
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; Free and open source</h3>
           <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Released under LGPL-3. Read the 38 lines yourself, adapt them, keep them &mdash; no strings attached.</p>
         </div>
       </div>
@@ -109,6 +116,7 @@
 <!-- ============ FAQ ============ -->
 <section id="faq">
   <div class="container pt-5 pb-4">
+    <div style="width:40px; border-top:3px solid #FFA500; margin-bottom:16px"></div>
     <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:24px">Frequently asked</h2>
 
     <div style="border-bottom:1px solid #DCDFE2; padding:18px 0">
