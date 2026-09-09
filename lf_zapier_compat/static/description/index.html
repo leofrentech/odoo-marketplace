@@ -12,13 +12,15 @@
     - no unicode arrows/dashes — HTML entities instead
     - no @font-face possible without <style>, so this uses the page's
       default font rather than Archivo
-    - container padding is set inline (24px) since Odoo's own .container
-      class has padding-left/right overridden to nothing on this page
+    - every container has box-sizing:border-box + inline padding, since
+      Odoo's own .container is content-box with padding zeroed out —
+      without border-box, added padding overflows the box symmetrically
+      off both edges of the viewport
 -->
 
 <!-- ============ BRAND HEADER ============ -->
 <section>
-  <div class="container pt-4 pb-3" style="border-bottom:2px solid #FFA500; padding-left:24px; padding-right:24px">
+  <div class="container pt-4 pb-3" style="border-bottom:2px solid #FFA500; box-sizing:border-box; padding-left:24px; padding-right:24px">
     <div class="d-flex align-items-center justify-content-between flex-wrap">
       <img src="leofren-logo.png" alt="Leofren Technologies" style="width:160px">
       <span style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#7C8288">Official Odoo Ready Partner</span>
@@ -28,7 +30,7 @@
 
 <!-- ============ HERO ============ -->
 <section>
-  <div class="container pt-5 pb-4" style="padding-left:24px; padding-right:24px">
+  <div class="container pt-5 pb-4" style="box-sizing:border-box; padding-left:24px; padding-right:24px">
     <p style="font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#A65C00; margin-bottom:10px">Leofren Technologies &middot; Odoo Compatibility</p>
     <h1 style="font-size:34px; font-weight:700; line-height:1.2; color:#010101; margin-bottom:18px">Stop legacy XML-RPC clients from breaking your search() calls</h1>
     <p style="font-size:18px; line-height:1.6; color:#2E3033; max-width:700px">
@@ -73,7 +75,7 @@
 
 <!-- ============ WHY YOU NEED THIS ============ -->
 <section id="why" style="background-color:#f8f9fa; scroll-margin-top:50px">
-  <div class="container pt-5 pb-4" style="padding-left:24px; padding-right:24px">
+  <div class="container pt-5 pb-4" style="box-sizing:border-box; padding-left:24px; padding-right:24px">
     <div style="width:40px; border-top:3px solid #FFA500; margin-bottom:16px"></div>
     <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:6px">Why you need this</h2>
     <p style="color:#7C8288; margin-bottom:32px">One narrow fix, installed once, and Zapier polling stops failing.</p>
@@ -108,7 +110,7 @@
 
 <!-- ============ FAQ ============ -->
 <section id="faq" style="scroll-margin-top:50px">
-  <div class="container pt-5 pb-4" style="padding-left:24px; padding-right:24px">
+  <div class="container pt-5 pb-4" style="box-sizing:border-box; padding-left:24px; padding-right:24px">
     <div style="width:40px; border-top:3px solid #FFA500; margin-bottom:16px"></div>
     <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:24px">Frequently asked</h2>
 
@@ -129,7 +131,7 @@
 
 <!-- ============ CLOSING ============ -->
 <section>
-  <div class="container py-5" style="padding-left:24px; padding-right:24px">
+  <div class="container py-5" style="box-sizing:border-box; padding-left:24px; padding-right:24px">
     <div style="background-color:#010101; border-radius:4px; padding:36px 40px">
       <h2 style="color:#fff; font-size:22px; font-weight:700; margin-bottom:8px">Questions before you install?</h2>
       <p style="color:#C9C9C9; margin-bottom:18px; max-width:520px">Reach the team directly and we'll help you confirm the fix covers your setup.</p>
