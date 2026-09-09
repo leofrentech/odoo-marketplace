@@ -21,7 +21,7 @@ it, rather than erroring - without changing behavior for any normal call.
     'website': 'https://leofren.com',
     'support': 'contact@leofren.com',
     'depends': ['base'],
-    'images': ['static/description/banner.png', 'static/description/icon.png'],
+    'images': ['static/description/banner/lf_zapier_compat_cover_light.gif'],
     'installable': True,
     'application': False,
     'auto_install': False,
