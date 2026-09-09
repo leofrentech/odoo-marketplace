@@ -1,0 +1,153 @@
+<!--
+  static/description/index.html — lf_zapier_compat
+  Leofren Technologies brand system, adapted for the Odoo App Store sanitizer.
+
+  Constraints respected (verified against Odoo's actual sanitizer behavior):
+    - fragment only, no <html>/<head>/<body>, no <style>, no <script>
+    - all styling is inline style="" attributes, hex colors only
+      (no rgba, no gradients, no transitions/transforms)
+    - flexbox alignment (align-items / justify-content / gap) only via
+      Bootstrap utility classes — inline flex alignment gets stripped
+    - only mailto: links — external <a href> is rewritten to <span>
+    - no unicode arrows/dashes — HTML entities instead
+    - no @font-face possible without <style>, so this uses the page's
+      default font rather than Archivo
+    - side padding lives on an UN-WIDTHED inner div, not on .container
+      itself (which is width:100%). Odoo's sanitizer may strip
+      box-sizing, and padding on a width:100% content-box element
+      overflows without it — a plain auto-width div never has that
+      problem, with or without box-sizing, so this avoids the issue
+      entirely rather than depending on a property surviving sanitization
+-->
+
+<!-- ============ BRAND HEADER ============ -->
+<section>
+  <div class="container pt-4 pb-3" style="border-bottom:2px solid #FFA500">
+    <div style="padding-left:24px; padding-right:24px">
+      <div class="d-flex align-items-center justify-content-between flex-wrap">
+        <img src="leofren-logo.png" alt="Leofren Technologies" style="width:160px">
+        <span style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#7C8288">Official Odoo Ready Partner</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HERO ============ -->
+<section>
+  <div class="container pt-5 pb-4">
+    <div style="padding-left:24px; padding-right:24px">
+      <p style="font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#A65C00; margin-bottom:10px">Leofren Technologies &middot; Odoo Compatibility</p>
+      <h1 style="font-size:34px; font-weight:700; line-height:1.2; color:#010101; margin-bottom:18px">Stop legacy XML-RPC clients from breaking your search() calls</h1>
+      <p style="font-size:18px; line-height:1.6; color:#2E3033; max-width:700px">
+        Zapier's "Odoo ERP Self Hosted" app, and a handful of other older XML-RPC clients,
+        still call <code>search()</code> using the pre-v8 calling convention, where
+        <code>context</code> was passed positionally instead of as a keyword. Modern Odoo
+        rejects that shape outright. This module recognizes it and repairs the call, with
+        no effect on anything that calls <code>search()</code> normally.
+      </p>
+
+      <div class="d-flex flex-wrap mt-3">
+        <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-right:8px; margin-bottom:8px">LGPL-3</span>
+        <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-right:8px; margin-bottom:8px">Zero Config</span>
+        <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-right:8px; margin-bottom:8px">Odoo 17</span>
+        <span style="font-size:12px; font-weight:700; color:#A65C00; background-color:#FFF2E0; border-radius:20px; padding:5px 14px; margin-bottom:8px">Free</span>
+      </div>
+
+      <div style="display:inline-block; border:1px solid #DCDFE2; border-radius:4px; padding:2px 20px; margin-top:12px">
+        <span style="font-size:13px; color:#2E3033; margin-right:20px">Jump to:</span>
+        <a href="#why" style="font-size:13px; color:#A65C00; text-decoration:none; margin-right:20px">Why you need this</a>
+        <a href="#faq" style="font-size:13px; color:#A65C00; text-decoration:none">FAQ</a>
+      </div>
+
+      <div class="row mt-4">
+        <div class="col-md-6 col-12 mb-3">
+          <div style="background-color:#010101; border-radius:4px; padding:20px 24px; height:100%">
+            <p style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#FFA500; margin-bottom:8px">Today, without this module</p>
+            <p style="font-family:monospace; font-size:12.5px; color:#F2F2F0; margin-bottom:6px">client.search([['id','&gt;',0]], 0, 10, 'id', {'lang':'en_US'})</p>
+            <p style="font-family:monospace; font-size:12.5px; color:#ff8a8a; margin-bottom:0">TypeError: search() takes from 2 to 5 positional arguments but 6 were given</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-12 mb-3">
+          <div style="background-color:#010101; border-radius:4px; padding:20px 24px; height:100%">
+            <p style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#FFA500; margin-bottom:8px">With this module installed</p>
+            <p style="font-family:monospace; font-size:12.5px; color:#F2F2F0; margin-bottom:6px">client.search([['id','&gt;',0]], 0, 10, 'id', {'lang':'en_US'})</p>
+            <p style="font-family:monospace; font-size:12.5px; color:#8fe38f; margin-bottom:0">&#8594; recognized as legacy shape, context applied, results returned</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY YOU NEED THIS ============ -->
+<section id="why" style="background-color:#f8f9fa; scroll-margin-top:50px">
+  <div class="container pt-5 pb-4">
+    <div style="padding-left:24px; padding-right:24px">
+      <div style="width:40px; border-top:3px solid #FFA500; margin-bottom:16px"></div>
+      <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:6px">Why you need this</h2>
+      <p style="color:#7C8288; margin-bottom:32px">One narrow fix, installed once, and Zapier polling stops failing.</p>
+      <div class="row">
+        <div class="col-md-6 col-12 mb-4">
+          <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+            <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; No more failed Zapier polling</h3>
+            <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Triggers that poll a model with <code>search()</code> stop throwing <code>TypeError</code> the moment this module is installed. Nothing changes on the Zapier side.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-12 mb-4">
+          <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+            <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; Fully backward compatible</h3>
+            <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Only the exact legacy shape &mdash; a stray positional integer where the domain belongs &mdash; gets intercepted. Every other caller passes straight through untouched.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-12 mb-4">
+          <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+            <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; Zero configuration</h3>
+            <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Install it and it works. There is nothing to set up: no settings page, no menu, no view.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-12 mb-4">
+          <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+            <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">&#10003; Free and open source</h3>
+            <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Released under LGPL-3. Read the 38 lines yourself, adapt them, keep them &mdash; no strings attached.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" style="scroll-margin-top:50px">
+  <div class="container pt-5 pb-4">
+    <div style="padding-left:24px; padding-right:24px">
+      <div style="width:40px; border-top:3px solid #FFA500; margin-bottom:16px"></div>
+      <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:24px">Frequently asked</h2>
+
+      <div style="border-bottom:1px solid #DCDFE2; padding:18px 0">
+        <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Does this change behavior for normal users?</h3>
+        <p style="font-size:15px; color:#2E3033; margin-bottom:0">No. It only intercepts one specific, otherwise-invalid legacy call shape. Every other call to <code>search()</code> runs through Odoo's original implementation exactly as before.</p>
+      </div>
+      <div style="border-bottom:1px solid #DCDFE2; padding:18px 0">
+        <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Which RPC clients does this fix?</h3>
+        <p style="font-size:15px; color:#2E3033; margin-bottom:0">Confirmed against Zapier's "Odoo ERP Self Hosted" app, and applicable to any other XML-RPC client still built on the pre-v8 <code>search(domain, offset, limit, order, context)</code> convention.</p>
+      </div>
+      <div style="padding:18px 0">
+        <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Does it work on Community and Enterprise?</h3>
+        <p style="font-size:15px; color:#2E3033; margin-bottom:0">Yes. It depends only on <code>base</code>, so it behaves the same way on Community and Enterprise, on-premise or Odoo.sh.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<section>
+  <div class="container py-5">
+    <div style="padding-left:24px; padding-right:24px">
+      <div style="background-color:#010101; border-radius:4px; padding:32px 24px; margin-left:-24px; margin-right:-24px">
+        <h2 style="color:#fff; font-size:22px; font-weight:700; margin-bottom:8px">Questions before you install?</h2>
+        <p style="color:#C9C9C9; margin-bottom:18px; max-width:520px">Reach the team directly and we'll help you confirm the fix covers your setup.</p>
+        <a href="mailto:contact@leofren.com" style="color:#FFA500; font-weight:700; text-decoration:none; border-bottom:2px solid #FFA500">contact@leofren.com</a>
+      </div>
+    </div>
+  </div>
+</section>
