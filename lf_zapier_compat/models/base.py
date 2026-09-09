@@ -57,17 +57,22 @@ class Base(models.AbstractModel):
         elif len(ints) >= 2:
             offset, limit = ints[0], ints[1]
 
+        # recs, not self: with_context() returns a different instance.
         recs = self.with_context(context) if context else self
         try:
-            return super(Base, recs).search(domain, offset=offset, limit=limit, order=order, **kwargs)  # noqa: UP008 - different instance than self
+            return super(Base, recs).search(  # noqa: UP008
+                domain, offset=offset, limit=limit, order=order, **kwargs
+            )
         except TypeError:
             # This only fires for a call that was going to fail anyway - log
             # the exact shape (both original and reinterpreted) so an actual
             # fix can be written for it, instead of guessing again.
             _logger.warning(
-                "search() failed on %s after reinterpreting a legacy call - "
-                "original domain=%r args=%r kwargs=%r; reinterpreted as "
-                "domain=%r offset=%r limit=%r order=%r context=%r",
-                self._name, orig_domain, orig_args, orig_kwargs, domain, offset, limit, order, context,
+                "search() failed on %s after reinterpreting a legacy "
+                "call - original domain=%r args=%r kwargs=%r; "
+                "reinterpreted as domain=%r offset=%r limit=%r "
+                "order=%r context=%r",
+                self._name, orig_domain, orig_args, orig_kwargs,
+                domain, offset, limit, order, context,
             )
             raise
