@@ -1,172 +1,152 @@
-<section class="oe_container pt16 mt16" style="margin-left:calc(-42vw + 50%); width:84%;">
-    <div class="row o_equal_col_sm"
-        style="max-width:1540px; margin:0 auto; background-color:#ebf2f8; padding-bottom:92px; border-radius:15px">
-        <div class="" style="display:block; margin:0 auto; max-width:330px; width:80%;"><span
-                style="width:100%;; display:inline-block">
-                <img class="img img-responsive mt24 mb8" src="leofren_logo.png" style="display:block; margin:0 auto; max-width:280px;">
-            </span>
-        </div>
+<!--
+  static/description/index.html — lf_zapier_compat
+  Leofren Technologies brand system, adapted for the Odoo App Store sanitizer.
+
+  Constraints respected (verified against Odoo's actual sanitizer behavior):
+    - fragment only, no <html>/<head>/<body>, no <style>, no <script>
+    - all styling is inline style="" attributes, hex colors only
+      (no rgba, no gradients, no transitions/transforms)
+    - flexbox alignment (align-items / justify-content / gap) only via
+      Bootstrap utility classes — inline flex alignment gets stripped
+    - only mailto: links — external <a href> is rewritten to <span>
+    - no unicode arrows/dashes — HTML entities instead
+    - no @font-face possible without <style>, so this uses the page's
+      default font rather than Archivo
+-->
+
+<!-- ============ BRAND HEADER ============ -->
+<section>
+  <div class="container pt-4 pb-3" style="border-bottom:2px solid #FFA500">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
+      <img src="leofren-logo.png" alt="Leofren Technologies" style="width:160px">
+      <span style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#7C8288">Official Odoo Ready Partner</span>
     </div>
+  </div>
 </section>
-<section class="oe_container fixed-top position-relative" style="margin:-5rem 0 0">
-    <div class="o_equal_col_sm">
-        <div class="shadow bg-white pb32 pt32 px-2" style="border-radius:15px">
-            <!-- Label -->
-            <h1
-                style="color:#0f1e40; font-family: Montserrat; font-weight:700; text-align:center; text-transform:uppercase; opacity:1; font-size:24px; margin-bottom:18px; margin-top:18px">
-                Zapier RPC Compatibility
-            </h1>
-            <!-- Tag Line -->
-            <h3 class="oe_slogan"
-                style="color:#3b4a6b; font-family:Roboto; font-weight:400; font-size:18px; text-align:center; margin-bottom:24px;">
-                Stop legacy XML-RPC clients like Zapier from breaking your search() calls
-            </h3>
-            <!-- Summary -->
-            <p class="mb16 text-center text-black-dark"
-                style="font-family: Roboto;font-weight: initial;color: #091E42;text-align:center;">
-                Zapier's "Odoo ERP Self Hosted" app - and a few other legacy XML-RPC clients - still call
-                <code>search()</code> using the pre-v8 convention, where <code>context</code> was passed as a
-                positional argument: <code>search(domain, offset, limit, order, context[, count])</code>.
-            </p>
-            <p class="mb16 text-center text-black-dark"
-                style="font-family: Roboto;font-weight: initial;color: #091E42;text-align:center;">
-                Modern Odoo no longer accepts <code>context</code> positionally at all, so that dict lands in
-                <code>search()</code>'s <code>count</code> slot and the call fails with
-                <code>TypeError: BaseModel.search() takes from 2 to 5 positional arguments but 6 were given</code>.
-                This module detects that legacy call shape and reinterprets it correctly - with zero effect on
-                any normal, modern call.
-            </p>
-            <div class="text-center d-flex justify-content-center">
-                <div class="d-flex align-items-center">
-                    <p class="text-center mt-2 mb-0" style="font-size: 16px;font-weight: 600;">
-                        <span>Connect with us on email:</span>
-                    </p>
-                    <h2 class="m-0 ms-2">
-                        <a href="mailto:contact@leofren.com">contact@leofren.com</a>
-                    </h2>
-                </div>
-            </div>
-        </div>
+
+<!-- ============ HERO ============ -->
+<section>
+  <div class="container pt-5 pb-4">
+    <div class="row">
+      <div class="col-12">
+        <p style="font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#A65C00; margin-bottom:10px">Leofren Technologies &middot; Odoo Compatibility</p>
+        <h1 style="font-size:34px; font-weight:700; line-height:1.2; color:#010101; margin-bottom:18px">Stop legacy XML-RPC clients from breaking your search() calls</h1>
+        <p style="font-size:18px; line-height:1.6; color:#2E3033; max-width:700px">
+          Zapier's "Odoo ERP Self Hosted" app, and a handful of other older XML-RPC clients,
+          still call <code>search()</code> using the pre-v8 calling convention, where
+          <code>context</code> was passed positionally instead of as a keyword. Modern Odoo
+          rejects that shape outright. This module recognizes it and repairs the call, with
+          no effect on anything that calls <code>search()</code> normally.
+        </p>
+      </div>
     </div>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <div style="background-color:#010101; border-radius:4px; padding:20px 24px">
+          <p style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#FFA500; margin-bottom:8px">What breaks today, without this module</p>
+          <p style="font-family:monospace; font-size:13px; color:#F2F2F0; margin-bottom:0">TypeError: BaseModel.search() takes from 2 to 5 positional arguments but 6 were given</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
-<!-- Highlights -->
-<section class="oe_container pb-5">
-    <div class="mt64 mb64">
-        <h2 style="color:#091E42; font-family:&quot;Montserrat&quot;; text-align:center; margin:25px auto; text-transform:uppercase"
-            class="oe_slogan">
-            <b>Why you need this</b>
-        </h2>
-        <div class="row">
-            <div class="col-md-6 col-sm-12 mt32">
-                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
-                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
-                        No more failed Zapier polling
-                    </h3>
-                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
-                        Zapier triggers that poll a model with <code>search()</code> stop throwing
-                        <code>TypeError</code> once this module is installed - no changes needed on the Zapier
-                        side.
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-6 col-sm-12 mt32">
-                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
-                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
-                        Fully backward compatible
-                    </h3>
-                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
-                        Only the exact legacy call shape (a stray positional <code>int</code> where the domain
-                        belongs) is intercepted. Every normal <code>search()</code> call - from the web client,
-                        other modules, or modern RPC clients - passes through completely untouched.
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-6 col-sm-12 mt32">
-                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
-                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
-                        Zero configuration
-                    </h3>
-                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
-                        Install the module and it works immediately. There are no settings, menus, or views to
-                        configure.
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-6 col-sm-12 mt32">
-                <div class="container shadow" style="border-radius:10px; padding:20px 20px">
-                    <h3 class="mt16 mb0" style="font-family:Roboto; font-weight:500; font-size:22px">
-                        Free and open source
-                    </h3>
-                    <p class="mt8" style="font-family:Roboto; color:#091E42;">
-                        Released under the LGPL-3 license. Use it, inspect it, and adapt it freely.
-                    </p>
-                </div>
-            </div>
+
+<!-- ============ WHY YOU NEED THIS ============ -->
+<section style="background-color:#f8f9fa">
+  <div class="container py-5">
+    <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:6px">Why you need this</h2>
+    <p style="color:#7C8288; margin-bottom:32px">One narrow fix, installed once, and Zapier polling stops failing.</p>
+
+    <div class="row">
+      <div class="col-md-6 col-12 mb-4">
+        <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">No more failed Zapier polling</h3>
+          <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Triggers that poll a model with <code>search()</code> stop throwing <code>TypeError</code> the moment this module is installed. Nothing changes on the Zapier side.</p>
         </div>
+      </div>
+      <div class="col-md-6 col-12 mb-4">
+        <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Fully backward compatible</h3>
+          <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Only the exact legacy shape &mdash; a stray positional integer where the domain belongs &mdash; gets intercepted. Every other caller passes straight through untouched.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-12 mb-4">
+        <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Zero configuration</h3>
+          <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Install it and it works. There is nothing to set up: no settings page, no menu, no view.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-12 mb-4">
+        <div style="border-top:2px solid #FFA500; padding-top:12px; height:100%">
+          <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Free and open source</h3>
+          <p style="font-size:14.5px; color:#7C8288; margin-bottom:0">Released under LGPL-3. Read the 38 lines yourself, adapt them, keep them &mdash; no strings attached.</p>
+        </div>
+      </div>
     </div>
+  </div>
 </section>
-<!-- FAQs -->
-<section class="oe_container mt32 mb32" style="margin-left:calc(-42vw + 50%); width:84vw">
-    <div class="row" style="max-width:1540px; margin:0 auto; padding-bottom:64px; border-radius:15px">
-        <div class="container-fluid" style="border:1px solid #eee; border-radius:10px">
-            <div class="mt48 mb16">
-                <h2 style="color:#091E42; font-family:&quot;Montserrat&quot;; text-align:center; margin:25px auto; text-transform:uppercase"
-                    class="oe_slogan">
-                    <b>FAQs</b>
-                </h2>
-                <div class="s_faq mt32 mb32" style="border-radius:10px; background-color:#fff !important">
-                    <div class="accordion" id="accordion">
-                        <div class="accordion-item overflow-hidden">
-                            <h2 class="accordion-header p-2" id="heading1">
-                                <a class="accordion-button collapsed bg-transparent shadow-none" data-bs-toggle="collapse"
-                                    href="#faq1" aria-expanded="false" aria-controls="faq1">
-                                    Does this module change any behavior for normal users?
-                                </a>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse" aria-labelledby="heading1"
-                                data-bs-parent="#accordion" style="background-color: rgb(240, 244, 247); padding: 15px;">
-                                <p class="mb0" style="height: auto;padding-left: 2%;margin-left: 2%;font-family: Roboto;">
-                                    No. It only intercepts one specific, otherwise-invalid legacy call shape.
-                                    Every other call to <code>search()</code> is passed straight through to
-                                    Odoo's original implementation.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="accordion-item overflow-hidden">
-                            <h2 class="accordion-header p-2" id="heading2">
-                                <a class="accordion-button collapsed bg-transparent shadow-none" data-bs-toggle="collapse"
-                                    href="#faq2" aria-expanded="false" aria-controls="faq2">
-                                    Which RPC clients does this fix?
-                                </a>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" aria-labelledby="heading2"
-                                data-bs-parent="#accordion" style="background-color: rgb(240, 244, 247); padding: 15px;">
-                                <p class="mb0" style="height: auto;padding-left: 2%;margin-left: 2%;font-family: Roboto;">
-                                    It was confirmed against Zapier's "Odoo ERP Self Hosted" app, and applies to
-                                    any other XML-RPC client still using the pre-v8
-                                    <code>search(domain, offset, limit, order, context)</code> calling
-                                    convention.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="accordion-item overflow-hidden">
-                            <h2 class="accordion-header p-2" id="heading3">
-                                <a class="accordion-button collapsed bg-transparent shadow-none" data-bs-toggle="collapse"
-                                    href="#faq3" aria-expanded="false" aria-controls="faq3">
-                                    Does this work on both Community and Enterprise?
-                                </a>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" aria-labelledby="heading3"
-                                data-bs-parent="#accordion" style="background-color: rgb(240, 244, 247); padding: 15px;">
-                                <p class="mb0" style="height: auto;padding-left: 2%;margin-left: 2%;font-family: Roboto;">
-                                    Yes. It only depends on <code>base</code> and works the same way on Odoo
-                                    Community and Enterprise, on-premise or Odoo.sh.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+<!-- ============ FAQ ============ -->
+<section>
+  <div class="container py-5">
+    <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:24px">Frequently asked</h2>
+
+    <div style="border-bottom:1px solid #DCDFE2; padding:18px 0">
+      <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Does this change behavior for normal users?</h3>
+      <p style="font-size:15px; color:#2E3033; margin-bottom:0">No. It only intercepts one specific, otherwise-invalid legacy call shape. Every other call to <code>search()</code> runs through Odoo's original implementation exactly as before.</p>
     </div>
+    <div style="border-bottom:1px solid #DCDFE2; padding:18px 0">
+      <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Which RPC clients does this fix?</h3>
+      <p style="font-size:15px; color:#2E3033; margin-bottom:0">Confirmed against Zapier's "Odoo ERP Self Hosted" app, and applicable to any other XML-RPC client still built on the pre-v8 <code>search(domain, offset, limit, order, context)</code> convention.</p>
+    </div>
+    <div style="padding:18px 0">
+      <h3 style="font-size:16px; font-weight:700; color:#010101; margin-bottom:6px">Does it work on Community and Enterprise?</h3>
+      <p style="font-size:15px; color:#2E3033; margin-bottom:0">Yes. It depends only on <code>base</code>, so it behaves the same way on Community and Enterprise, on-premise or Odoo.sh.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPATIBILITY ============ -->
+<section style="background-color:#f8f9fa">
+  <div class="container py-5">
+    <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:24px">Compatibility</h2>
+    <table style="width:100%; max-width:560px; border-collapse:collapse">
+      <tr>
+        <th style="text-align:left; padding:12px 16px 12px 0; border-bottom:1px solid #DCDFE2; font-weight:700; color:#010101; width:190px">Availability</th>
+        <td style="text-align:left; padding:12px 0; border-bottom:1px solid #DCDFE2; color:#7C8288">Odoo Online, Odoo.sh, On Premise</td>
+      </tr>
+      <tr>
+        <th style="text-align:left; padding:12px 16px 12px 0; border-bottom:1px solid #DCDFE2; font-weight:700; color:#010101">Lines of code</th>
+        <td style="text-align:left; padding:12px 0; border-bottom:1px solid #DCDFE2; color:#7C8288">38</td>
+      </tr>
+      <tr>
+        <th style="text-align:left; padding:12px 16px 12px 0; border-bottom:1px solid #DCDFE2; font-weight:700; color:#010101">Technical name</th>
+        <td style="text-align:left; padding:12px 0; border-bottom:1px solid #DCDFE2; color:#7C8288"><code>lf_zapier_compat</code></td>
+      </tr>
+      <tr>
+        <th style="text-align:left; padding:12px 16px 12px 0; border-bottom:1px solid #DCDFE2; font-weight:700; color:#010101">Depends on</th>
+        <td style="text-align:left; padding:12px 0; border-bottom:1px solid #DCDFE2; color:#7C8288"><code>base</code></td>
+      </tr>
+      <tr>
+        <th style="text-align:left; padding:12px 16px 12px 0; border-bottom:1px solid #DCDFE2; font-weight:700; color:#010101">License</th>
+        <td style="text-align:left; padding:12px 0; border-bottom:1px solid #DCDFE2; color:#7C8288">LGPL-3</td>
+      </tr>
+      <tr>
+        <th style="text-align:left; padding:12px 16px 12px 0; font-weight:700; color:#010101">Website</th>
+        <td style="text-align:left; padding:12px 0; color:#7C8288">leofren.com</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<section>
+  <div class="container py-5">
+    <div style="background-color:#010101; border-radius:4px; padding:36px 40px">
+      <h2 style="color:#fff; font-size:22px; font-weight:700; margin-bottom:8px">Questions before you install?</h2>
+      <p style="color:#C9C9C9; margin-bottom:18px; max-width:520px">Reach the team directly and we'll help you confirm the fix covers your setup.</p>
+      <a href="mailto:contact@leofren.com" style="color:#FFA500; font-weight:700; text-decoration:none; border-bottom:2px solid #FFA500">contact@leofren.com</a>
+    </div>
+  </div>
 </section>
