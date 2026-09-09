@@ -18,7 +18,7 @@
 <section>
   <div class="container pt-4 pb-3" style="border-bottom:2px solid #FFA500">
     <div class="d-flex align-items-center justify-content-between flex-wrap">
-      <img src="leofren_logo.png" alt="Leofren Technologies" style="width:160px">
+      <img src="leofren-logo.png" alt="Leofren Technologies" style="width:160px">
       <span style="font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#7C8288">Official Odoo Ready Partner</span>
     </div>
   </div>
@@ -41,11 +41,30 @@
       </div>
     </div>
 
-    <div class="row mt-4">
+    <div class="row mt-3">
       <div class="col-12">
-        <div style="background-color:#010101; border-radius:4px; padding:20px 24px">
-          <p style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#FFA500; margin-bottom:8px">What breaks today, without this module</p>
-          <p style="font-family:monospace; font-size:13px; color:#F2F2F0; margin-bottom:0">TypeError: BaseModel.search() takes from 2 to 5 positional arguments but 6 were given</p>
+        <div style="border:1px solid #DCDFE2; border-radius:4px; padding:2px 0">
+          <span style="font-size:13px; color:#2E3033; margin:0 20px">Jump to:</span>
+          <a href="#why" style="font-size:13px; color:#A65C00; text-decoration:none; margin-right:20px">Why you need this</a>
+          <a href="#faq" style="font-size:13px; color:#A65C00; text-decoration:none; margin-right:20px">FAQ</a>
+          <a href="#compat" style="font-size:13px; color:#A65C00; text-decoration:none">Compatibility</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-md-6 col-12 mb-3">
+        <div style="background-color:#010101; border-radius:4px; padding:20px 24px; height:100%">
+          <p style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#FFA500; margin-bottom:8px">Today, without this module</p>
+          <p style="font-family:monospace; font-size:12.5px; color:#F2F2F0; margin-bottom:6px">client.search([['id','&gt;',0]], 0, 10, 'id', {'lang':'en_US'})</p>
+          <p style="font-family:monospace; font-size:12.5px; color:#ff8a8a; margin-bottom:0">TypeError: search() takes from 2 to 5 positional arguments but 6 were given</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-12 mb-3">
+        <div style="background-color:#010101; border-radius:4px; padding:20px 24px; height:100%">
+          <p style="font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#FFA500; margin-bottom:8px">With lf_zapier_compat installed</p>
+          <p style="font-family:monospace; font-size:12.5px; color:#F2F2F0; margin-bottom:6px">client.search([['id','&gt;',0]], 0, 10, 'id', {'lang':'en_US'})</p>
+          <p style="font-family:monospace; font-size:12.5px; color:#8fe38f; margin-bottom:0">&#8594; recognized as legacy shape, context applied, results returned</p>
         </div>
       </div>
     </div>
@@ -53,8 +72,8 @@
 </section>
 
 <!-- ============ WHY YOU NEED THIS ============ -->
-<section style="background-color:#f8f9fa">
-  <div class="container py-5">
+<section id="why" style="background-color:#f8f9fa">
+  <div class="container pt-5 pb-4">
     <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:6px">Why you need this</h2>
     <p style="color:#7C8288; margin-bottom:32px">One narrow fix, installed once, and Zapier polling stops failing.</p>
 
@@ -88,8 +107,8 @@
 </section>
 
 <!-- ============ FAQ ============ -->
-<section>
-  <div class="container py-5">
+<section id="faq">
+  <div class="container pt-5 pb-4">
     <h2 style="font-size:24px; font-weight:700; color:#010101; margin-bottom:24px">Frequently asked</h2>
 
     <div style="border-bottom:1px solid #DCDFE2; padding:18px 0">
