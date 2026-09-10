@@ -50,3 +50,22 @@ class TestLegacySearchCompat(TransactionCase):
         # raising rather than being silently swallowed.
         with self.assertRaises(TypeError):
             self.env['res.country'].search(0, count=True)
+
+    def test_api_model_marker_preserved(self):
+        # Overriding search() silently drops the @api.model marker the
+        # original carries unless it's redeclared on the override too.
+        # odoo.api.call_kw() (used by both XML <function> tag data loading
+        # and every RPC call) checks method._api == 'model' to decide
+        # whether the first argument is the domain (correct) or record ids
+        # to browse() first (wrong) - losing it broke every XML
+        # <function name="search"> call during module loading with
+        # "search() missing 1 required positional argument: 'domain'",
+        # since the domain value was being popped off and browse()'d
+        # instead. Regression test for that exact failure mode. (v17/v18
+        # mark this via method._api == 'model'; v19 renamed it to a
+        # boolean method._api_model instead.)
+        self.assertEqual(
+            getattr(self.env['res.country'].search, '_api', None), 'model',
+            "search() must stay decorated with @api.model or Odoo's own "
+            "XML <function> data loader misinterprets its arguments.",
+        )

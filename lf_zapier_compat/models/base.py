@@ -2,7 +2,7 @@
 
 import logging
 
-from odoo import models
+from odoo import api, models
 
 _logger = logging.getLogger(__name__)
 
@@ -10,7 +10,18 @@ _logger = logging.getLogger(__name__)
 class Base(models.AbstractModel):
     _inherit = 'base'
 
+    @api.model
+    @api.readonly
+    @api.returns('self')
     def search(self, domain, *args, **kwargs):
+        # Overriding search() drops the @api.model/@api.readonly/
+        # @api.returns markers the original carries unless redeclared here -
+        # odoo/tools/convert.py's XML <function> tag handler checks the
+        # _api_model marker to decide whether to treat the first argument as
+        # the domain (correct) or pop it off as record ids to browse()
+        # (wrong). Losing it breaks every XML <function name="search"> call
+        # during module loading.
+        #
         # Some legacy XML-RPC clients (e.g. Zapier's "Odoo ERP Self Hosted"
         # app) send an extra leading placeholder int before/instead of the
         # actual domain - mimicking the pre-v6 method signature that used to
