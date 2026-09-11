@@ -3,15 +3,16 @@
     'name': 'Zapier RPC Compatibility',
     'version': '18.0.1.0.1',
     'category': 'Extra Tools',
-    'summary': 'Accepts the legacy pre-v8 search() calling convention some XML-RPC clients still use',
+    'summary': 'Accepts a legacy search() call shape some XML-RPC clients still send',
     'description': """
 Zapier RPC Compatibility
 =========================
-Zapier's "Odoo ERP Self Hosted" app (and other legacy XML-RPC clients) still
-call search() using the pre-v8 convention where context was a positional
-argument: search(domain, offset, limit, order, context[, count]). Modern
-Odoo no longer accepts context positionally at all, so that dict lands in
-search()'s count slot and raises TypeError: BaseModel.search() takes from
+Zapier's "Odoo ERP Self Hosted" app (and possibly other legacy XML-RPC
+clients) calls search() with an extra leading placeholder argument before
+the domain, followed by offset, limit, order and context - a shape that
+worked without error through Odoo 16. Odoo 17 removed the count parameter
+from search()'s signature, so that trailing context dict now overflows the
+positional arguments and raises TypeError: BaseModel.search() takes from
 2 to 5 positional arguments but 6 were given.
 
 This module patches base.search() to detect that legacy shape and translate
