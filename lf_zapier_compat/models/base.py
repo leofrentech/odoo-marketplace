@@ -22,12 +22,14 @@ class Base(models.AbstractModel):
         #
         # Some legacy XML-RPC clients (e.g. Zapier's "Odoo ERP Self Hosted"
         # app) send an extra leading placeholder int before/instead of the
-        # actual domain - mimicking the pre-v6 method signature that used to
-        # take (cr, uid, domain, ...) directly, before the framework's own
-        # RPC dispatch stripped cr/uid at a higher level. Confirmed against
-        # two real failing calls with different remaining shapes (one with
-        # a real domain list further along, one with none at all - just
-        # limit/order for what looks like "fetch latest record" polling).
+        # actual domain, followed by offset/limit/order/context - a shape
+        # that worked without error through Odoo 16 (context just landed in
+        # the count slot search() dropped in Odoo 17, overflowing the
+        # positional arguments and raising TypeError since). Confirmed
+        # against two real failing calls with different remaining shapes
+        # (one with a real domain list further along, one with none at all -
+        # just limit/order for what looks like "fetch latest record"
+        # polling).
         #
         # Only trigger on that exact marker (domain is literally an int -
         # excluding bool, a legitimate domain value in its own right).
