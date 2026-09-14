@@ -1,6 +1,8 @@
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
+MAX_FILENAME_PRODUCTS_LENGTH = 80
+
 
 class ProductLabelLayout(models.TransientModel):
     # ------------------------------------------------------------------
@@ -41,9 +43,61 @@ class ProductLabelLayout(models.TransientModel):
     # 8. ACTION METHODS
     # ------------------------------------------------------------------
 
+    def process(self):
+        """
+        Download QR labels as a named attachment instead of through the
+        generic report-download route, which can't include the product
+        name(s) in the filename here: the client only appends docids to
+        the report URL when the action carries no `data`, but reports
+        built from a wizard (this one included) always populate `data`
+        with the print options, so that branch never triggers.
+        """
+        self.ensure_one()
+        if self.print_format != "qr":
+            return super().process()
+
+        xml_id, data = self._prepare_report_data()
+        pdf_content, __ = self.env["ir.actions.report"]._render_qweb_pdf(
+            xml_id, data=data
+        )
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": self._get_qr_report_filename(data["products"]),
+                "type": "binary",
+                "raw": pdf_content,
+                "mimetype": "application/pdf",
+            }
+        )
+
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
+            "close_on_report_download": True,
+        }
+
     # ------------------------------------------------------------------
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
+
+    def _get_qr_report_filename(self, products):
+        """Build a PDF filename that names the product(s) it covers.
+
+        :param products: list of dicts as built by _prepare_report_data,
+            each with at least a "name" key.
+        """
+        names = [product["name"] for product in products]
+        if len(names) == 1:
+            return _("QR Label - %s.pdf", names[0])
+
+        joined = ", ".join(names)
+        if len(joined) > MAX_FILENAME_PRODUCTS_LENGTH:
+            joined = _(
+                "%(first)s and %(count)s more",
+                first=names[0],
+                count=len(names) - 1,
+            )
+        return _("QR Labels - %s.pdf", joined)
 
     def _prepare_report_data(self):
         """
@@ -74,7 +128,9 @@ class ProductLabelLayout(models.TransientModel):
             "quantity": self.custom_quantity,
             "layout_wizard": self.id,
         }
-        products = self.product_tmpl_ids.product_variant_ids or self.product_ids
+        products = (
+            self.product_tmpl_ids.product_variant_ids or self.product_ids
+        )
 
         data.update(
             {
