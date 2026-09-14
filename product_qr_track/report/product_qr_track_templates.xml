@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_product_qr">
+        <t t-call="web.basic_layout">
+            <style>
+                /* This label is smaller than Bootstrap's container gutter, drop it. */
+                body.container, body.container-fluid { padding: 0 !important; margin: 0 !important; }
+            </style>
+            <t t-if="quantity and products">
+                <t t-foreach="products" t-as="product">
+                    <t t-foreach="range(quantity)" t-as="iter">
+                        <div style="page-break-before:always; width:20mm; height:20mm; padding:2.5mm;">
+                            <div t-out="product['qr_url']"
+                                t-options="{'widget': 'barcode', 'symbology': 'QR', 'width': 300, 'height': 300, 'img_style': 'width:20mm;height:20mm;display:block'}" />
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

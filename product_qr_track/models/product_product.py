@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class ProductProduct(models.Model):
@@ -56,7 +56,7 @@ class ProductProduct(models.Model):
     def action_open_qr_visits(self):
         self.ensure_one()
         return {
-            "name": "Product QR Visits",
+            "name": _("Product QR Visits"),
             "type": "ir.actions.act_window",
             "res_model": "product.qr.visit",
             "view_mode": "graph,list,form",

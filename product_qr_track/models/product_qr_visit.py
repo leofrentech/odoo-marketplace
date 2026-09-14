@@ -1,7 +1,7 @@
-from odoo import fields, models
+from odoo import _, fields, models
 
 
-class ProductQRVisit(models.Model):
+class ProductQrVisit(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
@@ -26,7 +26,7 @@ class ProductQRVisit(models.Model):
     product_id = fields.Many2one(
         "product.product", "Product", ondelete="cascade", required=True
     )
-    country_id = fields.Many2one("res.country", "Country", ondelete="restrict")
+    country_id = fields.Many2one("res.country", "Country", ondelete="set null")
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
@@ -51,7 +51,7 @@ class ProductQRVisit(models.Model):
     def action_open_product(self):
         self.ensure_one()
         return {
-            "name": "Product",
+            "name": _("Product"),
             "type": "ir.actions.act_window",
             "res_model": "product.product",
             "view_mode": "form",
