@@ -1,13 +1,13 @@
 from odoo import models
 
 
-class ReportProductQrTrackReportProductQr(models.AbstractModel):
+class ReportProductQr(models.AbstractModel):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
     _name = "report.product_qr_track.report_product_qr"
-    _description = "Product Label Report 2x7"
+    _description = "Product QR Label Report"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
