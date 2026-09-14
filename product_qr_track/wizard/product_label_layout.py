@@ -1,4 +1,5 @@
 from odoo import fields, models
+from odoo.exceptions import UserError
 
 
 class ProductLabelLayout(models.TransientModel):
@@ -50,15 +51,30 @@ class ProductLabelLayout(models.TransientModel):
         """
         # Use default behavior if not QR format
         if self.print_format != "qr":
-            return super(ProductLabelLayout, self)._prepare_report_data()
+            return super()._prepare_report_data()
+
+        # A QR code identifies a single variant, so a multi-variant
+        # product can't be printed as one label: which variant's code
+        # would it even carry? Require printing from the Product
+        # Variants list instead, where each variant is picked explicitly.
+        multi_variant_templates = self.product_tmpl_ids.filtered(
+            lambda template: len(template.product_variant_ids) > 1
+        )
+        if multi_variant_templates:
+            raise UserError(
+                self.env._(
+                    "%s has multiple variants. Print QR labels from the "
+                    "Product Variants list instead, so each variant gets "
+                    "its own code.",
+                    ", ".join(multi_variant_templates.mapped("name")),
+                )
+            )
 
         data = {
             "quantity": self.custom_quantity,
-            "base_url": self.get_base_url(),
             "layout_wizard": self.id,
         }
-        # Determine active model and product records
-        products = self.product_tmpl_ids or self.product_ids
+        products = self.product_tmpl_ids.product_variant_ids or self.product_ids
 
         data.update(
             {

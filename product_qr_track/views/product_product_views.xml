@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="product_normal_form_view" model="ir.ui.view">
-        <field name="name">product.normal.form.view.inherit.qr_scan_track</field>
+        <field name="name">product.normal.form.view.inherit.product_qr_track</field>
         <field name="model">product.product</field>
         <field name="inherit_id" ref="product.product_normal_form_view" />
         <field name="arch" type="xml">

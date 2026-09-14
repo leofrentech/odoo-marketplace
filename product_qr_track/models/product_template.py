@@ -56,7 +56,7 @@ class ProductTemplate(models.Model):
     def action_open_qr_visits(self):
         self.ensure_one()
         return {
-            "name": "Product QR Visits",
+            "name": self.env._("Product QR Visits"),
             "type": "ir.actions.act_window",
             "res_model": "product.qr.visit",
             "view_mode": "graph,list,form",
