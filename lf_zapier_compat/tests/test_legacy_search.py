@@ -21,6 +21,19 @@ class TestLegacySearchCompat(TransactionCase):
             0, [('id', '>', 0)], 0, 5, 'id', {'lang': 'en_US'})
         self.assertEqual(legacy.ids, expected.ids)
 
+    def test_legacy_call_with_domain_no_placeholder(self):
+        # A real domain (no leading int placeholder) followed by more
+        # positional args than search() accepts - e.g. context sent
+        # positionally too. Raises "takes from 2 to 5 positional
+        # arguments but N were given" instead of the usual "missing
+        # domain" TypeError, since the domain itself is already valid.
+        Partner = self.env['res.partner']
+        expected = Partner.search(
+            [('id', '>', 0)], offset=0, limit=5, order='id')
+        legacy = Partner.search(
+            [('id', '>', 0)], 0, 5, 'id', {'lang': 'en_US'})
+        self.assertEqual(legacy.ids, expected.ids)
+
     def test_legacy_call_without_domain(self):
         # Confirmed real-world shape: Zapier polling for the latest
         # record, with no domain at all - just limit/order/context.
