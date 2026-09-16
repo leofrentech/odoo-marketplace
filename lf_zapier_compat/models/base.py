@@ -23,32 +23,42 @@ class Base(models.AbstractModel):
         # during module loading.
         #
         # Some legacy XML-RPC clients (e.g. Zapier's "Odoo ERP Self Hosted"
-        # app) send an extra leading placeholder int before/instead of the
-        # actual domain, followed by offset/limit/order/context - a shape
-        # that worked without error through Odoo 16 (context just landed in
-        # the count slot search() dropped in Odoo 17, overflowing the
-        # positional arguments and raising TypeError since). Confirmed
-        # against two real failing calls with different remaining shapes
-        # (one with a real domain list further along, one with none at all -
-        # just limit/order for what looks like "fetch latest record"
-        # polling).
+        # app) send extra positional arguments the current search()
+        # signature doesn't accept, in one of two shapes:
+        #   1. An extra leading placeholder int before/instead of the
+        #      actual domain, followed by offset/limit/order/context - a
+        #      shape that worked without error through Odoo 16 (context
+        #      just landed in the count slot search() dropped in Odoo 17,
+        #      overflowing the positional arguments and raising TypeError
+        #      since).
+        #   2. A real domain followed by more positional args than
+        #      search() accepts (offset, limit, order - 3 extra max), e.g.
+        #      context sent positionally too, without the placeholder int.
+        #      This doesn't raise the usual "missing domain" TypeError - it
+        #      raises "takes from 2 to 5 positional arguments but N were
+        #      given" instead, since the domain itself is already valid.
+        # Confirmed against real failing calls of both shapes (plus a
+        # third remaining shape of case 1: no real domain at all, just
+        # limit/order for what looks like "fetch latest record" polling).
         #
-        # Only trigger on that exact marker (domain is literally an int -
-        # excluding bool, a legitimate domain value in its own right).
-        # Anything else, including Odoo's own internal Domain object (not a
-        # list/tuple, but a perfectly valid domain), passes straight through
-        # untouched - this must never re-run its own logic on a call that
-        # already works.
-        if type(domain) is not int:
+        # Only trigger on one of those two unambiguous markers - domain is
+        # literally an int (excluding bool, a legitimate domain value in
+        # its own right), or there are more positional args than search()
+        # accepts. Anything else, including Odoo's own internal Domain
+        # object (not a list/tuple, but a perfectly valid domain), passes
+        # straight through untouched - this must never re-run its own
+        # logic on a call that already works.
+        if type(domain) is not int and len(args) <= 3:
             return super().search(domain, *args, **kwargs)
 
         orig_domain, orig_args, orig_kwargs = domain, args, kwargs
         leftover = list(args)
-        domain = []
-        for i, arg in enumerate(leftover):
-            if isinstance(arg, (list, tuple)):
-                domain = leftover.pop(i)
-                break
+        if type(domain) is int:
+            domain = []
+            for i, arg in enumerate(leftover):
+                if isinstance(arg, (list, tuple)):
+                    domain = leftover.pop(i)
+                    break
 
         # Classify what's left by type rather than assuming a fixed
         # position - the two real shapes seen so far don't agree on where
