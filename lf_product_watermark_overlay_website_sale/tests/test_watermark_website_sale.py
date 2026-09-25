@@ -61,6 +61,29 @@ class TestProductWatermarkWebsiteSale(TransactionCase):
         self.assertFalse(extra.original_image_1920)
         self.assertEqual(bytes(extra.image_1920), bytes(original_b64))
 
+    def test_video_extra_media_not_watermarked(self):
+        """Extra media carrying a video only uses image_1920 as the
+        video's thumbnail, so it is never watermarked — neither on
+        upload nor by the backfill cron."""
+        _configure_company_watermark(self.env, enabled=True)
+        product = self.env["product.template"].create({
+            "name": "Video Gallery Product", "is_watermark_eligible": True,
+        })
+        thumbnail_b64 = _make_image_b64()
+        video = self.env["product.image"].create({
+            "name": "Video 1",
+            "product_tmpl_id": product.id,
+            "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "image_1920": thumbnail_b64,
+        })
+        self.assertFalse(video.original_image_1920)
+
+        self.env["product.template"]._cron_regenerate_watermarked_images()
+
+        video = self.env["product.image"].browse(video.id)
+        self.assertFalse(video.original_image_1920)
+        self.assertEqual(bytes(video.image_1920), bytes(thumbnail_b64))
+
     def test_extra_image_not_watermarked_when_disabled(self):
         """No automatic watermark on a new extra image while company
         watermarking is disabled."""
@@ -127,6 +150,63 @@ class TestProductWatermarkWebsiteSale(TransactionCase):
         matched._apply_watermark()
         extra = self.env["product.image"].browse(extra.id)
         self.assertTrue(extra.original_image_1920)
+
+    def test_wizard_apply_covers_extra_images_but_not_videos(self):
+        """The wizard's Apply watermarks the product's extra images too
+        (template- and variant-level), but never video media."""
+        _configure_company_watermark(self.env, enabled=False)
+        product = self.env["product.template"].create({"name": "Wizard Gallery Product"})
+        extra = self.env["product.image"].create({
+            "name": "Extra 1",
+            "product_tmpl_id": product.id,
+            "image_1920": _make_image_b64(),
+        })
+        variant_extra = self.env["product.image"].create({
+            "name": "Variant Extra",
+            "product_variant_id": product.product_variant_id.id,
+            "image_1920": _make_image_b64(color=(0, 0, 255)),
+        })
+        video = self.env["product.image"].create({
+            "name": "Video 1",
+            "product_tmpl_id": product.id,
+            "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "image_1920": _make_image_b64(),
+        })
+
+        self.env["product.template.watermark"].create({
+            "product_tmpl_id": product.id,
+            "watermark_type": "text",
+            "watermark_text": "CUSTOM",
+        }).action_apply()
+
+        self.assertTrue(extra.original_image_1920)
+        self.assertTrue(variant_extra.original_image_1920)
+        self.assertFalse(video.original_image_1920)
+
+    def test_remove_watermark_reverts_extra_images(self):
+        """The product's Remove Watermark action restores its extra
+        images too, and is offered even when only an extra image (not
+        the main one) carries a watermark."""
+        _configure_company_watermark(self.env, enabled=True)
+        product = self.env["product.template"].create({
+            "name": "Remove Gallery Product", "is_watermark_eligible": True,
+        })
+        original_b64 = _make_image_b64()
+        extra = self.env["product.image"].create({
+            "name": "Extra 1",
+            "product_tmpl_id": product.id,
+            "image_1920": original_b64,
+        })
+        self.assertFalse(product.original_image_1920)
+        self.assertTrue(product.has_watermark)
+
+        product.action_remove_watermark()
+
+        extra = self.env["product.image"].browse(extra.id)
+        self.assertFalse(extra.original_image_1920)
+        self.assertEqual(bytes(extra.image_1920), bytes(original_b64))
+        product.invalidate_recordset(["has_watermark"])
+        self.assertFalse(product.has_watermark)
 
     def test_marking_product_ineligible_reverts_extra_images(self):
         """Marking a product not eligible for watermarking also reverts

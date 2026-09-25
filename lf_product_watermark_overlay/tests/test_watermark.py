@@ -1,15 +1,19 @@
 import base64
 import io
 
-from PIL import Image
+from unittest.mock import patch
+
+from PIL import Image, ImageChops
 
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase, tagged
 
+from ..models.watermark_utils import _find_font_path, apply_watermark
 
-def _make_image_b64(size=(64, 64), color=(255, 0, 0)):
+
+def _make_image_b64(size=(64, 64), color=(255, 0, 0), image_format="PNG"):
     buffer = io.BytesIO()
-    Image.new("RGB", size, color).save(buffer, format="PNG")
+    Image.new("RGB", size, color).save(buffer, format=image_format)
     return base64.b64encode(buffer.getvalue())
 
 
@@ -34,6 +38,28 @@ class TestProductWatermark(TransactionCase):
         with self.assertRaises(ValidationError):
             self.env["res.config.settings"].create(
                 {"watermark_enabled": True, "watermark_type": "text", "watermark_opacity": 1.5}
+            ).execute()
+
+    def test_logo_scaled_to_logo_size(self):
+        """A logo far larger than the product photo is scaled down to fit
+        `logo_size`% of it, instead of covering the whole photo."""
+        base = Image.new("RGBA", (200, 100), (255, 255, 255, 255))
+        settings = {
+            "type": "image",
+            "logo": _make_image_b64(size=(1000, 500), color=(0, 0, 0)),
+            "logo_size": 20,
+            "position": "center",
+            "opacity": 1.0,
+        }
+        result = apply_watermark(base, settings)
+        bbox = ImageChops.difference(result.convert("RGB"), base.convert("RGB")).getbbox()
+        # Fits a 40x20 box (20% of 200x100), keeping the logo's 2:1 ratio.
+        self.assertEqual((bbox[2] - bbox[0], bbox[3] - bbox[1]), (40, 20))
+
+    def test_logo_size_constraint_rejects_out_of_range(self):
+        with self.assertRaises(ValidationError):
+            self.env["res.config.settings"].create(
+                {"watermark_enabled": True, "watermark_type": "image", "watermark_logo_size": 0}
             ).execute()
 
     def test_automatic_watermark_on_upload_when_enabled(self):
@@ -72,7 +98,7 @@ class TestProductWatermark(TransactionCase):
         )
         self.assertFalse(product.original_image_1920)
 
-        wizard = self.env["product.watermark.wizard"].create({
+        wizard = self.env["product.template.watermark"].create({
             "product_tmpl_id": product.id,
             "watermark_type": "text",
             "watermark_text": "CUSTOM",
@@ -92,7 +118,7 @@ class TestProductWatermark(TransactionCase):
         product = self.env["product.template"].create(
             {"name": "Not Sticky Product", "image_1920": _make_image_b64()}
         )
-        wizard = self.env["product.watermark.wizard"].create({
+        wizard = self.env["product.template.watermark"].create({
             "product_tmpl_id": product.id,
             "watermark_type": "text",
             "watermark_text": "CUSTOM",
@@ -123,6 +149,119 @@ class TestProductWatermark(TransactionCase):
 
         self.assertFalse(product.original_image_1920)
         self.assertEqual(bytes(product.image_1920), bytes(original_b64))
+
+    def test_wizard_apply_covers_variant_images(self):
+        """The wizard's Apply watermarks every image of the product,
+        each variant's own image included, not just the main one."""
+        _configure_company_watermark(self.env, enabled=False)
+        product = self.env["product.template"].create({
+            "name": "Wizard Variant Product", "image_1920": _make_image_b64(),
+        })
+        variant = product.product_variant_id
+        variant.write({"image_variant_1920": _make_image_b64(color=(0, 0, 255))})
+        self.assertFalse(variant.original_image_variant_1920)
+
+        self.env["product.template.watermark"].create({
+            "product_tmpl_id": product.id,
+            "watermark_type": "text",
+            "watermark_text": "CUSTOM",
+        }).action_apply()
+
+        self.assertTrue(product.original_image_1920)
+        self.assertTrue(variant.original_image_variant_1920)
+
+    def test_remove_watermark_reverts_variant_images(self):
+        """Remove Watermark restores every image of the product, variant
+        images included, not just the template's main image."""
+        _configure_company_watermark(self.env, enabled=True)
+        product = self.env["product.template"].create({
+            "name": "Remove Variant Product", "is_watermark_eligible": True,
+        })
+        variant = product.product_variant_id
+        original_b64 = _make_image_b64(color=(0, 0, 255))
+        variant.write({"image_variant_1920": original_b64})
+        self.assertTrue(product.has_watermark)
+
+        product.action_remove_watermark()
+
+        self.assertFalse(variant.original_image_variant_1920)
+        self.assertEqual(bytes(variant.image_variant_1920), bytes(original_b64))
+
+    def test_wizard_remove_restores_original(self):
+        """The wizard's Remove button restores the original photo; it is
+        only offered while the product actually carries a watermark."""
+        _configure_company_watermark(self.env, enabled=True)
+        original_b64 = _make_image_b64()
+        product = self.env["product.template"].create({
+            "name": "Wizard Remove Product",
+            "is_watermark_eligible": True,
+            "image_1920": original_b64,
+        })
+        wizard = self.env["product.template.watermark"].create({
+            "product_tmpl_id": product.id,
+            "watermark_type": "text",
+            "watermark_text": "CUSTOM",
+        })
+        self.assertTrue(wizard.has_watermark)
+        self.assertTrue(wizard.can_apply)
+
+        wizard.action_remove()
+
+        self.assertFalse(product.original_image_1920)
+        self.assertEqual(bytes(product.image_1920), bytes(original_b64))
+        wizard.invalidate_recordset(["has_watermark"])
+        self.assertFalse(wizard.has_watermark)
+
+    def test_watermarked_image_keeps_original_format(self):
+        """The watermarked image is saved in the same format as the
+        uploaded one, not always re-encoded as (much larger) PNG."""
+        _configure_company_watermark(self.env, enabled=True)
+        for image_format in ("PNG", "JPEG", "WEBP"):
+            with self.subTest(image_format=image_format):
+                product = self.env["product.template"].create({
+                    "name": f"{image_format} Product",
+                    "is_watermark_eligible": True,
+                    "image_1920": _make_image_b64(image_format=image_format),
+                })
+                self.assertTrue(product.original_image_1920)
+                watermarked = Image.open(io.BytesIO(base64.b64decode(product.image_1920)))
+                self.assertEqual(watermarked.format, image_format)
+
+    def test_watermarked_webp_gets_resized_alternates(self):
+        """Odoo never resizes WebP server side; the smaller image fields
+        must still get genuinely resized versions of the watermarked
+        image, and PDF reports a JPEG fallback of it."""
+        _configure_company_watermark(self.env, enabled=True)
+        product = self.env["product.template"].create({
+            "name": "Large WebP Product",
+            "is_watermark_eligible": True,
+            "image_1920": _make_image_b64(size=(600, 400), image_format="WEBP"),
+        })
+        self.assertTrue(product.original_image_1920)
+        self.assertEqual(bytes(product.image_1920), bytes(product.image_1024))
+        image_128 = Image.open(io.BytesIO(base64.b64decode(product.image_128)))
+        self.assertEqual(image_128.format, "WEBP")
+        self.assertEqual(max(image_128.size), 128)
+
+        uri = self.env["ir.qweb"].with_context(webp_as_jpg=True)._get_converted_image_data_uri(
+            product.image_1920
+        )
+        self.assertTrue(uri.startswith("data:image/jpg;"))
+
+    def test_unsupported_image_format_left_untouched(self):
+        """A GIF (possibly animated) is never watermarked: re-encoding
+        it would flatten it to a single frame."""
+        _configure_company_watermark(self.env, enabled=True)
+        buffer = io.BytesIO()
+        Image.new("RGB", (64, 64), (255, 0, 0)).save(buffer, format="GIF")
+        gif_b64 = base64.b64encode(buffer.getvalue())
+        product = self.env["product.template"].create({
+            "name": "GIF Product",
+            "is_watermark_eligible": True,
+            "image_1920": gif_b64,
+        })
+        self.assertFalse(product.original_image_1920)
+        self.assertEqual(bytes(product.image_1920), bytes(gif_b64))
 
     def test_marking_ineligible_removes_existing_watermark(self):
         """Unchecking is_watermark_eligible on a product that currently
@@ -198,6 +337,70 @@ class TestProductWatermark(TransactionCase):
         reopened.is_watermark_eligible = False
         warning = reopened._onchange_is_watermark_eligible()
         self.assertTrue(warning and warning.get("warning"))
+
+    def test_onchange_eligible_warns_for_variant_only_watermark(self):
+        """The warning also fires when only a variant image (not the
+        main one) carries a watermark, since unticking restores it too."""
+        _configure_company_watermark(self.env, enabled=True)
+        product = self.env["product.template"].create({
+            "name": "Variant Only Product", "is_watermark_eligible": True,
+        })
+        product.product_variant_id.write({"image_variant_1920": _make_image_b64()})
+        self.assertFalse(product.original_image_1920)
+
+        reopened = self.env["product.template"].new(
+            {"is_watermark_eligible": False}, origin=product
+        )
+        warning = reopened._onchange_is_watermark_eligible()
+        self.assertTrue(warning and warning.get("warning"))
+
+    def test_cron_backfills_every_batch(self):
+        """The backfill walks records by id, not by offset: each processed
+        batch drops out of the "not watermarked yet" domain, so an offset
+        would skip as many unprocessed products as it just handled."""
+        _configure_company_watermark(self.env, enabled=False)
+        products = self.env["product.template"].create([
+            {
+                "name": f"Batch Product {index}",
+                "is_watermark_eligible": True,
+                "image_1920": _make_image_b64(color=(index * 40, 0, 0)),
+            }
+            for index in range(5)
+        ])
+        self.assertFalse(any(products.mapped("original_image_1920")))
+
+        _configure_company_watermark(self.env, enabled=True)
+        ProductTemplate = type(self.env["product.template"])
+        IrCron = type(self.env["ir.cron"])
+        # Batches of 2, and no real commit (forbidden inside a test).
+        with patch.object(ProductTemplate, "_WATERMARK_REGEN_BATCH_SIZE", 2), \
+                patch.object(IrCron, "_commit_progress", return_value=1.0):
+            self.assertTrue(self.env["product.template"]._cron_regenerate_watermarked_images())
+
+        products.invalidate_recordset(["original_image_1920"])
+        self.assertTrue(all(products.mapped("original_image_1920")))
+
+    def test_font_lookup_only_accepts_known_fonts(self):
+        """An arbitrary font name (e.g. from an RPC call) never reaches the
+        recursive font glob; it falls back to the default font."""
+        self.assertEqual(_find_font_path("../../**/*"), _find_font_path("Arial"))
+
+    def test_logo_saved_on_company(self):
+        """The settings logo is stored on the current company and used to
+        resolve product watermark settings."""
+        logo_b64 = _make_image_b64(color=(0, 0, 0))
+        _configure_company_watermark(
+            self.env, enabled=True, watermark_type="image", watermark_logo=logo_b64
+        )
+        self.assertTrue(self.env.company.watermark_logo)
+        product = self.env["product.template"].create({"name": "Logo Product"})
+        self.assertTrue(product._get_watermark_settings()["logo"])
+
+    def test_size_constraint_rejects_out_of_range(self):
+        with self.assertRaises(ValidationError):
+            self.env["res.config.settings"].create(
+                {"watermark_enabled": True, "watermark_type": "text", "watermark_size": 500}
+            ).execute()
 
     def test_variant_specific_image_watermarked_independently(self):
         _configure_company_watermark(self.env, enabled=True)
@@ -293,7 +496,7 @@ class TestProductWatermark(TransactionCase):
         # Simulate a product that was watermarked before being marked
         # ineligible (bypassing the UI button, which the wizard action
         # itself does not block).
-        ineligible.action_apply_watermark(
+        ineligible._apply_watermark_to_all_images(
             {"type": "text", "text": "X", "position": "bottom_right", "opacity": 0.5}
         )
         self.assertTrue(ineligible.original_image_1920)
@@ -347,7 +550,7 @@ class TestProductWatermark(TransactionCase):
         )
         # Hand-customize this product's watermark to something different
         # from the company default, simulating a wizard Apply.
-        customized.action_apply_watermark(
+        customized._apply_watermark_to_all_images(
             {"type": "text", "text": "CUSTOM", "position": "top_left", "opacity": 0.8}
         )
         customized_bytes = bytes(customized.image_1920)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="res_config_settings_view_form" model="ir.ui.view">
-        <field name="name">res.config.settings.view.form.inherit.product.watermark.overlay</field>
+        <field name="name">res.config.settings.view.form.inherit.lf_product_watermark_overlay</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
         <field name="arch" type="xml">
@@ -30,6 +30,10 @@
                             invisible="not watermark_enabled or watermark_type != 'image'" name="watermark_logo">
                             <field name="watermark_logo" widget="image" required="watermark_enabled and watermark_type == 'image'"
                                 class="oe_avatar" options="{'accepted_file_extensions': '.png,.jpg,.jpeg'}" />
+                            <div class="row mt8">
+                                <label class="col-lg-4" string="Logo Size (%)" for="watermark_logo_size"/>
+                                <field name="watermark_logo_size" required="watermark_enabled and watermark_type == 'image'"/>
+                            </div>
                         </setting>
                         <setting id="watermark_text" string="Watermark Text" help="Add text to be used as watermark"
                             name="watermark_text" invisible="not watermark_enabled or watermark_type != 'text'" >

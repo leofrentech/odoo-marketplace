@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="product_template_form_view" model="ir.ui.view">
-        <field name="name">product.template.view.form.inherit.product.watermark.overlay</field>
+        <field name="name">product.template.view.form.inherit.lf_product_watermark_overlay</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button name="%(lf_product_watermark_overlay.product_watermark_wizard_action)d"
+                <button name="%(lf_product_watermark_overlay.product_template_watermark_action)d"
                     type="action" class="oe_stat_button" icon="fa-magic"
                     string="Add/Update Watermark"
-                    invisible="not is_watermark_eligible or not watermark_globally_enabled"/>
-                <button name="action_remove_watermark" type="object"
-                    class="oe_stat_button" icon="fa-eraser" string="Remove Watermark"
-                    invisible="not original_image_1920"/>
+                    invisible="not has_watermark and (not is_watermark_eligible or not watermark_globally_enabled)"/>
             </xpath>
             <xpath expr="//group[@name='group_standard_price']/field[@name='company_id']" position="before">
                 <field name="watermark_globally_enabled" invisible="1"/>

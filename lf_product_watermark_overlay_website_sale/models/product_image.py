@@ -1,14 +1,6 @@
-import logging
-
 from odoo import api, fields, models
 
-from odoo.addons.lf_product_watermark_overlay.models.watermark_utils import (
-    apply_watermark,
-    decode_image,
-    encode_image,
-)
-
-_logger = logging.getLogger(__name__)
+from odoo.addons.lf_product_watermark_overlay.models.watermark_utils import render_watermark
 
 
 class ProductImage(models.Model):
@@ -97,23 +89,17 @@ class ProductImage(models.Model):
                 })
                 continue
 
+            if image.video_url:
+                continue  # image_1920 is just the video's thumbnail
+
             original = image.original_image_1920 or image.image_1920
             if not original:
                 continue  # no photo at all yet, nothing to watermark
 
-            try:
-                base_image = decode_image(original)
-                result = apply_watermark(base_image, image_settings)
-                vals = {"image_1920": encode_image(result)}
-                if not image.original_image_1920:
-                    vals["original_image_1920"] = original
-                # Top-level guard: a bad image/font/setting must never
-                # block saving the record itself, only skip its watermark.
-                super(ProductImage, image).write(vals)
-
-            except Exception as e:
-                _logger.warning(
-                    "Watermark failed for product image %s: %s",
-                    image.id,
-                    str(e),
-                )
+            watermarked = render_watermark(self.env, original, image_settings)
+            if not watermarked:
+                continue  # unsupported format or failed rendering, leave as is
+            vals = {"image_1920": watermarked}
+            if not image.original_image_1920:
+                vals["original_image_1920"] = original
+            super(ProductImage, image).write(vals)

@@ -1,10 +1,6 @@
-import logging
+from odoo import api, fields, models
 
-from odoo import fields, models, api
-from .watermark_utils import decode_image, encode_image, apply_watermark
-
-
-_logger = logging.getLogger(__name__)
+from .watermark_utils import render_watermark
 
 
 class ProductProduct(models.Model):
@@ -89,19 +85,10 @@ class ProductProduct(models.Model):
             if not original:
                 continue  # no variant-specific photo yet, nothing to watermark
 
-            try:
-                base_image = decode_image(original)
-                result = apply_watermark(base_image, product_settings)
-                vals = {"image_variant_1920": encode_image(result)}
-                if not product.original_image_variant_1920:
-                    vals["original_image_variant_1920"] = original
-                # Top-level guard: a bad image/font/setting must never
-                # block saving the product itself, only skip its watermark.
-                super(ProductProduct, product).write(vals)
-
-            except Exception as e:
-                _logger.warning(
-                    "Watermark failed for product variant %s: %s",
-                    product.id,
-                    str(e),
-                )
+            watermarked = render_watermark(self.env, original, product_settings)
+            if not watermarked:
+                continue  # unsupported format or failed rendering, leave as is
+            vals = {"image_variant_1920": watermarked}
+            if not product.original_image_variant_1920:
+                vals["original_image_variant_1920"] = original
+            super(ProductProduct, product).write(vals)

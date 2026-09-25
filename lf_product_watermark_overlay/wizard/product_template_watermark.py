@@ -1,29 +1,43 @@
 import logging
 
-from odoo import fields, models, api
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
-from ..models.watermark_utils import apply_watermark, decode_image, encode_image, is_valid_opacity
+from ..models.watermark_utils import (
+    DEFAULT_LOGO_SIZE,
+    FONT_SELECTION,
+    apply_watermark,
+    decode_image,
+    encode_image,
+    is_valid_opacity,
+    is_valid_size_percent,
+)
 
 
 _logger = logging.getLogger(__name__)
 
 
-class ProductWatermarkWizard(models.TransientModel):
-    _name = "product.watermark.wizard"
-    _description = "Apply a one-off custom watermark to a product's current photo"
+class ProductTemplateWatermark(models.TransientModel):
+    # ------------------------------------------------------------------
+    # 1. PRIVATE ATTRIBUTES
+    # ------------------------------------------------------------------
+
+    _name = "product.template.watermark"
+    _description = "Apply or remove a custom watermark on a product's images"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
     # ------------------------------------------------------------------
 
     @api.model
-    def default_get(self, fields_list):
+    def default_get(self, fields):
         """Pre-fill from the company-wide resolved defaults — there is
         no per-product persisted customization to remember, by design
         (see the module's watermarking architecture notes)."""
-        res = super().default_get(fields_list)
-        product = self.env["product.template"].browse(self.env.context.get("active_id"))
+        res = super().default_get(fields)
+        if self.env.context.get("active_model") != "product.template":
+            return res
+        product = self.env["product.template"].browse(self.env.context.get("active_id")).exists()
         if not product:
             return res
 
@@ -32,6 +46,7 @@ class ProductWatermarkWizard(models.TransientModel):
             "product_tmpl_id": product.id,
             "watermark_type": settings["type"] if settings["type"] != "none" else "image",
             "watermark_logo": settings["logo"],
+            "watermark_logo_size": settings["logo_size"],
             "watermark_text": settings["text"],
             "watermark_font": settings["font"],
             "watermark_size": settings["size"],
@@ -50,6 +65,18 @@ class ProductWatermarkWizard(models.TransientModel):
         string="Product",
         required=True,
     )
+    has_watermark = fields.Boolean(
+        compute="_compute_product_watermark_state",
+        help="Technical field: whether any of the product's images "
+             "currently carries a watermark, to show the Remove button.",
+    )
+    can_apply = fields.Boolean(
+        compute="_compute_product_watermark_state",
+        help="Technical field: whether the product is eligible and "
+             "watermarking is enabled company-wide, to show the Apply "
+             "button. The wizard is also reachable without these just "
+             "to remove an existing watermark.",
+    )
     watermark_type = fields.Selection(
         [("image", "Image"), ("text", "Text")],
         string="Watermark Type",
@@ -59,29 +86,28 @@ class ProductWatermarkWizard(models.TransientModel):
     watermark_logo = fields.Image(
         string="Watermark Logo",
     )
+    watermark_logo_size = fields.Integer(
+        string="Logo Size (%)",
+        default=DEFAULT_LOGO_SIZE,
+        help="The logo is scaled, keeping its aspect ratio, to fit within "
+             "this percentage of the product image's width and height.",
+    )
     watermark_text = fields.Char(
         string="Watermark Text",
     )
     watermark_font = fields.Selection(
-        [
-            ("Arial", "Arial"),
-            ("Times New Roman", "Times New Roman"),
-            ("Courier New", "Courier New"),
-            ("Verdana", "Verdana"),
-            ("Georgia", "Georgia"),
-            ("Comic Sans MS", "Comic Sans MS"),
-            ("Impact", "Impact"),
-        ],
+        FONT_SELECTION,
         string="Watermark Font",
         default="Arial",
     )
     watermark_size = fields.Integer(
         string="Watermark Size",
         default=6,
+        help="Font size, as a percentage of the product image's diagonal.",
     )
     watermark_color = fields.Char(
         string="Watermark Color",
-        default="#000000",
+        default="#FFFFFF",
     )
     watermark_position = fields.Selection(
         [
@@ -107,10 +133,18 @@ class ProductWatermarkWizard(models.TransientModel):
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
 
+    @api.depends("product_tmpl_id")
+    def _compute_product_watermark_state(self):
+        for wizard in self:
+            product = wizard.product_tmpl_id
+            wizard.has_watermark = product.has_watermark
+            wizard.can_apply = product.is_watermark_eligible and product.watermark_globally_enabled
+
     @api.depends(
         "product_tmpl_id",
         "watermark_type",
         "watermark_logo",
+        "watermark_logo_size",
         "watermark_text",
         "watermark_font",
         "watermark_size",
@@ -136,12 +170,22 @@ class ProductWatermarkWizard(models.TransientModel):
                 result = apply_watermark(base_image, settings)
                 wizard.watermark_preview = encode_image(result)
 
-            except Exception as e:
-                _logger.warning("Watermark preview failed: %s", str(e))
+            except (OSError, ValueError) as e:
+                _logger.warning("Watermark preview failed: %s", e)
 
     # ------------------------------------------------------------------
     # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
+
+    @api.constrains('watermark_size', 'watermark_logo_size')
+    def _check_watermark_sizes(self):
+        for rec in self:
+            if not is_valid_size_percent(rec.watermark_size) or not is_valid_size_percent(
+                rec.watermark_logo_size
+            ):
+                raise ValidationError(
+                    self.env._("Watermark and Logo Size must be between 1 and 100%.")
+                )
 
     @api.constrains('watermark_opacity')
     def _check_watermark_opacity(self):
@@ -156,10 +200,16 @@ class ProductWatermarkWizard(models.TransientModel):
     # ------------------------------------------------------------------
 
     def action_apply(self):
-        """Apply the chosen watermark to the target product's current
-        photo."""
+        """Apply the chosen watermark to every current photo of the target
+        product."""
         self.ensure_one()
-        self.product_tmpl_id.action_apply_watermark(self._get_wizard_settings())
+        self.product_tmpl_id._apply_watermark_to_all_images(self._get_wizard_settings())
+        return {"type": "ir.actions.act_window_close"}
+
+    def action_remove(self):
+        """Restore the target product's original, unwatermarked photo."""
+        self.ensure_one()
+        self.product_tmpl_id.action_remove_watermark()
         return {"type": "ir.actions.act_window_close"}
 
     # ------------------------------------------------------------------
@@ -173,6 +223,7 @@ class ProductWatermarkWizard(models.TransientModel):
         return {
             "type": self.watermark_type,
             "logo": self.watermark_logo,
+            "logo_size": self.watermark_logo_size,
             "text": self.watermark_text,
             "font": self.watermark_font,
             "size": self.watermark_size,

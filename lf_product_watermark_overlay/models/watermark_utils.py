@@ -2,6 +2,7 @@ import base64
 import binascii
 import functools
 import glob
+import importlib
 import io
 import logging
 import os
@@ -9,6 +10,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 _logger = logging.getLogger(__name__)
+
+# Odoo preinitializes PIL with only BMP/GIF/JPEG/PPM/PNG and blocks
+# loading the rest (see odoo/tools/image.py), so WebP, the format the
+# product form converts every upload to, can't be opened or saved
+# unless its plugin is registered explicitly.
+importlib.import_module("PIL.WebPImagePlugin")
 
 # Common font install locations across the platforms Odoo actually runs on
 # (Linux servers/containers, macOS dev machines). Searched recursively.
@@ -35,6 +42,9 @@ _FONT_FALLBACKS = {
     "Impact": ["impact.ttf", "DejaVuSans-Bold.ttf"],
 }
 
+# Selectable fonts, shared by the settings and the watermark wizard.
+FONT_SELECTION = [(font, font) for font in _FONT_FALLBACKS]
+
 
 # Convert base64 to PIL Image
 def decode_image(image_data):
@@ -49,19 +59,135 @@ def decode_image(image_data):
     except (binascii.Error, OSError, ValueError):
         return None
 
+
+# Raster formats a watermark can be composited onto without losing
+# anything. Everything else is left untouched: an (animated) GIF would
+# be flattened to its first frame, and SVG/other files PIL can't decode
+# must never be overwritten with an empty result.
+_WATERMARKABLE_FORMATS = {"PNG", "JPEG", "WEBP"}
+
+# Default logo watermark size, as a percentage of the product image's
+# width and height the logo is scaled to fit within.
+DEFAULT_LOGO_SIZE = 20
+
+# Sizes Odoo's image field widget pre-generates for a WebP upload (see
+# web/static/src/views/fields/image/image_field.js, `onFileUploaded`).
+_WEBP_RESIZE_SIZES = (1920, 1024, 512, 256, 128)
+
+
+def decode_watermarkable_image(image_data):
+    """Like `decode_image()`, but also returns the source format, so the
+    watermarked result can be saved back in that same format.
+
+    Returns `(None, None)` for any image whose format is not in
+    `_WATERMARKABLE_FORMATS`, meaning "skip it"."""
+    if not image_data:
+        return None, None
+
+    try:
+        image = Image.open(io.BytesIO(base64.b64decode(image_data)))
+        if image.format not in _WATERMARKABLE_FORMATS:
+            return None, None
+        return image.convert("RGBA"), image.format
+
+    except (binascii.Error, OSError, ValueError):
+        return None, None
+
 # Convert PIL Image to base64
-def encode_image(pil_image):
-    """Encode PIL Image to base64."""
+def encode_image(pil_image, output_format="PNG"):
+    """Encode PIL Image to base64, in `output_format` (PNG, JPEG or
+    WEBP). JPEG has no alpha channel, so transparency is flattened onto
+    white."""
     if not pil_image:
         return False
 
     try:
         output = io.BytesIO()
-        pil_image.save(output, format="PNG")
+        if output_format == "JPEG":
+            _flatten_on_white(pil_image).save(output, format="JPEG", quality=95, optimize=True)
+        elif output_format == "WEBP":
+            pil_image.save(output, format="WEBP", quality=90)
+        else:
+            pil_image.save(output, format="PNG", optimize=True)
         return base64.b64encode(output.getvalue())
 
     except (OSError, ValueError):
         return False
+
+
+def encode_watermarked_image(env, pil_image, output_format):
+    """Encode a watermarked image in its original format, ready to be
+    written to an `image_1920`-like field.
+
+    Odoo never resizes WebP server side: `image_1024`/`image_512`/...
+    and PDF reports are served from `ir.attachment` alternates the web
+    client generates at upload time, matched by checksum. A watermarked
+    WebP is new content with no such alternates, so they are created
+    here the same way the client does, before the image field is
+    written (the related resized fields look them up on write)."""
+    image_b64 = encode_image(pil_image, output_format)
+    if image_b64 and output_format == "WEBP":
+        _create_webp_alternates(env, pil_image, image_b64)
+    return image_b64
+
+
+def render_watermark(env, image_b64, settings):
+    """Watermark a base64 image with `settings`, returning the result in
+    the image's own format — or False when the image must be left as is:
+    an unsupported format (see `_WATERMARKABLE_FORMATS`), or a failed
+    rendering (bad font, color, ...), which is logged. Never raises for
+    a bad image or setting, so it can't block saving the record."""
+    base_image, source_format = decode_watermarkable_image(image_b64)
+    if base_image is None:
+        return False
+    try:
+        result = apply_watermark(base_image, settings)
+    except (OSError, ValueError) as e:
+        _logger.warning("Watermark rendering failed: %s", e)
+        return False
+    return encode_watermarked_image(env, result, source_format)
+
+
+def _flatten_on_white(pil_image):
+    background = Image.new("RGB", pil_image.size, (255, 255, 255))
+    background.paste(pil_image, mask=pil_image.getchannel("A") if pil_image.mode == "RGBA" else None)
+    return background
+
+
+def _create_webp_alternates(env, pil_image, image_b64):
+    """Mirror of the web client's WebP upload handling: store the image
+    as a standalone attachment, plus one resized WebP per smaller size
+    and a JPEG fallback (for wkhtmltopdf) of each."""
+    Attachment = env["ir.attachment"]
+    name = "watermarked.webp"
+    original_size = max(pil_image.size)
+    sizes = [original_size] + [size for size in _WEBP_RESIZE_SIZES if size < original_size]
+
+    reference_id = False
+    for size in sizes:
+        if size == original_size:
+            resized, datas = pil_image, image_b64
+        else:
+            resized = pil_image.copy()
+            resized.thumbnail((size, size), Image.LANCZOS)
+            datas = encode_image(resized, "WEBP")
+        [resized_id] = Attachment.create_unique([{
+            "name": name,
+            "description": "" if size == original_size else f"resize: {size}",
+            "datas": datas,
+            "res_id": reference_id,
+            "res_model": "ir.attachment",
+            "mimetype": "image/webp",
+        }])
+        reference_id = reference_id or resized_id  # keep track of the original
+        Attachment.create_unique([{
+            "name": "watermarked.jpg",
+            "description": "format: jpeg",
+            "datas": encode_image(resized, "JPEG"),
+            "res_id": resized_id,
+            "res_model": "ir.attachment",
+            "mimetype": "image/jpeg",
+        }])
 
 # Apply watermark main method
 def apply_watermark(base_image, settings):
@@ -100,8 +226,14 @@ def _find_font_path(font_name):
     preinstalled fallbacks so watermarking still works on servers that
     lack proprietary fonts such as Arial or Comic Sans MS. Result is
     cached per font name since scanning font directories is not cheap.
+
+    Only the known fonts in `_FONT_FALLBACKS` are ever looked up: the
+    name ends up in a recursive glob pattern, so an arbitrary value
+    (e.g. "../../**/*") must never reach it.
     """
-    candidates = [f"{font_name}.ttf"] + _FONT_FALLBACKS.get(font_name, [])
+    if font_name not in _FONT_FALLBACKS:
+        font_name = "Arial"
+    candidates = [f"{font_name}.ttf"] + _FONT_FALLBACKS[font_name]
 
     for candidate in candidates:
         for directory in _FONT_SEARCH_DIRS:
@@ -165,6 +297,20 @@ def _draw_image_watermark(overlay, settings):
     if not logo_image:
         return overlay
 
+    # Scale the logo (up or down, keeping its aspect ratio) to fit a box
+    # `logo_size`% of the product image's width and height, so it keeps
+    # the same relative footprint whatever the logo's or photo's own
+    # resolution, instead of being pasted at its native pixel size.
+    img_width, img_height = overlay.size
+    percent = settings.get("logo_size") or DEFAULT_LOGO_SIZE
+    ratio = min(
+        img_width * percent / 100 / logo_image.width,
+        img_height * percent / 100 / logo_image.height,
+    )
+    logo_image = logo_image.resize(
+        (max(1, round(logo_image.width * ratio)), max(1, round(logo_image.height * ratio))),
+        Image.LANCZOS,
+    )
     logo_width, logo_height = logo_image.size
 
     x, y = _calculate_position(
@@ -207,6 +353,11 @@ def _hex_to_rgb(hex_color):
 
     except ValueError:
         return (255, 255, 255)
+
+
+def is_valid_size_percent(value):
+    """Whether `value` is a valid watermark or logo size (1-100%)."""
+    return 1 <= value <= 100
 
 
 def is_valid_opacity(value):

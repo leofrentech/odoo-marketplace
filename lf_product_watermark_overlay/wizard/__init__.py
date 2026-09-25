@@ -1,1 +1,1 @@
-from . import product_watermark_wizard
+from . import product_template_watermark
