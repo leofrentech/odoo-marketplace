@@ -38,5 +38,6 @@ format (JPEG, PNG or WebP); GIF and SVG images are left untouched.
     "installable": True,
     "application": False,
     "auto_install": False,
+    "images": ["static/description/banner/lf_product_watermark_overlay_cover.png"],
     "license": "LGPL-3",
 }

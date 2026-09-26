@@ -26,5 +26,6 @@ Overlay are installed; nothing to configure.
     "installable": True,
     "application": False,
     "auto_install": True,
+    "images": ["static/description/banner/lf_product_watermark_overlay_website_sale_cover.png"],
     "license": "LGPL-3",
 }
