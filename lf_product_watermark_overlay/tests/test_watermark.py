@@ -654,11 +654,17 @@ class TestProductWatermark(TransactionCase):
         )
         self.assertTrue(product_a.is_watermark_eligible)
         self.assertTrue(product_b.is_watermark_eligible)
+        self.assertTrue(product_a.original_image_1920)
+        original = product_a.original_image_1920
 
         self.env["res.config.settings"].action_uncheck_all_products_watermark_eligibility()
 
         self.assertFalse(product_a.is_watermark_eligible)
         self.assertFalse(product_b.is_watermark_eligible)
+        # The button is labelled "Remove Watermark from All Products":
+        # unchecking eligibility must also restore the original photo.
+        self.assertFalse(product_a.original_image_1920)
+        self.assertEqual(product_a.image_1920, original)
 
         # Re-enabling watermarking should watermark product_a again
         # without anyone needing to re-check its eligibility.

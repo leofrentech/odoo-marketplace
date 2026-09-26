@@ -188,9 +188,10 @@ class ResConfigSettings(models.TransientModel):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": self.env._("Eligibility cleared"),
+                "title": self.env._("Watermarks removed"),
                 "message": self.env._(
-                    "Every product has been marked not eligible for watermarking."
+                    "Every product's original photo has been restored, and "
+                    "every product has been marked not eligible for watermarking."
                 ),
                 "sticky": False,
                 "type": "success",

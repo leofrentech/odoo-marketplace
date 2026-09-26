@@ -17,8 +17,8 @@
                             </div>
                             <div class="mt-2">
                                 <button name="action_uncheck_all_products_watermark_eligibility" type="object"
-                                    string="Uncheck Eligibility on All Products" class="btn-secondary"
-                                    confirm="This will mark every product as not eligible for watermarking. Continue?"/>
+                                    string="Remove Watermark from All Products" class="btn-secondary"
+                                    confirm="This restores the original photo of every product and marks every product as not eligible for watermarking. Continue?"/>
                             </div>
                         </setting>
                         <setting string="Watermark Type" name="watermark_type"
