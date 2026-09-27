@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="product_template_watermark_view_form" model="ir.ui.view">
+        <field name="name">product.template.watermark.view.form</field>
+        <field name="model">product.template.watermark</field>
+        <field name="arch" type="xml">
+            <form string="Add/Update Watermark">
+                <field name="product_tmpl_id" invisible="1"/>
+                <field name="has_watermark" invisible="1"/>
+                <field name="can_apply" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="watermark_type"/>
+                        <field name="watermark_position"/>
+                        <field name="watermark_opacity"/>
+                    </group>
+                    <group>
+                        <field name="watermark_logo" widget="image" class="oe_avatar"
+                            required="watermark_type == 'image'" invisible="watermark_type != 'image'"/>
+                        <field name="watermark_logo_size" required="watermark_type == 'image'" invisible="watermark_type != 'image'"/>
+                        <field name="watermark_text" required="watermark_type == 'text'" invisible="watermark_type != 'text'"/>
+                        <field name="watermark_font" required="watermark_type == 'text'" invisible="watermark_type != 'text'"/>
+                        <field name="watermark_color" widget="color" required="watermark_type == 'text'" invisible="watermark_type != 'text'"/>
+                        <field name="watermark_size" required="watermark_type == 'text'" invisible="watermark_type != 'text'"/>
+                    </group>
+                </group>
+                <group string="Preview">
+                    <field name="watermark_preview" widget="image" nolabel="1" options="{'preview_image': 'watermark_preview'}"/>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply Watermark" class="btn-primary"
+                        invisible="not can_apply"/>
+                    <button name="action_remove" type="object" string="Remove Watermark" class="btn-secondary"
+                        invisible="not has_watermark"
+                        confirm="This will restore the original, unwatermarked image. Continue?"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="product_template_watermark_action" model="ir.actions.act_window">
+        <field name="name">Add/Update Watermark</field>
+        <field name="res_model">product.template.watermark</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
