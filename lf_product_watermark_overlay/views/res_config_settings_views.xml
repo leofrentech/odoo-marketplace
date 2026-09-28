@@ -14,6 +14,13 @@
                             <field name="watermark_enabled"/>
                             <div class="mt-2" invisible="not watermark_enabled">
                                 <button name="regenerate_all_images" type="object" string="Regenerate All Images" />
+                                <div class="text-muted small mt-1">
+                                    Only watermarks eligible products that don't have one yet.
+                                    Products that already have a watermark keep it: to give
+                                    one the new settings, open Add/Update Watermark on that
+                                    product and click Remove Watermark, then run Regenerate
+                                    All Images again.
+                                </div>
                             </div>
                             <div class="mt-2">
                                 <button name="action_uncheck_all_products_watermark_eligibility" type="object"
