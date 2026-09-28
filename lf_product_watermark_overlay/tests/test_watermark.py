@@ -53,8 +53,34 @@ class TestProductWatermark(TransactionCase):
         }
         result = apply_watermark(base, settings)
         bbox = ImageChops.difference(result.convert("RGB"), base.convert("RGB")).getbbox()
-        # Fits a 40x20 box (20% of 200x100), keeping the logo's 2:1 ratio.
+        # Fits a 40x40 box (20% of the longer side), keeping the logo's
+        # 2:1 ratio.
         self.assertEqual((bbox[2] - bbox[0], bbox[3] - bbox[1]), (40, 20))
+
+    def test_logo_size_follows_longer_side(self):
+        """On a wide photo the logo is sized from the longer side, so it
+        looks as big as on a square photo once the shop fits both into
+        the same square, but is still clamped to fit inside the photo."""
+        settings = {
+            "type": "image",
+            "logo_size": 30,
+            "position": "center",
+            "opacity": 1.0,
+        }
+        wide = Image.new("RGBA", (1920, 600), (255, 255, 255, 255))
+
+        settings["logo"] = _make_image_b64(size=(200, 100), color=(0, 0, 0))
+        result = apply_watermark(wide, settings)
+        bbox = ImageChops.difference(result.convert("RGB"), wide.convert("RGB")).getbbox()
+        # 30% of 1920 = 576 wide, at the logo's 2:1 ratio.
+        self.assertEqual((bbox[2] - bbox[0], bbox[3] - bbox[1]), (576, 288))
+
+        settings["logo"] = _make_image_b64(size=(100, 100), color=(0, 0, 0))
+        result = apply_watermark(wide, settings)
+        bbox = ImageChops.difference(result.convert("RGB"), wide.convert("RGB")).getbbox()
+        # A square 576 box doesn't fit a 600 high photo with its 30px
+        # padding on both sides: clamped to 540.
+        self.assertEqual((bbox[2] - bbox[0], bbox[3] - bbox[1]), (540, 540))
 
     def test_logo_size_constraint_rejects_out_of_range(self):
         with self.assertRaises(ValidationError):

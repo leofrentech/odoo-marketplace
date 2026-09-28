@@ -297,15 +297,21 @@ def _draw_image_watermark(overlay, settings):
     if not logo_image:
         return overlay
 
-    # Scale the logo (up or down, keeping its aspect ratio) to fit a box
-    # `logo_size`% of the product image's width and height, so it keeps
-    # the same relative footprint whatever the logo's or photo's own
-    # resolution, instead of being pasted at its native pixel size.
+    # Scale the logo (up or down, keeping its aspect ratio) to fit a
+    # square box `logo_size`% of the product image's longer side, so it
+    # keeps the same relative footprint whatever the logo's or photo's
+    # own resolution, instead of being pasted at its native pixel size.
+    # The longer side, not each side, because shops show product photos
+    # scaled to fit a square: sizing by the shorter side made logos look
+    # tiny on wide or tall photos. The box is then clamped to the image,
+    # minus its padding, so the logo never overflows a narrow photo.
     img_width, img_height = overlay.size
     percent = settings.get("logo_size") or DEFAULT_LOGO_SIZE
+    box = max(img_width, img_height) * percent / 100
+    padding = _padding(overlay.size)
     ratio = min(
-        img_width * percent / 100 / logo_image.width,
-        img_height * percent / 100 / logo_image.height,
+        min(box, img_width - 2 * padding) / logo_image.width,
+        min(box, img_height - 2 * padding) / logo_image.height,
     )
     logo_image = logo_image.resize(
         (max(1, round(logo_image.width * ratio)), max(1, round(logo_image.height * ratio))),
@@ -320,11 +326,15 @@ def _draw_image_watermark(overlay, settings):
     overlay.paste(logo_image, (x, y), logo_image)
     return overlay
 
+def _padding(image_size):
+    """Watermark distance from the image edges: 5% of its shorter side."""
+    return int(min(image_size) * 0.05)
+
 # Position Caluculation
 def _calculate_position(image_size, watermark_size, position):
     img_width, img_height = image_size
     wm_width, wm_height = watermark_size
-    padding = int(min(img_width, img_height) * 0.05)  # Padding as 5% of the image size
+    padding = _padding(image_size)
 
     positions = {
         "top_left": (padding, padding),
