@@ -90,7 +90,7 @@ class ProductTemplateWatermark(models.TransientModel):
         string="Logo Size (%)",
         default=DEFAULT_LOGO_SIZE,
         help="The logo is scaled, keeping its aspect ratio, to fit within "
-             "this percentage of the product image's width and height.",
+             "this percentage of the product image's longer side.",
     )
     watermark_text = fields.Char(
         string="Watermark Text",

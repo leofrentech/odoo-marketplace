@@ -1,6 +1,6 @@
 {
     "name": "Product Image Watermark Overlay",
-    "version": "17.0.2.1.1",
+    "version": "17.0.2.2.0",
     "category": "Sales/Sales",
     "summary": "Add your logo or text as a watermark on product images.",
     "description": """
