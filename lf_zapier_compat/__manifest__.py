@@ -22,7 +22,7 @@ it, rather than erroring - without changing behavior for any normal call.
     'website': 'https://leofren.com',
     'support': 'contact@leofren.com',
     'depends': ['base'],
-    'images': ['static/description/banner/lf_zapier_compat_cover_light.gif'],
+    'images': ['static/description/banner/lf_zapier_compat_cover.png'],
     'installable': True,
     'application': False,
     'auto_install': False,
