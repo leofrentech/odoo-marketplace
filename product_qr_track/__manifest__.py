@@ -33,7 +33,7 @@ smart button on its form.
         'report/product_qr_track_templates.xml',
         'report/product_qr_track_reports.xml',
     ],
-    'images': ['static/description/banner/product_qr_track_cover_light.gif'],
+    'images': ['static/description/banner/product_qr_track_cover.png'],
     'installable': True,
     'application': True,
     'auto_install': False,
