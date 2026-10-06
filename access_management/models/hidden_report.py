@@ -1,4 +1,5 @@
-from odoo import fields, models
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class AccessRuleHiddenReport(models.Model):
@@ -19,8 +20,15 @@ class AccessRuleHiddenReport(models.Model):
 
     rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade", required=True)
     model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
-    hide_report_btn = fields.Boolean("Hide Reports Button?")
-    report_id = fields.Many2one("ir.actions.report", "Report")
+    hide_report_btn = fields.Boolean(
+        "Hide All Reports",
+        help="Hide the Print menu of the model, with all its reports.",
+    )
+    report_id = fields.Many2one(
+        "ir.actions.report",
+        "Report to Hide",
+        help="Hide only this report from the Print menu of the model.",
+    )
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
@@ -34,9 +42,54 @@ class AccessRuleHiddenReport(models.Model):
     # 6. CONSTRAINTS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
 
+    @api.constrains("model_id", "hide_report_btn", "report_id")
+    def _check_report_id(self):
+        for line in self:
+            if line.hide_report_btn:
+                continue
+            if not line.report_id:
+                raise ValidationError(
+                    self.env._(
+                        "Select the report to hide for %(model)s, or hide all "
+                        "its reports.",
+                        model=line.model_id.name,
+                    )
+                )
+            if line.report_id.model != line.model_id.model:
+                raise ValidationError(
+                    self.env._(
+                        "The report %(report)s doesn't belong to %(model)s.",
+                        report=line.report_id.name,
+                        model=line.model_id.name,
+                    )
+                )
+
+    @api.onchange("hide_report_btn", "model_id")
+    def _onchange_hide_report_btn(self):
+        for line in self:
+            if line.hide_report_btn or line.report_id.model != line.model_id.model:
+                line.report_id = False
+
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
     # ------------------------------------------------------------------
+
+    # Hiding all the reports leaves no report to pick
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("hide_report_btn"):
+                vals["report_id"] = False
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if vals.get("hide_report_btn"):
+            vals = {**vals, "report_id": False}
+        res = super().write(vals)
+        if vals.get("report_id"):
+            self.filtered("hide_report_btn").report_id = False
+        return res
 
     # ------------------------------------------------------------------
     # 8. ACTION METHODS

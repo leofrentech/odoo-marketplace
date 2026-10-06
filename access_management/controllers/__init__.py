@@ -1,2 +1,1 @@
-from . import main
-from . import home
+from . import access_management

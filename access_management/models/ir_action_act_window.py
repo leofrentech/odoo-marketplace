@@ -22,31 +22,35 @@ class IrActionsActWindow(models.Model):
 
     @api.depends("view_ids.view_mode", "view_mode", "view_id.type")
     def _compute_views(self):
-        result = super(IrActionsActWindow, self)._compute_views()
-        Rule = self.env["access.rule"]
-        for act in self:
-            # Views in the window action (set through default compute method)
-            views = {key: value for value, key in act.views}
+        super()._compute_views()
+        restricted_views_by_model = {}
+        for action in self:
+            res_model = action.res_model
+            if not res_model:
+                continue
+            if res_model not in restricted_views_by_model:
+                model_rules = self.env["access.rule"].get_model_rules(res_model)
+                restricted_views_by_model[res_model] = (
+                    model_rules.restricted_view_ids.filtered(
+                        lambda line: line.model == res_model
+                    ).view_id
+                )
+            restricted_views = restricted_views_by_model[res_model]
+            if not restricted_views:
+                continue
 
-            # If the specific view_id is provided in the views,
-            # then check that specific view for restriction
-            # otherwise restrict by view type
-            model_rules = Rule.get_model_rules(model=act.res_model)
-            for line in model_rules.restricted_view_ids.filtered(
-                lambda r: r.model_id.model == act.res_model
-            ):
-                restricted_view = line.view_id
-                if (not views[restricted_view.type]) or (
-                    views[restricted_view.type]
-                    and views[restricted_view.type] == restricted_view.id
-                ):
-                    views.pop(restricted_view.type, False)
-
-            # Only update views, if any are restricted
-            if len(views) != len(act.views):
-                act.views = [(v, k) for k, v in views.items()]
-
-        return result
+            # A restricted view hides its type when the action uses the
+            # default view of that type or that view specifically
+            views = [
+                (view_id, view_type)
+                for view_id, view_type in action.views
+                if not any(
+                    view.type == view_type and view_id in (False, view.id)
+                    for view in restricted_views
+                )
+            ]
+            if len(views) != len(action.views):
+                action.views = views
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
@@ -67,7 +71,3 @@ class IrActionsActWindow(models.Model):
     # ------------------------------------------------------------------
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
-
-    # def _get_action_dict(self):
-    #     result = super()._get_action_dict()
-    #     return result

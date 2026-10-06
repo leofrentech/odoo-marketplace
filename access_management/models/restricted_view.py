@@ -19,7 +19,7 @@ class AccessRuleRestrictedView(models.Model):
 
     rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade", required=True)
     model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
-    model = fields.Char("Model", related="model_id.model", store=True)
+    model = fields.Char("Model Name", related="model_id.model", store=True)
     view_id = fields.Many2one("ir.ui.view", "View", required=True)
 
     # ------------------------------------------------------------------

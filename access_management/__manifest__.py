@@ -1,6 +1,6 @@
 {
     "name": "Access Management",
-    "version": "19.0.2.0.0",
+    "version": "19.0.3.0.0",
     "summary": "Easily create access management rules to manage the visibility of the model views, menuitems, fields and records.",
     "category": "Tools",
     "author": "Leofren Technologies",
@@ -19,13 +19,14 @@
     "assets": {
         "web.assets_backend": [
             "access_management/static/src/chatter/*",
-            "access_management/static/src/import_records/*",
             "access_management/static/src/view_service.js",
-            "access_management/static/src/views/list/*",
-            "access_management/static/src/views/view.js",
-            "access_management/static/src/webclient/actions/action_service.js",
-        ]
+            "access_management/static/src/views/*",
+        ],
+        "web.assets_tests": [
+            "access_management/static/tests/tours/*",
+        ],
     },
+    "uninstall_hook": "uninstall_hook",
     "installable": True,
     "application": True,
     "auto_install": False,

@@ -1,5 +1,3 @@
-/** @odoo-module **/
-
 import { View } from "@web/views/view";
 import { patch } from "@web/core/utils/patch";
 import { rpc } from "@web/core/network/rpc";

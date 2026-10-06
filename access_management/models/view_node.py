@@ -1,7 +1,7 @@
-from odoo import models, fields
+from odoo import api, fields, models
 
 
-class store_model_nodes(models.Model):
+class ViewNode(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
@@ -42,6 +42,16 @@ class store_model_nodes(models.Model):
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
 
+    @api.depends("node_string", "name", "node_option", "is_smart_button")
+    def _compute_display_name(self):
+        for node in self:
+            name = node.node_string or ""
+            if node.name:
+                name = f"{name} ({node.name})"
+                if node.is_smart_button and node.node_option == "button":
+                    name = f"{name} (Smart Button)"
+            node.display_name = name
+
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
     # ------------------------------------------------------------------
@@ -61,14 +71,3 @@ class store_model_nodes(models.Model):
     # ------------------------------------------------------------------
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
-
-    def name_get(self):
-        result = []
-        for rec in self:
-            name = rec.node_string
-            if rec.name:
-                name = name + " (" + rec.name + ")"
-                if rec.is_smart_button and rec.node_option == "button":
-                    name = name + " (Smart Button)"
-            result.append((rec.id, name))
-        return result

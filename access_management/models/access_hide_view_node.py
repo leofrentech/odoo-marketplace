@@ -1,6 +1,17 @@
 from lxml import etree
 
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+
+COLLECTED_VIEW_TYPES = ("form", "list", "kanban")
+BUTTONS_XPATH = "//button[@type='object' or @type='action'][@name]"
+
+# Kind of view node of each tab, by the field linking its lines to the rule
+NODE_OPTION_BY_RULE_FIELD = {
+    "access_rule_btn_id": "button",
+    "access_rule_page_id": "page",
+    "access_rule_id": "link",
+}
 
 
 class AccessHideViewNode(models.Model):
@@ -45,192 +56,69 @@ class AccessHideViewNode(models.Model):
     # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
 
-    @api.model
-    @api.onchange("model_id", "access_rule_id")
-    def _get_button(self):
-        View_node = self.env["view.node"]
-        view_obj = self.env["ir.ui.view"]
-
-        if self.model_id:
-
-            view_list = ["form", "list", "kanban"]
-            for view in view_list:
-                for views in view_obj.search(
-                    [("model", "=", self.model_id.model), ("type", "=", view)]
-                ):
-                    res = (
-                        self.env[self.model_id.model]
-                        .sudo()
-                        .get_view(view_id=views.id, view_type=view)
+    @api.constrains("model_id", "view_node_id")
+    def _check_view_node_id(self):
+        for line in self.filtered("view_node_id"):
+            node_option = line._get_node_option()
+            if line.view_node_id.model_id != line.model_id or (
+                node_option and line.view_node_id.node_option != node_option
+            ):
+                raise ValidationError(
+                    self.env._(
+                        "%(node)s is not part of the views of %(model)s.",
+                        node=line.view_node_id.display_name,
+                        model=line.model_id.name,
                     )
-                    arch = etree.XML(res["arch"])
+                )
 
-                    object_link = arch.xpath("//a")
-                    for btn in object_link:
-                        if (
-                            btn.text
-                            and "\n" not in btn.text
-                            and "type" in btn.attrib.keys()
-                            and btn.attrib["type"]
-                            and "name" in btn.attrib.keys()
-                            and btn.attrib["name"]
-                        ):
-                            domain = [
-                                ("button_type", "=", btn.get("type")),
-                                ("node_string", "=", btn.text),
-                                ("name", "=", btn.get("name")),
-                                ("model_id", "=", self.model_id.id),
-                                ("node_option", "=", "link"),
-                            ]
-                            if not View_node.search(domain):
-                                View_node.create(
-                                    {
-                                        "model_id": self.model_id.id,
-                                        "node_option": "link",
-                                        "name": btn.get("name"),
-                                        "node_string": btn.text,
-                                        "button_type": btn.get("type"),
-                                        "lang_code": self.env.lang,
-                                    }
-                                )
+    @api.onchange("model_id", "access_rule_id")
+    def _onchange_model_id_collect_view_nodes(self):
+        """Collect the buttons, pages and links of the model's views, so they
+        can be selected on the rule."""
+        node_option = self._get_node_option()
+        if self.view_node_id and (
+            self.view_node_id.model_id != self.model_id
+            or (node_option and self.view_node_id.node_option != node_option)
+        ):
+            self.view_node_id = False
 
-                    object_button = arch.xpath("//button[@type='object']")
-                    for btn in object_button:
-                        string_value = btn.get("string")
-                        if view == "kanban" and not string_value:
-                            try:
-                                string_value = (
-                                    btn.text if not btn.text.startswith("\n") else False
-                                )
-                            except:
-                                pass
+        if not self.model_id or self.model_id.model not in self.env:
+            return
 
-                        if not string_value:
-                            fields = btn.findall(".//*[@class='o_stat_text']")
-                            if fields:
-                                string_value = ""
-                            for f in fields:
-                                string_value += " " + f.text
+        # sudo: collect the nodes of every view, whatever the groups of the
+        # rule manager; only their names and labels are stored.
+        model = self.env[self.model_id.model].sudo()
+        views = self.env["ir.ui.view"].sudo().search([
+            ("model", "=", model._name),
+            ("type", "in", COLLECTED_VIEW_TYPES),
+            ("mode", "=", "primary"),
+        ])
+        for view in views:
+            view_info = model.get_view(view_id=view.id, view_type=view.type)
+            arch = etree.fromstring(view_info["arch"])
+            self._collect_links(arch)
+            self._collect_buttons(arch, view.type)
+            if view.type == "form":
+                self._collect_smart_buttons(arch)
+                self._collect_pages(arch)
 
-                        if btn.get("name") and string_value:
-                            domain = [
-                                ("button_type", "=", btn.get("type")),
-                                ("node_string", "=", string_value),
-                                ("name", "=", btn.get("name")),
-                                ("model_id", "=", self.model_id.id),
-                                ("node_option", "=", "button"),
-                            ]
-                            if not View_node.search(domain):
-                                self.with_context(
-                                    string_value=string_value
-                                )._store_btn_data(btn)
-
-                    action_button = arch.xpath("//button[@type='action']")
-                    for btn in action_button:
-                        string_value = btn.get("string")
-                        if view == "kanban" and not string_value:
-                            try:
-                                string_value = (
-                                    btn.text if not btn.text.startswith("\n") else False
-                                )
-                            except:
-                                pass
-                        if btn.get("name") and string_value:
-                            domain = [
-                                ("button_type", "=", btn.get("type")),
-                                ("node_string", "=", string_value),
-                                ("name", "=", btn.get("name")),
-                                ("model_id", "=", self.model_id.id),
-                                ("node_option", "=", "button"),
-                            ]
-                            if not View_node.search(domain):
-                                self.with_context(
-                                    string_value=string_value
-                                )._store_btn_data(btn)
-
-                    if view == "form":
-                        ## Smart Buttons Extraction
-                        smt_button_division = arch.xpath(
-                            "//div[@class='oe_button_box']"
-                        )
-                        if smt_button_division:
-                            smt_button_division = etree.tostring(smt_button_division[0])
-                            smt_button_division = etree.XML(smt_button_division)
-
-                            smt_object_button = smt_button_division.xpath(
-                                "//button[@type='object']"
-                            )
-                            self._get_smart_btn_string(smt_object_button, type="object")
-
-                            smt_action_button = smt_button_division.xpath(
-                                "//button[@type='action']"
-                            )
-                            self._get_smart_btn_string(smt_action_button, type="action")
-
-                        ## Tab Extraction
-                        page_list = arch.xpath("//page")
-                        if page_list:
-                            for page in page_list:
-                                if page.get("string"):
-                                    domain = [
-                                        (
-                                            "node_string",
-                                            "=",
-                                            page.get("string"),
-                                        ),
-                                        ("model_id", "=", self.model_id.id),
-                                        ("node_option", "=", "page"),
-                                    ]
-                                    if page.get("name"):
-                                        domain += [("name", "=", page.get("name"))]
-                                    store_model_nodes_id = View_node.search(
-                                        domain, limit=1
-                                    )
-                                    if not store_model_nodes_id:
-                                        View_node.create(
-                                            {
-                                                "model_id": self.model_id.id,
-                                                "name": page.get("name"),
-                                                "node_string": page.get("string"),
-                                                "node_option": "page",
-                                                "lang_code": self.env.lang,
-                                            }
-                                        )
-                        if self.model_id.model == "res.config.settings":
-                            for setting_page in arch.xpath("//app"):
-                                if setting_page.get("string"):
-                                    domain = [
-                                        (
-                                            "node_string",
-                                            "=",
-                                            setting_page.get("string"),
-                                        ),
-                                        ("model_id", "=", self.model_id.id),
-                                        ("node_option", "=", "page"),
-                                    ]
-                                    if setting_page.get("name"):
-                                        domain += [
-                                            (
-                                                "name",
-                                                "=",
-                                                setting_page.get("name"),
-                                            )
-                                        ]
-                                    store_model_nodes_id = View_node.search(
-                                        domain, limit=1
-                                    )
-                                    if not store_model_nodes_id:
-                                        View_node.create(
-                                            {
-                                                "model_id": self.model_id.id,
-                                                "name": setting_page.get("name") or "",
-                                                "node_string": setting_page.get(
-                                                    "string"
-                                                ),
-                                                "node_option": "page",
-                                                "lang_code": self.env.lang,
-                                            }
-                                        )
+        if node_option and not self.env["view.node"].search_count([
+            ("model_id", "=", self.model_id.id),
+            ("node_option", "=", node_option),
+        ]):
+            labels = {
+                "button": self.env._("buttons"),
+                "page": self.env._("pages"),
+                "link": self.env._("links"),
+            }
+            return {"warning": {
+                "title": self.env._("Nothing to hide"),
+                "message": self.env._(
+                    "The views of %(model)s have no %(nodes)s to hide.",
+                    model=self.model_id.name,
+                    nodes=labels[node_option],
+                ),
+            }}
 
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
@@ -244,77 +132,103 @@ class AccessHideViewNode(models.Model):
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
 
-    def _store_btn_data(self, btn, smart_button=False, smart_button_string=False):
-        # string_value is used in case of kanban view button store,
-        string_value = (
-            "string_value" in self._context.keys()
-            and self._context["string_value"]
-            or False
-        )
+    def _get_node_option(self):
+        """Kind of view node (button, page or link) the line hides."""
+        if node_option := self.env.context.get("access_management_node_option"):
+            return node_option
+        for field_name, node_option in NODE_OPTION_BY_RULE_FIELD.items():
+            if self[field_name]:
+                return node_option
+        return False
 
-        View_node = self.env["view.node"]
-        name = btn.get("string") or string_value
-        if smart_button:
-            name = smart_button_string
+    def _ensure_view_node(
+        self,
+        node_option,
+        node_string,
+        name=False,
+        button_type=False,
+        is_smart_button=False,
+    ):
+        domain = [
+            ("model_id", "=", self.model_id.id),
+            ("node_option", "=", node_option),
+            ("node_string", "=", node_string),
+        ]
+        if name:
+            domain.append(("name", "=", name))
+        if button_type:
+            domain.append(("button_type", "=", button_type))
 
-        View_node.create(
-            {
+        view_node = self.env["view.node"].search(domain, limit=1)
+        if not view_node:
+            view_node = self.env["view.node"].create({
                 "model_id": self.model_id.id,
-                "node_option": "button",
-                "name": btn.get("name"),
-                "node_string": name,
-                "button_type": btn.get("type"),
-                "is_smart_button": smart_button,
+                "node_option": node_option,
+                "node_string": node_string,
+                "name": name,
+                "button_type": button_type,
+                "is_smart_button": is_smart_button,
                 "lang_code": self.env.lang,
-            }
-        )
+            })
+        elif is_smart_button and not view_node.is_smart_button:
+            view_node.is_smart_button = True
+        return view_node
 
-    def _get_smart_btn_string(self, btn_list, type=False):
-        store_model_button_obj = self.env["view.node"]
+    def _collect_links(self, arch):
+        for link in arch.xpath("//a[@type][@name]"):
+            text, name, link_type = link.text, link.get("name"), link.get("type")
+            if text and "\n" not in text and name and link_type:
+                self._ensure_view_node("link", text, name=name, button_type=link_type)
 
-        def _get_span_text(span_list):
-            name = ""
-            for sp in span_list:
-                if sp.text:
-                    name = name + " " + sp.text
-            name = name.strip()
-            return name
+    def _collect_buttons(self, arch, view_type):
+        for button in arch.xpath(BUTTONS_XPATH):
+            string = button.get("string")
+            text = button.text
+            if not string and view_type == "kanban" and text and text[0] != "\n":
+                string = text
+            if not string and button.get("type") == "object":
+                stat_texts = button.findall(".//*[@class='o_stat_text']")
+                string = _join_texts(stat_texts)
+            if string and button.get("name"):
+                self._ensure_view_node(
+                    "button",
+                    string,
+                    name=button.get("name"),
+                    button_type=button.get("type"),
+                )
 
-        for btn in btn_list:
-            name = ""
-            field_list = btn.findall("field")
-            if field_list:
-                name = field_list[0].get("string")
-            else:
-                span_list = btn.findall("span")
-                if span_list:
-                    name = _get_span_text(span_list)
-                else:
-                    div_list = btn.findall("div")
-                    if div_list:
-                        span_list = div_list[0].findall("span")
-                        if span_list:
-                            name = _get_span_text(span_list)
-            if not name:
-                try:
-                    name = btn.get("string")
-                except:
-                    pass
-            if name and (type == "object" or type == "action"):
-                domain = [
-                    ("button_type", "=", btn.get("type")),
-                    ("node_string", "=", name),
-                    ("model_id", "=", self.model_id.id),
-                    ("node_option", "=", "button"),
-                ]
-                if type == "object":
-                    domain += [("name", "=", btn.get("name"))]
-                if type == "action":
-                    domain += [("name", "=", btn.get("name"))]
-                smart_button_id = store_model_button_obj.search(domain)
-                if not smart_button_id:
-                    self._store_btn_data(
-                        btn, smart_button=True, smart_button_string=name
+    def _collect_smart_buttons(self, arch):
+        for button_box in arch.xpath("//div[@class='oe_button_box']")[:1]:
+            for button in button_box.xpath(f".{BUTTONS_XPATH}"):
+                if string := _smart_button_string(button):
+                    self._ensure_view_node(
+                        "button",
+                        string,
+                        name=button.get("name"),
+                        button_type=button.get("type"),
+                        is_smart_button=True,
                     )
-                else:
-                    smart_button_id[0].is_smart_button = True
+
+    def _collect_pages(self, arch):
+        pages = arch.xpath("//page[@string]")
+        if self.model_id.model == "res.config.settings":
+            pages += arch.xpath("//app[@string]")
+        for page in pages:
+            self._ensure_view_node(
+                "page", page.get("string"), name=page.get("name")
+            )
+
+
+def _join_texts(nodes):
+    texts = (node.text.strip() for node in nodes if node.text)
+    return " ".join(text for text in texts if text)
+
+
+def _smart_button_string(button):
+    """Label of a smart button: its statinfo field or its spans' texts."""
+    if fields_ := button.findall("field"):
+        return fields_[0].get("string") or button.get("string")
+    spans = button.findall("span")
+    if not spans and (divs := button.findall("div")):
+        spans = divs[0].findall("span")
+    return _join_texts(spans) or button.get("string")

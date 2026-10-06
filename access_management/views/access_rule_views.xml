@@ -6,9 +6,10 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <field name="active" invisible="1" />
                     <div class="oe_button_box" name="button_box">
                         <button class="oe_stat_button" name="action_toggle_active" type="object"
-                            icon="fa-bars" invisible="active == False">
+                            icon="fa-bars" invisible="not active">
                             <div class="o_stat_info">
                                 <span class="o_stat_text text-danger">
                                     Deactivate Rule
@@ -16,7 +17,7 @@
                             </div>
                         </button>
                         <button class="oe_stat_button" name="action_toggle_active" type="object"
-                            icon="fa-bars" invisible="active == True">
+                            icon="fa-bars" invisible="active">
                             <div class="o_stat_info">
                                 <span class="o_stat_text text-success">
                                     Activate Rule
@@ -36,7 +37,7 @@
                                 options="{'no_create': True}" />
                         </group>
                         <group>
-                            <field name="company_id" options="{'no_create': True}"
+                            <field name="company_ids" widget="many2many_tags" options="{'no_create': True}"
                                 groups="base.group_multi_company" />
                             <field name="readonly" />
                             <field name="restrict_debug_mode" />
@@ -54,23 +55,38 @@
                     </group>
                     <separator />
                     <notebook>
-                        <page string="Model Access">
+                        <page name="model_access" string="Model Access">
+                            <div class="alert alert-info" role="alert">
+                                Ticked operations are allowed on the records matching
+                                the domain, even if the users' groups don't allow them.
+                                Unticked operations are refused. Leave the domain empty
+                                to allow all records.
+                            </div>
                             <field name="record_rule_ids"
-                                context="{'default_rule_id': id}">
+                                context="{'default_rule_id': id, 'access_management_model_access': True}">
                                 <list editable="top">
                                     <field name="model_id" required="1"
+                                        domain="[('transient', '=', False), ('abstract', '=', False),
+                                                 '!', ('model', '=like', 'ir.%'),
+                                                 '!', ('model', '=like', 'res.users%'),
+                                                 '!', ('model', '=like', 'res.groups%'),
+                                                 '!', ('model', '=like', 'access.rule%'),
+                                                 ('model', 'not in', ['res.company', 'field.access', 'view.node', 'access.hide.view.node'])]"
                                         options="{'no_create': True}" />
                                     <field name="name" required="1" />
-                                    <field name="domain_force" required="1" />
-                                    <field name="perm_read" />
-                                    <field name="perm_write" />
-                                    <field name="perm_create" />
-                                    <field name="perm_unlink" />
+                                    <field name="domain_force"
+                                        placeholder="All records, or e.g. [('user_id', '=', user.id)]" />
+                                    <field name="perm_read" string="Read" />
+                                    <field name="perm_write" string="Write" />
+                                    <field name="perm_create" string="Create" />
+                                    <field name="perm_unlink" string="Delete" />
+                                    <field name="ignore_standard_rules" widget="boolean_toggle"
+                                        optional="hide" />
                                 </list>
                             </field>
                         </page>
                         <page name="restrict_menu" string="Restrict Menus">
-                            <field name="hide_menu_domain" invisible="True" />
+                            <field name="hide_menu_domain" invisible="1" />
                             <field name="hide_menu_ids" domain="hide_menu_domain"
                                 options="{'no_create': True}" />
                         </page>
@@ -88,14 +104,23 @@
                             </field>
                         </page>
                         <page string="Reports" name="hide_reports">
+                            <div class="alert alert-info" role="alert">
+                                Hide one report of a model, or switch on Hide All
+                                Reports to remove its whole Print menu.
+                            </div>
                             <field name="hidden_report_ids"
                                 context="{'default_rule_id': id}">
                                 <list editable="bottom">
                                     <field name="model_id" required="1"
                                         options="{'no_create': True}" />
-                                    <field name="hide_report_btn" />
+                                    <field name="hide_report_btn" widget="boolean_toggle" />
                                     <field name="report_id"
-                                        domain="[('model_id', '=', model_id)]" />
+                                        domain="[('model_id', '=', model_id)]"
+                                        readonly="hide_report_btn"
+                                        required="not hide_report_btn"
+                                        force_save="1"
+                                        placeholder="All reports"
+                                        options="{'no_create': True}" />
                                 </list>
                             </field>
                         </page>
@@ -128,9 +153,10 @@
                                 </list>
                             </field>
                         </page>
-                        <page name="hide_buttons" string="Hide/Show button">
+                        <page name="hide_buttons" string="Hide Buttons">
                             <field name="hide_button_ids"
-                                domain="[('view_node_id.node_option', '=', 'button')]">
+                                domain="[('view_node_id.node_option', '=', 'button')]"
+                                context="{'access_management_node_option': 'button'}">
                                 <list editable="bottom" open_form_view="false">
                                     <field name="model_id" required="1"
                                         options="{'no_create': True}" />
@@ -141,9 +167,10 @@
                                 </list>
                             </field>
                         </page>
-                        <page name="hide_pages" string="Hide/Show Pages">
+                        <page name="hide_pages" string="Hide Pages">
                             <field name="hide_page_ids"
-                                domain="[('view_node_id.node_option', '=', 'page')]">
+                                domain="[('view_node_id.node_option', '=', 'page')]"
+                                context="{'access_management_node_option': 'page'}">
                                 <list editable="bottom" open_form_view="false">
                                     <field name="model_id" required="1"
                                         options="{'no_create': True}" />
@@ -154,9 +181,10 @@
                                 </list>
                             </field>
                         </page>
-                        <page name="hide_links" string="Hide/Show Links">
+                        <page name="hide_links" string="Hide Links">
                             <field name="hide_link_ids"
-                                domain="[('view_node_id.node_option', '=', 'link')]">
+                                domain="[('view_node_id.node_option', '=', 'link')]"
+                                context="{'access_management_node_option': 'link'}">
                                 <list editable="bottom" open_form_view="false">
                                     <field name="model_id" required="1"
                                         options="{'no_create': True}" />
@@ -196,7 +224,7 @@
         <field name="arch" type="xml">
             <list open_form_view="True">
                 <field name="name" />
-                <field name="company_id" optional="hide" groups="base.group_multi_company" />
+                <field name="company_ids" widget="many2many_tags" optional="hide" groups="base.group_multi_company" />
                 <field name="user_ids" widget="many2many_tags" />
                 <field name="readonly" optional="hide" />
                 <field name="restrict_debug_mode" optional="hide" />
@@ -232,5 +260,5 @@
     <menuitem id="access_management_menu_main" name="Easy Access Rules"
         web_icon="access_management,static/description/icon.png"
         action="access_management_action_show"
-        groups="access_management.access_management_group_user" />
+        groups="access_management.access_management_group_admin" />
 </odoo>

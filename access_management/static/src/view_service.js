@@ -1,5 +1,3 @@
-// @odoo-module
-
 import { DebugMenu } from "@web/core/debug/debug_menu";
 import { registry } from "@web/core/registry";
 import { patch } from "@web/core/utils/patch";
@@ -53,71 +51,21 @@ function syncDebugState(env, isRestricted) {
 
 
 patch(registry.category("services").get("view"), {
-    start(env, { orm }) {
-        super.start(...arguments)
-
-        async function loadViews(params, options = {}) {
-            const { context, resModel, views } = params;
-            const isDebugRestricted = resModel
-                ? await rpc("/restrict_debug/check", { model_name: resModel })
-                : false;
-            syncDebugState(env, isDebugRestricted);
-            const loadViewsOptions = {
-                action_id: options.actionId || false,
-                embedded_action_id: options.embeddedActionId || false,
-                embedded_parent_res_id: options.embeddedParentResId || false,
-                load_filters: options.loadIrFilters || false,
-                toolbar: (!context?.disable_toolbar && options.loadActionMenus) || false,
-            };
-            for (const key in options) {
-                if (
-                    ![
-                        "actionId",
-                        "embeddedActionId",
-                        "embeddedParentResId",
-                        "loadIrFilters",
-                        "loadActionMenus",
-                    ].includes(key)
-                ) {
-                    loadViewsOptions[key] = options[key];
-                }
-            }
-            if (env.isSmall) {
-                loadViewsOptions.mobile = true;
-            }
-            if (env.debug && !isDebugRestricted) {
-                loadViewsOptions.debug = true;
-            }
-            const filteredContext = Object.fromEntries(
-                Object.entries(context || {}).filter(
-                    ([k, v]) => k == "lang" || k.endsWith("_view_ref")
-                )
-            );
-
-            const result = await orm.call(resModel, "get_views", [], {
-                context: filteredContext,
-                views,
-                options: loadViewsOptions,
-            });
-
-            const viewDescriptions = {
-                fields: result.models[resModel].fields,
-                relatedModels: result.models,
-                views: {},
-            };
-            for (const viewType in result.views) {
-                const { arch, toolbar, id, filters, custom_view_id } = result.views[viewType];
-                const viewDescription = { arch, id, custom_view_id };
-                if (toolbar) {
-                    viewDescription.actionMenus = toolbar;
-                }
-                if (filters) {
-                    viewDescription.irFilters = filters;
-                }
-                viewDescriptions.views[viewType] = viewDescription;
-            }
-            return viewDescriptions;
-        }
-        return { loadViews }
-    }
-})
+    start(env, dependencies) {
+        // Views depend on the user's access rules: don't serve them from the
+        // disk cache, which would keep showing them after a rule change.
+        const orm = Object.create(dependencies.orm);
+        orm.cache = () => dependencies.orm;
+        const viewService = super.start(env, { ...dependencies, orm });
+        return {
+            ...viewService,
+            async loadViews(params, options) {
+                const isDebugRestricted = params.resModel
+                    ? await rpc("/restrict_debug/check", { model_name: params.resModel })
+                    : false;
+                syncDebugState(env, isDebugRestricted);
+                return viewService.loadViews(params, options);
+            },
+        };
+    },
+});

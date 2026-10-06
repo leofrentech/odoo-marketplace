@@ -1,5 +1,3 @@
-/** @odoo-module **/
-
 import { patch } from "@web/core/utils/patch";
 import { Chatter } from "@mail/chatter/web_portal/chatter";
 import { onWillStart } from "@odoo/owl";
