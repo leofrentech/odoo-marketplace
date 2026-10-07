@@ -1,6 +1,7 @@
 from lxml import etree
 
 from odoo import api, models
+from odoo.exceptions import AccessError
 from odoo.http import request
 
 RESTRICTED_VIEW_TYPES = ("form", "list", "kanban")
@@ -56,13 +57,44 @@ class Base(models.AbstractModel):
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
 
+    def export_data(self, fields_to_export):
+        if rules := self._get_access_rules_setting("restrict_export"):
+            raise AccessError(
+                self.env._(
+                    "You are not allowed to export %(model)s records: the access "
+                    "rule %(rules)s restricts the export.",
+                    model=self._description,
+                    rules=", ".join(rules.mapped("name")),
+                )
+            )
+        return super().export_data(fields_to_export)
+
+    @api.model
+    def load(self, fields, data):
+        if rules := self._get_access_rules_setting("restrict_import_records"):
+            raise AccessError(
+                self.env._(
+                    "You are not allowed to import %(model)s records: the access "
+                    "rule %(rules)s restricts the import.",
+                    model=self._description,
+                    rules=", ".join(rules.mapped("name")),
+                )
+            )
+        return super().load(fields, data)
+
+    def _get_access_rules_setting(self, flag):
+        """Access rules of the current user setting ``flag`` on this model."""
+        if self.env.su:
+            return self.env["access.rule"]
+        return self.env["access.rule"]._get_model_rules(self._name).filtered(flag)
+
     @api.model
     @api.readonly
     def get_views(self, views, options=None):
         result = super().get_views(views, options)
 
         # Restrict debug mode
-        model_rules = self.env["access.rule"].get_model_rules(self._name)
+        model_rules = self.env["access.rule"]._get_model_rules(self._name)
         if request and any(model_rules.mapped("restrict_debug_mode")):
             request.session.debug = ""
 
@@ -76,7 +108,7 @@ class Base(models.AbstractModel):
         if view_type not in RESTRICTED_VIEW_TYPES:
             return result
 
-        model_rules = self.env["access.rule"].get_model_rules(self._name)
+        model_rules = self.env["access.rule"]._get_model_rules(self._name)
         if model_rules:
             arch = etree.fromstring(result["arch"])
             self._apply_access_rules(arch, view_type, model_rules)
@@ -106,10 +138,10 @@ class Base(models.AbstractModel):
             | model_rules.hide_button_ids
         ).view_node_id
         for view_node in view_nodes:
-            if view_node.node_option == "page" and not view_node.name:
-                xpath, name = NODE_XPATHS["page_string"], view_node.node_string
+            if view_node.node_type == "page" and not view_node.name:
+                xpath, name = NODE_XPATHS["page_string"], view_node.label
             else:
-                xpath, name = NODE_XPATHS[view_node.node_option], view_node.name
+                xpath, name = NODE_XPATHS[view_node.node_type], view_node.name
             for node in arch.xpath(xpath, name=name):
                 node.set("invisible", "1")
 

@@ -4,7 +4,7 @@ from odoo.tools import SQL
 def uninstall_hook(env):
     # Without the module, the Model Access lines would remain as global
     # record rules restricting every user
-    env["ir.rule"].search([("rule_id", "!=", False)]).unlink()
+    env["ir.rule"].search([("access_rule_id", "!=", False)]).unlink()
 
     # Restore the constraint of base, relaxed for the Model Access lines
     env.cr.execute(SQL("""

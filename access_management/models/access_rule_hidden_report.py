@@ -8,7 +8,7 @@ class AccessRuleHiddenReport(models.Model):
     # ------------------------------------------------------------------
 
     _name = "access.rule.hidden.report"
-    _description = "Access Rule Hidden Report"
+    _description = "Easy Access Rule Hidden Report"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -19,14 +19,21 @@ class AccessRuleHiddenReport(models.Model):
     # ------------------------------------------------------------------
 
     rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade", required=True)
-    model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
-    hide_report_btn = fields.Boolean(
+    model_id = fields.Many2one(
+        "ir.model",
+        "Model",
+        required=True,
+        ondelete="cascade",
+        help="Model whose Print menu shows the report.",
+    )
+    hide_all_reports = fields.Boolean(
         "Hide All Reports",
         help="Hide the Print menu of the model, with all its reports.",
     )
     report_id = fields.Many2one(
         "ir.actions.report",
         "Report to Hide",
+        ondelete="cascade",
         help="Hide only this report from the Print menu of the model.",
     )
 
@@ -42,10 +49,10 @@ class AccessRuleHiddenReport(models.Model):
     # 6. CONSTRAINTS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
 
-    @api.constrains("model_id", "hide_report_btn", "report_id")
+    @api.constrains("model_id", "hide_all_reports", "report_id")
     def _check_report_id(self):
         for line in self:
-            if line.hide_report_btn:
+            if line.hide_all_reports:
                 continue
             if not line.report_id:
                 raise ValidationError(
@@ -64,10 +71,10 @@ class AccessRuleHiddenReport(models.Model):
                     )
                 )
 
-    @api.onchange("hide_report_btn", "model_id")
-    def _onchange_hide_report_btn(self):
+    @api.onchange("hide_all_reports", "model_id")
+    def _onchange_hide_all_reports(self):
         for line in self:
-            if line.hide_report_btn or line.report_id.model != line.model_id.model:
+            if line.hide_all_reports or line.report_id.model != line.model_id.model:
                 line.report_id = False
 
     # ------------------------------------------------------------------
@@ -79,16 +86,16 @@ class AccessRuleHiddenReport(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get("hide_report_btn"):
+            if vals.get("hide_all_reports"):
                 vals["report_id"] = False
         return super().create(vals_list)
 
     def write(self, vals):
-        if vals.get("hide_report_btn"):
+        if vals.get("hide_all_reports"):
             vals = {**vals, "report_id": False}
         res = super().write(vals)
         if vals.get("report_id"):
-            self.filtered("hide_report_btn").report_id = False
+            self.filtered("hide_all_reports").report_id = False
         return res
 
     # ------------------------------------------------------------------

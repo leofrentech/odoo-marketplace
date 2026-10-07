@@ -56,7 +56,7 @@ class TestAccessRule(TransactionCase):
         )
 
     def test_record_rules_follow_rule_activity(self):
-        self.rule.record_rule_ids = [Command.create({
+        self.rule.model_access_ids = [Command.create({
             "name": "Companies only",
             "model_id": self.partner_model.id,
             "domain_force": "[('is_company', '=', True)]",
@@ -65,22 +65,26 @@ class TestAccessRule(TransactionCase):
         self.assertIn(False, self._visible_is_company(self.other_user))
 
         # An archived rule restricts nobody, rather than everybody
-        self.rule.action_toggle_active()
+        self.rule.action_archive()
         self.assertIn(False, self._visible_is_company(self.user))
         self.assertIn(False, self._visible_is_company(self.other_user))
 
-        self.rule.action_toggle_active()
+        self.rule.action_unarchive()
         self.assertEqual(self._visible_is_company(self.user), {True})
 
     def test_hide_view_nodes(self):
-        hide_node = self.env["access.hide.view.node"].new({
+        hide_node = self.env["access.rule.hidden.node"].new({
             "model_id": self.partner_model.id,
         })
         hide_node._onchange_model_id_collect_view_nodes()
-        ViewNode = self.env["view.node"]
+        ViewNode = self.env["access.view.node"]
         nodes = ViewNode.search([("model_id", "=", self.partner_model.id)])
-        page = nodes.filtered(lambda node: node.node_option == "page" and node.name)[:1]
-        self.assertTrue(page)
+        form = self._get_arch(self.other_user)
+        page = nodes.filtered(
+            lambda node: node.node_type == "page"
+            and form.xpath("//page[@name=$name]", name=node.name or "")
+        )[:1]
+        self.assertTrue(page, "The form's pages are collected")
 
         hide_node._onchange_model_id_collect_view_nodes()
         self.assertEqual(
@@ -91,9 +95,9 @@ class TestAccessRule(TransactionCase):
 
         link = ViewNode.create({
             "model_id": self.partner_model.id,
-            "node_option": "link",
+            "node_type": "link",
             "name": "action_test",
-            "node_string": "Test",
+            "label": "Test",
             "button_type": "object",
         })
         self.rule.write({
@@ -111,18 +115,18 @@ class TestAccessRule(TransactionCase):
         self.assertNotIn("1", {node.get("invisible") for node in pages})
 
     def test_hide_view_node_model_change(self):
-        ViewNode = self.env["view.node"]
+        ViewNode = self.env["access.view.node"]
         link = ViewNode.create({
             "model_id": self.partner_model.id,
-            "node_option": "link",
+            "node_type": "link",
             "name": "action_test",
-            "node_string": "Test",
+            "label": "Test",
             "button_type": "object",
         })
         # A model without anything to hide in its views
         empty_model = self.env["ir.model"]._get("res.partner.industry")
-        HideNode = self.env["access.hide.view.node"].with_context(
-            access_management_node_option="link"
+        HideNode = self.env["access.rule.hidden.node"].with_context(
+            access_management_node_type="link"
         )
 
         line = HideNode.new({
@@ -146,11 +150,11 @@ class TestAccessRule(TransactionCase):
             })]
 
     def test_view_node_display_name(self):
-        node = self.env["view.node"].create({
+        node = self.env["access.view.node"].create({
             "model_id": self.partner_model.id,
-            "node_option": "button",
+            "node_type": "button",
             "name": "action_test",
-            "node_string": "Test",
+            "label": "Test",
             "is_smart_button": True,
         })
         self.assertEqual(node.display_name, "Test (action_test) (Smart Button)")
@@ -175,6 +179,21 @@ class TestAccessRule(TransactionCase):
         self.assertNotEqual(arch.get("create"), "False")
         self.assertNotEqual(arch.get("import"), "0")
 
+    def test_export_import_refused_on_server(self):
+        export_group = self.env.ref("base.group_allow_export")
+        (self.user | self.other_user).group_ids = [Command.link(export_group.id)]
+        self.rule.write({"restrict_export": True, "restrict_import_records": True})
+
+        Partner = self.env["res.partner"].with_user(self.user)
+        with self.assertRaisesRegex(AccessError, "Test rule"):
+            Partner.search([], limit=1).export_data(["name"])
+        with self.assertRaisesRegex(AccessError, "Test rule"):
+            Partner.load(["name"], [["Imported"]])
+
+        OtherPartner = self.env["res.partner"].with_user(self.other_user)
+        self.assertTrue(OtherPartner.search([], limit=1).export_data(["name"])["datas"])
+        self.assertTrue(OtherPartner.load(["name"], [["Imported"]])["ids"])
+
     def test_restrict_debug_without_request(self):
         self.rule.restrict_debug_mode = True
         self._get_arch(self.user)
@@ -197,7 +216,7 @@ class TestAccessRule(TransactionCase):
         self.assertNotIn(report.id, report_ids(self.user))
         self.assertIn(report.id, report_ids(self.other_user))
 
-        self.rule.hidden_report_ids.hide_report_btn = True
+        self.rule.hidden_report_ids.hide_all_reports = True
         self.assertFalse(report_ids(self.user))
         self.assertIn(report.id, report_ids(self.other_user))
 
@@ -218,20 +237,20 @@ class TestAccessRule(TransactionCase):
         with self.assertRaises(ValidationError):
             HiddenReport.create({**values, "report_id": other_report.id})
         hide_all = HiddenReport.create({
-            **values, "hide_report_btn": True, "report_id": report.id,
+            **values, "hide_all_reports": True, "report_id": report.id,
         })
         self.assertFalse(hide_all.report_id)
 
         # Switching an existing line to hide all clears its report
         line = HiddenReport.create({**values, "report_id": report.id})
-        line.hide_report_btn = True
+        line.hide_all_reports = True
         self.assertFalse(line.report_id)
         line.report_id = report
         self.assertFalse(line.report_id)
 
         line = HiddenReport.new({**values, "report_id": report.id})
-        line.hide_report_btn = True
-        line._onchange_hide_report_btn()
+        line.hide_all_reports = True
+        line._onchange_hide_all_reports()
         self.assertFalse(line.report_id)
 
     def test_chatter_and_menus(self):
@@ -324,12 +343,12 @@ class TestAccessRule(TransactionCase):
 
     def _add_model_access(self, model, rule=None, **values):
         rule = rule or self.rule
-        rule.record_rule_ids = [Command.create({
+        rule.model_access_ids = [Command.create({
             "name": model,
             "model_id": self.env["ir.model"]._get(model).id,
             **values,
         })]
-        return rule.record_rule_ids[-1]
+        return rule.model_access_ids[-1]
 
     def test_model_access_refuses_unticked_operations(self):
         self._add_model_access(
@@ -450,15 +469,17 @@ class TestAccessRule(TransactionCase):
         rule = AccessRule.with_user(admin).create({
             "name": "Admin rule",
             "user_ids": [Command.set(self.other_user.ids)],
-            "record_rule_ids": [Command.create({
+            "model_access_ids": [Command.create({
                 "name": "All partners",
                 "model_id": self.partner_model.id,
             })],
         })
-        rule.record_rule_ids.name = "Renamed"
+        rule.model_access_ids.name = "Renamed"
         rule.unlink()
 
         # but not Odoo's own record rules
-        core_rule = self.env["ir.rule"].search([("rule_id", "=", False)], limit=1)
+        core_rule = self.env["ir.rule"].search(
+            [("access_rule_id", "=", False)], limit=1
+        )
         with self.assertRaises(AccessError):
             core_rule.with_user(admin).domain_force = "[(1, '=', 1)]"

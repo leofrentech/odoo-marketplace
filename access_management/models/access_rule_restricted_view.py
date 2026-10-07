@@ -1,14 +1,14 @@
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
-class ViewNode(models.Model):
+class AccessRuleRestrictedView(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
-    _name = "view.node"
-    _description = "View Nodes"
-    _rec_name = "node_string"
+    _name = "access.rule.restricted.view"
+    _description = "Easy Access Rule Restricted View"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -18,39 +18,27 @@ class ViewNode(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
-    name = fields.Char("Node Name")
+    rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade", required=True)
     model_id = fields.Many2one(
         "ir.model",
-        string="Model",
-        index=True,
+        "Model",
+        required=True,
         ondelete="cascade",
+        help="Model whose view is restricted.",
+    )
+    model = fields.Char("Model Name", related="model_id.model", store=True)
+    view_id = fields.Many2one(
+        "ir.ui.view",
+        "View",
         required=True,
+        ondelete="cascade",
+        help="View the users can't open. Its view type (e.g. kanban) is "
+        "removed from the actions showing it.",
     )
-    node_option = fields.Selection(
-        [("button", "Button"), ("page", "Page"), ("link", "Link")],
-        string="Node Option",
-        required=True,
-    )
-    node_string = fields.Char("Node String", required=True, translate=True)
-    lang_code = fields.Char("Language Code")
-    button_type = fields.Selection(
-        [("object", "Object"), ("action", "Action")], string="Button Type"
-    )
-    is_smart_button = fields.Boolean("Smart Button")
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
-
-    @api.depends("node_string", "name", "node_option", "is_smart_button")
-    def _compute_display_name(self):
-        for node in self:
-            name = node.node_string or ""
-            if node.name:
-                name = f"{name} ({node.name})"
-                if node.is_smart_button and node.node_option == "button":
-                    name = f"{name} (Smart Button)"
-            node.display_name = name
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
@@ -59,6 +47,23 @@ class ViewNode(models.Model):
     # ------------------------------------------------------------------
     # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
+
+    @api.constrains("model_id", "view_id")
+    def _check_view_id(self):
+        for line in self:
+            if line.view_id.model != line.model:
+                raise ValidationError(
+                    self.env._(
+                        "The view %(view)s doesn't belong to %(model)s.",
+                        view=line.view_id.name,
+                        model=line.model_id.name,
+                    )
+                )
+
+    @api.onchange("model_id")
+    def _onchange_model_id(self):
+        if self.view_id.model != self.model_id.model:
+            self.view_id = False
 
     # ------------------------------------------------------------------
     # 7. CRUD METHODS

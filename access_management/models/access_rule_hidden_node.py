@@ -6,21 +6,21 @@ from odoo.exceptions import ValidationError
 COLLECTED_VIEW_TYPES = ("form", "list", "kanban")
 BUTTONS_XPATH = "//button[@type='object' or @type='action'][@name]"
 
-# Kind of view node of each tab, by the field linking its lines to the rule
-NODE_OPTION_BY_RULE_FIELD = {
-    "access_rule_btn_id": "button",
-    "access_rule_page_id": "page",
-    "access_rule_id": "link",
+# Type of view node of each tab, by the field linking its lines to the rule
+NODE_TYPE_BY_RULE_FIELD = {
+    "button_rule_id": "button",
+    "page_rule_id": "page",
+    "link_rule_id": "link",
 }
 
 
-class AccessHideViewNode(models.Model):
+class AccessRuleHiddenNode(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
-    _name = "access.hide.view.node"
-    _description = "Access Hide View Nodes"
+    _name = "access.rule.hidden.node"
+    _description = "Easy Access Rule Hidden Button, Page or Link"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -30,18 +30,27 @@ class AccessHideViewNode(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
-    access_rule_id = fields.Many2one("access.rule", "Access Rule", ondelete="cascade")
-    model_id = fields.Many2one("ir.model", "Model", required=True, ondelete="cascade")
-    view_node_id = fields.Many2one("view.node", "View Node")
+    # A line hides a button, a page or a link, depending on which of these
+    # fields links it to its rule
+    button_rule_id = fields.Many2one("access.rule", "Button Rule", ondelete="cascade")
+    page_rule_id = fields.Many2one("access.rule", "Page Rule", ondelete="cascade")
+    link_rule_id = fields.Many2one("access.rule", "Link Rule", ondelete="cascade")
+    model_id = fields.Many2one(
+        "ir.model",
+        "Model",
+        required=True,
+        ondelete="cascade",
+        help="Model whose views show the button, page or link. Its views are "
+        "scanned when the model is picked.",
+    )
+    view_node_id = fields.Many2one(
+        "access.view.node",
+        "Element",
+        ondelete="cascade",
+        help="Button, page or link to hide in the views of the model.",
+    )
     is_smart_button = fields.Boolean(
-        "Is Smart Button?", related="view_node_id.is_smart_button"
-    )
-
-    access_rule_btn_id = fields.Many2one(
-        "access.rule", "Hide Button Rule", ondelete="cascade"
-    )
-    access_rule_page_id = fields.Many2one(
-        "access.rule", "Hide Page Rule", ondelete="cascade"
+        "Smart Button", related="view_node_id.is_smart_button"
     )
 
     # ------------------------------------------------------------------
@@ -59,9 +68,9 @@ class AccessHideViewNode(models.Model):
     @api.constrains("model_id", "view_node_id")
     def _check_view_node_id(self):
         for line in self.filtered("view_node_id"):
-            node_option = line._get_node_option()
+            node_type = line._get_node_type()
             if line.view_node_id.model_id != line.model_id or (
-                node_option and line.view_node_id.node_option != node_option
+                node_type and line.view_node_id.node_type != node_type
             ):
                 raise ValidationError(
                     self.env._(
@@ -71,14 +80,14 @@ class AccessHideViewNode(models.Model):
                     )
                 )
 
-    @api.onchange("model_id", "access_rule_id")
+    @api.onchange("model_id")
     def _onchange_model_id_collect_view_nodes(self):
         """Collect the buttons, pages and links of the model's views, so they
         can be selected on the rule."""
-        node_option = self._get_node_option()
+        node_type = self._get_node_type()
         if self.view_node_id and (
             self.view_node_id.model_id != self.model_id
-            or (node_option and self.view_node_id.node_option != node_option)
+            or (node_type and self.view_node_id.node_type != node_type)
         ):
             self.view_node_id = False
 
@@ -102,9 +111,9 @@ class AccessHideViewNode(models.Model):
                 self._collect_smart_buttons(arch)
                 self._collect_pages(arch)
 
-        if node_option and not self.env["view.node"].search_count([
+        if node_type and not self.env["access.view.node"].search_count([
             ("model_id", "=", self.model_id.id),
-            ("node_option", "=", node_option),
+            ("node_type", "=", node_type),
         ]):
             labels = {
                 "button": self.env._("buttons"),
@@ -116,7 +125,7 @@ class AccessHideViewNode(models.Model):
                 "message": self.env._(
                     "The views of %(model)s have no %(nodes)s to hide.",
                     model=self.model_id.name,
-                    nodes=labels[node_option],
+                    nodes=labels[node_type],
                 ),
             }}
 
@@ -132,43 +141,42 @@ class AccessHideViewNode(models.Model):
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
 
-    def _get_node_option(self):
-        """Kind of view node (button, page or link) the line hides."""
-        if node_option := self.env.context.get("access_management_node_option"):
-            return node_option
-        for field_name, node_option in NODE_OPTION_BY_RULE_FIELD.items():
+    def _get_node_type(self):
+        """Type of view node (button, page or link) the line hides."""
+        if node_type := self.env.context.get("access_management_node_type"):
+            return node_type
+        for field_name, node_type in NODE_TYPE_BY_RULE_FIELD.items():
             if self[field_name]:
-                return node_option
+                return node_type
         return False
 
     def _ensure_view_node(
         self,
-        node_option,
-        node_string,
+        node_type,
+        label,
         name=False,
         button_type=False,
         is_smart_button=False,
     ):
         domain = [
             ("model_id", "=", self.model_id.id),
-            ("node_option", "=", node_option),
-            ("node_string", "=", node_string),
+            ("node_type", "=", node_type),
+            ("label", "=", label),
         ]
         if name:
             domain.append(("name", "=", name))
         if button_type:
             domain.append(("button_type", "=", button_type))
 
-        view_node = self.env["view.node"].search(domain, limit=1)
+        view_node = self.env["access.view.node"].search(domain, limit=1)
         if not view_node:
-            view_node = self.env["view.node"].create({
+            view_node = self.env["access.view.node"].create({
                 "model_id": self.model_id.id,
-                "node_option": node_option,
-                "node_string": node_string,
+                "node_type": node_type,
+                "label": label,
                 "name": name,
                 "button_type": button_type,
                 "is_smart_button": is_smart_button,
-                "lang_code": self.env.lang,
             })
         elif is_smart_button and not view_node.is_smart_button:
             view_node.is_smart_button = True

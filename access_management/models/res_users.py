@@ -60,5 +60,5 @@ class ResUsers(models.Model):
     def check_export_enable(self, model):
         if not self.env.user.has_group("base.group_allow_export"):
             return False
-        model_rules = self.env["access.rule"].get_model_rules(model)
+        model_rules = self.env["access.rule"]._get_model_rules(model)
         return not any(model_rules.mapped("restrict_export"))

@@ -1,77 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="access_management_view_form" model="ir.ui.view">
-        <field name="name">access.management.view.form</field>
+    <record id="access_rule_view_form" model="ir.ui.view">
+        <field name="name">access.rule.view.form</field>
         <field name="model">access.rule</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                        invisible="active" />
                     <field name="active" invisible="1" />
-                    <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" name="action_toggle_active" type="object"
-                            icon="fa-bars" invisible="not active">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text text-danger">
-                                    Deactivate Rule
-                                </span>
-                            </div>
-                        </button>
-                        <button class="oe_stat_button" name="action_toggle_active" type="object"
-                            icon="fa-bars" invisible="active">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text text-success">
-                                    Activate Rule
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-                    <div>
+                    <div class="oe_title">
+                        <label for="name" />
                         <h1>
-                            <field name="name" />
+                            <field name="name" placeholder="e.g. Sales team restrictions" />
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="user_ids" widget="many2many_tags"
-                                required="1"
+                            <field name="user_ids" widget="many2many_tags" required="1"
                                 options="{'no_create': True}" />
+                            <field name="company_ids" widget="many2many_tags"
+                                options="{'no_create': True}" placeholder="All companies"
+                                groups="base.group_multi_company" />
                         </group>
                         <group>
-                            <field name="company_ids" widget="many2many_tags" options="{'no_create': True}"
-                                groups="base.group_multi_company" />
                             <field name="readonly" />
                             <field name="restrict_debug_mode" />
                         </group>
                     </group>
-                    <group string="Activity">
-                        <group>
-                            <field name="create_uid" readonly="1" />
-                            <field name="create_date" readonly="1" />
-                        </group>
-                        <group>
-                            <field name="write_uid" readonly="1" />
-                            <field name="write_date" readonly="1" />
-                        </group>
-                    </group>
-                    <separator />
                     <notebook>
                         <page name="model_access" string="Model Access">
                             <div class="alert alert-info" role="alert">
-                                Ticked operations are allowed on the records matching
-                                the domain, even if the users' groups don't allow them.
-                                Unticked operations are refused. Leave the domain empty
-                                to allow all records.
+                                Choose which operations the users may do on a model,
+                                checked on the server. Ticked operations are allowed on
+                                the records matching the domain, even if the users'
+                                groups don't allow them. Unticked operations are
+                                refused. Leave the domain empty to allow all records.
                             </div>
-                            <field name="record_rule_ids"
-                                context="{'default_rule_id': id, 'access_management_model_access': True}">
-                                <list editable="top">
+                            <field name="model_access_ids"
+                                context="{'default_access_rule_id': id, 'access_management_model_access': True}">
+                                <list editable="bottom">
                                     <field name="model_id" required="1"
                                         domain="[('transient', '=', False), ('abstract', '=', False),
                                                  '!', ('model', '=like', 'ir.%'),
                                                  '!', ('model', '=like', 'res.users%'),
                                                  '!', ('model', '=like', 'res.groups%'),
                                                  '!', ('model', '=like', 'access.rule%'),
-                                                 ('model', 'not in', ['res.company', 'field.access', 'view.node', 'access.hide.view.node'])]"
+                                                 ('model', 'not in', ['res.company', 'access.view.node'])]"
                                         options="{'no_create': True}" />
                                     <field name="name" required="1" />
                                     <field name="domain_force"
@@ -85,129 +60,149 @@
                                 </list>
                             </field>
                         </page>
-                        <page name="restrict_menu" string="Restrict Menus">
+                        <page name="hidden_menus" string="Menus">
+                            <div class="alert alert-info" role="alert">
+                                Remove menus from the users' navigation, with their
+                                sub-menus. This only hides the menus: use Model Access
+                                to refuse the records behind them.
+                            </div>
                             <field name="hide_menu_domain" invisible="1" />
                             <field name="hide_menu_ids" domain="hide_menu_domain"
                                 options="{'no_create': True}" />
                         </page>
-                        <page name="restrict_views" string="Restrict Views">
-                            <field name="restricted_view_ids"
-                                context="{'default_rule_id': id}">
+                        <page name="restricted_views" string="Views">
+                            <div class="alert alert-info" role="alert">
+                                Remove a view from the users' view switcher, e.g. the
+                                kanban view of a model.
+                            </div>
+                            <field name="restricted_view_ids" context="{'default_rule_id': id}">
+                                <list editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}" />
+                                    <field name="model" column_invisible="1" />
+                                    <field name="view_id" domain="[('model', '=', model)]"
+                                        options="{'no_create': True}" />
+                                </list>
+                            </field>
+                        </page>
+                        <page name="field_access" string="Fields">
+                            <div class="alert alert-info" role="alert">
+                                Make fields read-only, required or hidden in the views
+                                of a model. Only the views change: use Model Access to
+                                refuse writing the records.
+                            </div>
+                            <field name="field_access_ids" context="{'default_rule_id': id}">
+                                <list editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}" />
+                                    <field name="used_field_ids" column_invisible="1" />
+                                    <field name="field_id"
+                                        domain="[('model_id', '=', model_id), ('id', 'not in', used_field_ids)]"
+                                        options="{'no_create': True}" />
+                                    <field name="access" />
+                                </list>
+                            </field>
+                        </page>
+                        <page name="hidden_buttons" string="Buttons">
+                            <div class="alert alert-info" role="alert">
+                                Hide buttons, smart buttons included, from the views of
+                                a model. The model's views are scanned when you pick it.
+                            </div>
+                            <field name="hide_button_ids"
+                                context="{'access_management_node_type': 'button'}">
                                 <list editable="bottom">
                                     <field name="model_id" required="1"
                                         options="{'no_create': True}" />
-                                    <field name="model" column_invisible="1" />
-                                    <field name="view_id"
-                                        domain="[('model', '=', model)]"
+                                    <field name="view_node_id" string="Button" widget="selection"
+                                        domain="[('model_id', '=', model_id), ('node_type', '=', 'button')]"
                                         required="1" />
                                 </list>
                             </field>
                         </page>
-                        <page string="Reports" name="hide_reports">
+                        <page name="hidden_pages" string="Pages">
+                            <div class="alert alert-info" role="alert">
+                                Hide tabs from the forms of a model. The model's views
+                                are scanned when you pick it.
+                            </div>
+                            <field name="hide_page_ids"
+                                context="{'access_management_node_type': 'page'}">
+                                <list editable="bottom">
+                                    <field name="model_id" required="1"
+                                        options="{'no_create': True}" />
+                                    <field name="view_node_id" string="Page" widget="selection"
+                                        domain="[('model_id', '=', model_id), ('node_type', '=', 'page')]"
+                                        required="1" />
+                                </list>
+                            </field>
+                        </page>
+                        <page name="hidden_links" string="Links">
+                            <div class="alert alert-info" role="alert">
+                                Hide clickable links, e.g. on dashboard cards, from the
+                                views of a model. The model's views are scanned when you
+                                pick it.
+                            </div>
+                            <field name="hide_link_ids"
+                                context="{'access_management_node_type': 'link'}">
+                                <list editable="bottom">
+                                    <field name="model_id" required="1"
+                                        options="{'no_create': True}" />
+                                    <field name="view_node_id" string="Link" widget="selection"
+                                        domain="[('model_id', '=', model_id), ('node_type', '=', 'link')]"
+                                        required="1" />
+                                </list>
+                            </field>
+                        </page>
+                        <page name="hidden_reports" string="Reports">
                             <div class="alert alert-info" role="alert">
                                 Hide one report of a model, or switch on Hide All
                                 Reports to remove its whole Print menu.
                             </div>
-                            <field name="hidden_report_ids"
-                                context="{'default_rule_id': id}">
+                            <field name="hidden_report_ids" context="{'default_rule_id': id}">
                                 <list editable="bottom">
-                                    <field name="model_id" required="1"
-                                        options="{'no_create': True}" />
-                                    <field name="hide_report_btn" widget="boolean_toggle" />
+                                    <field name="model_id" options="{'no_create': True}" />
+                                    <field name="hide_all_reports" widget="boolean_toggle" />
                                     <field name="report_id"
                                         domain="[('model_id', '=', model_id)]"
-                                        readonly="hide_report_btn"
-                                        required="not hide_report_btn"
+                                        readonly="hide_all_reports"
+                                        required="not hide_all_reports"
                                         force_save="1"
                                         placeholder="All reports"
                                         options="{'no_create': True}" />
                                 </list>
                             </field>
                         </page>
-                        <page name="field_access" string="Field Access">
-                            <field name="field_access_ids" context="{'default_rule_id': id}">
-                                <list editable="bottom">
-                                    <field name="model_id" required="1"
-                                        options="{'no_create': True}" />
-                                    <field name="used_field_ids" column_invisible="1" />
-                                    <field name="field_id"
-                                        domain="[('model_id', '=', model_id),('id', 'not in', used_field_ids)]"
-                                        options="{'no_create': True}" />
-                                    <field name="access" required="1" />
-                                </list>
-                            </field>
-                        </page>
                         <page name="chatter" string="Chatter">
-                            <field name="chatter_setting_ids"
-                                context="{'default_rule_id': id}">
+                            <div class="alert alert-info" role="alert">
+                                Hide parts of the chatter on the forms of a model. To
+                                hide them on every model, use the All Models tab.
+                            </div>
+                            <field name="chatter_setting_ids" context="{'default_rule_id': id}">
                                 <list editable="bottom">
-                                    <field name="model_id" required="1"
-                                        options="{'no_create': True}" />
+                                    <field name="model_id" options="{'no_create': True}" />
                                     <field name="hide_chatter" />
                                     <field name="hide_send_message" />
-                                    <field name="hide_search_message" />
                                     <field name="hide_lognote" />
                                     <field name="hide_activity" />
                                     <field name="hide_attachments" />
                                     <field name="hide_followers" />
+                                    <field name="hide_search_message" />
                                 </list>
                             </field>
                         </page>
-                        <page name="hide_buttons" string="Hide Buttons">
-                            <field name="hide_button_ids"
-                                domain="[('view_node_id.node_option', '=', 'button')]"
-                                context="{'access_management_node_option': 'button'}">
-                                <list editable="bottom" open_form_view="false">
-                                    <field name="model_id" required="1"
-                                        options="{'no_create': True}" />
-                                    <field name="view_node_id"
-                                        domain="[('model_id' , '=' , model_id), ('node_option', '=', 'button')]"
-                                        widget="selection"
-                                        required="1" />
-                                </list>
-                            </field>
-                        </page>
-                        <page name="hide_pages" string="Hide Pages">
-                            <field name="hide_page_ids"
-                                domain="[('view_node_id.node_option', '=', 'page')]"
-                                context="{'access_management_node_option': 'page'}">
-                                <list editable="bottom" open_form_view="false">
-                                    <field name="model_id" required="1"
-                                        options="{'no_create': True}" />
-                                    <field name="view_node_id"
-                                        domain="[('model_id' , '=' , model_id), ('node_option', '=', 'page')]"
-                                        widget="selection"
-                                        required="1" />
-                                </list>
-                            </field>
-                        </page>
-                        <page name="hide_links" string="Hide Links">
-                            <field name="hide_link_ids"
-                                domain="[('view_node_id.node_option', '=', 'link')]"
-                                context="{'access_management_node_option': 'link'}">
-                                <list editable="bottom" open_form_view="false">
-                                    <field name="model_id" required="1"
-                                        options="{'no_create': True}" />
-                                    <field name="view_node_id"
-                                        domain="[('model_id' , '=' , model_id), ('node_option', '=', 'link')]"
-                                        widget="selection"
-                                        required="1" />
-                                </list>
-                            </field>
-                        </page>
-                        <page string="Common" name="common">
+                        <page name="all_models" string="All Models">
+                            <div class="alert alert-info" role="alert">
+                                These settings apply on every model.
+                            </div>
                             <group>
-                                <group string="Chatter &amp; Activity">
+                                <group string="Chatter">
                                     <field name="hide_chatter" />
                                     <field name="hide_send_message" />
-                                    <field name="hide_search_message" />
                                     <field name="hide_lognote" />
                                     <field name="hide_activity" />
                                     <field name="hide_attachments" />
                                     <field name="hide_followers" />
+                                    <field name="hide_search_message" />
                                 </group>
-                                <group string="Reports &amp; Imports">
-                                    <field name="hide_report_btn" />
+                                <group string="Reports, Import and Export">
+                                    <field name="hide_all_reports" />
                                     <field name="restrict_import_records" />
                                     <field name="restrict_export" />
                                 </group>
@@ -218,47 +213,61 @@
             </form>
         </field>
     </record>
-    <record id="access_management_view_tree" model="ir.ui.view">
-        <field name="name">access.management.view.tree</field>
+
+    <record id="access_rule_view_list" model="ir.ui.view">
+        <field name="name">access.rule.view.list</field>
         <field name="model">access.rule</field>
         <field name="arch" type="xml">
-            <list open_form_view="True">
+            <list>
                 <field name="name" />
-                <field name="company_ids" widget="many2many_tags" optional="hide" groups="base.group_multi_company" />
                 <field name="user_ids" widget="many2many_tags" />
+                <field name="company_ids" widget="many2many_tags" optional="hide"
+                    groups="base.group_multi_company" />
                 <field name="readonly" optional="hide" />
                 <field name="restrict_debug_mode" optional="hide" />
                 <field name="hide_menu_ids" widget="many2many_tags" optional="hide" />
             </list>
         </field>
     </record>
-    <record id="access_management_view_search" model="ir.ui.view">
-        <field name="name">access.management.view.search</field>
+
+    <record id="access_rule_view_search" model="ir.ui.view">
+        <field name="name">access.rule.view.search</field>
         <field name="model">access.rule</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name" />
-                <field name="readonly" />
-                <field name="restrict_debug_mode" />
-                <!-- Filters -->
-                <filter name="filter_disabled" string="Disabled" domain="[('active', '=', False)]"
-                    context="{}" />
-                <filter name="filter_readonly" string="Readonly" domain="[('readonly', '=', True)]"
-                    context="{}" />
+                <field name="user_ids" />
+                <field name="model_access_ids" string="Model"
+                    filter_domain="[('model_access_ids.model_id', 'ilike', self)]" />
+                <filter name="filter_readonly" string="Read-only"
+                    domain="[('readonly', '=', True)]" />
                 <filter name="filter_debug_restricted" string="Debug Restricted"
-                    domain="[('restrict_debug_mode', '=', True)]"
-                    context="{}" />
+                    domain="[('restrict_debug_mode', '=', True)]" />
+                <separator />
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]" />
             </search>
         </field>
     </record>
-    <record id="access_management_action_show" model="ir.actions.act_window">
+
+    <record id="access_rule_action" model="ir.actions.act_window">
         <field name="name">Access Rules</field>
         <field name="res_model">access.rule</field>
+        <field name="path">access-rules</field>
         <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="access_management_view_search" />
+        <field name="search_view_id" ref="access_rule_view_search" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first access rule
+            </p>
+            <p>
+                Pick the users, then choose what they may do on each model and
+                which menus, fields, buttons and reports they see.
+            </p>
+        </field>
     </record>
-    <menuitem id="access_management_menu_main" name="Easy Access Rules"
+
+    <menuitem id="access_rule_menu" name="Easy Access Rules"
         web_icon="access_management,static/description/icon.png"
-        action="access_management_action_show"
+        action="access_rule_action"
         groups="access_management.access_management_group_admin" />
 </odoo>

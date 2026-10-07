@@ -42,7 +42,7 @@ class MailThread(models.AbstractModel):
 
     @api.model
     def get_chatter_data(self):
-        model_rules = self.env["access.rule"].get_model_rules(self._name)
+        model_rules = self.env["access.rule"]._get_model_rules(self._name)
         defaults = {
             "hideSendMessage": False,
             "hideLogNote": False,

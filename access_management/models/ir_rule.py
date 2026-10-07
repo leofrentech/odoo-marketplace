@@ -27,12 +27,18 @@ class IrRule(models.Model):
     # domain limits the ticked operations, instead of the standard meaning.
     # Allow Model Access lines without any operation: they refuse them all
     _no_access_rights = models.Constraint(
-        "CHECK (rule_id IS NOT NULL OR perm_read OR perm_write OR perm_create "
+        "CHECK (access_rule_id IS NOT NULL OR perm_read OR perm_write OR perm_create "
         "OR perm_unlink)",
         "Rule must have at least one checked access right!",
     )
 
-    rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade")
+    access_rule_id = fields.Many2one(
+        "access.rule",
+        "Access Rule",
+        ondelete="cascade",
+        help="Easy Access rule the line belongs to: its Read, Write, Create and "
+        "Delete checkboxes then allow or refuse the operations.",
+    )
     ignore_standard_rules = fields.Boolean(
         "Ignore Standard Rules",
         help="Apply only this line's domain, without Odoo's own record rules "
@@ -52,9 +58,9 @@ class IrRule(models.Model):
     # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
 
-    @api.constrains("model_id", "rule_id")
+    @api.constrains("model_id", "access_rule_id")
     def _check_access_rule_model(self):
-        for rule in self.filtered("rule_id"):
+        for rule in self.filtered("access_rule_id"):
             if is_protected_model(rule.model_id.model):
                 raise ValidationError(
                     self.env._(
@@ -113,14 +119,14 @@ class IrRule(models.Model):
     def _model_access_lines(self):
         if self.env.context.get("access_management_model_access"):
             return self
-        return self.filtered("rule_id")
+        return self.filtered("access_rule_id")
 
     def _check_access_rule_scope(self):
         """Users granted ir.rule access by this module may only manage the
         Model Access lines, not the other record rules."""
         if self.env.su or self.env.user.has_group("base.group_erp_manager"):
             return
-        if any(not rule.rule_id for rule in self):
+        if any(not rule.access_rule_id for rule in self):
             raise AccessError(
                 self.env._("You can only manage the record rules of an access rule.")
             )
@@ -132,9 +138,9 @@ class IrRule(models.Model):
         if not rules:
             return rules
 
-        self.flush_model(["rule_id"])
+        self.flush_model(["access_rule_id"])
         model_access_line_ids = self.env.execute_query(SQL(
-            "SELECT id FROM ir_rule WHERE id IN %s AND rule_id IS NOT NULL",
+            "SELECT id FROM ir_rule WHERE id IN %s AND access_rule_id IS NOT NULL",
             tuple(rules.ids),
         ))
         return rules - self.browse(line_id for line_id, in model_access_line_ids)
