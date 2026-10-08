@@ -74,8 +74,9 @@ class AccessRule(models.Model):
         "company_id",
         string="Companies",
         default=lambda self: self.env.company,
-        help="Apply the rule while the users work in one of these companies. "
-        "Leave empty to apply it in all companies.",
+        help="Apply the rule while the users work in one of these companies, "
+        "also when it is one of several companies selected in the company "
+        "switcher. Leave empty to apply it in all companies.",
     )
 
     readonly = fields.Boolean(

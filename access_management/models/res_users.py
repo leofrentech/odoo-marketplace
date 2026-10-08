@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.http import request
 
 
 class ResUsers(models.Model):
@@ -50,11 +51,33 @@ class ResUsers(models.Model):
 
     def _get_hidden_menus(self):
         """Menus hidden from the current user in the companies they work in."""
-        AccessRule = self.env["access.rule"].with_user(self or self.env.user)
+        user = self or self.env.user
+        AccessRule = self.env["access.rule"].with_user(user).with_context(
+            allowed_company_ids=user._get_active_company_ids()
+        )
         # sudo: users are hidden menus by rules they cannot read; the domain
         # limits the search to their own rules.
         rules = AccessRule.sudo().search(AccessRule._get_user_rules_domain())
         return rules.hide_menu_ids
+
+    def _get_active_company_ids(self):
+        """Companies the user works in, also for requests without context.
+
+        The webclient loads its menus with a plain HTTP request, which only
+        carries the selected companies in the ``cids`` cookie; without it,
+        Odoo would apply the rules of all the user's companies.
+        """
+        self.ensure_one()
+        if self.env.context.get("allowed_company_ids") or not request:
+            return self.with_user(self).env.companies.ids
+        user_company_ids = self._get_company_ids()
+        cids = request.cookies.get("cids", "").replace(",", "-").split("-")
+        company_ids = [
+            int(cid) for cid in cids
+            if cid.isdigit() and int(cid) in user_company_ids
+        ]
+        # Same fallback as the webclient: the user's default company
+        return company_ids or [self.company_id.id]
 
     @api.model
     def check_export_enable(self, model):

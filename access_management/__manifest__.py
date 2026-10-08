@@ -1,6 +1,6 @@
 {
     "name": "Access Management",
-    "version": "19.0.4.0.0",
+    "version": "19.0.4.0.1",
     "summary": "Per-user rules for model access, menus, views, fields, buttons, "
     "reports, chatter, import, export and debug mode",
     "category": "Tools",
