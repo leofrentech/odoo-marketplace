@@ -32,6 +32,6 @@ pages, links, reports and chatter parts they see.
     "installable": True,
     "application": True,
     "auto_install": False,
-    "images": ["static/description/icon.png"],
+    "images": ["static/description/banner/access_management_cover.png"],
     "license": "LGPL-3",
 }
