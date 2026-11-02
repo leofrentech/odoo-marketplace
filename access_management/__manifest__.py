@@ -5,7 +5,6 @@
     "reports, chatter, import, export and debug mode",
     "category": "Tools",
     "author": "Leofren Technologies",
-    "maintainer": "Fenil Moradiya",
     "website": "https://leofren.com",
     "description": """
 Easy Access Rules: choose, per user and company, which operations users may do
