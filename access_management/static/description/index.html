@@ -280,13 +280,13 @@
     <div style="padding-left:24px; padding-right:24px">
       <ul class="nav nav-pills justify-content-center" role="tablist" style="margin-bottom:28px">
         <li class="nav-item" role="presentation">
-          <a class="nav-link active" id="am-top-overview-tab" data-bs-toggle="pill" href="#am-top-overview" role="tab" aria-controls="am-top-overview" aria-selected="true" style="font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">OVERVIEW</a>
+          <a class="nav-link active" id="am-top-overview-tab" data-bs-toggle="pill" href="#am-top-overview" role="tab" aria-controls="am-top-overview" aria-selected="true" style="color:#2E3033; font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">OVERVIEW</a>
         </li>
         <li class="nav-item" role="presentation">
-          <a class="nav-link" id="am-top-setup-tab" data-bs-toggle="pill" href="#am-top-setup" role="tab" aria-controls="am-top-setup" aria-selected="false" style="font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">SETUP</a>
+          <a class="nav-link" id="am-top-setup-tab" data-bs-toggle="pill" href="#am-top-setup" role="tab" aria-controls="am-top-setup" aria-selected="false" style="color:#2E3033; font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">SETUP</a>
         </li>
         <li class="nav-item" role="presentation">
-          <a class="nav-link" id="am-top-faq-tab" data-bs-toggle="pill" href="#am-top-faq" role="tab" aria-controls="am-top-faq" aria-selected="false" style="font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">FAQ</a>
+          <a class="nav-link" id="am-top-faq-tab" data-bs-toggle="pill" href="#am-top-faq" role="tab" aria-controls="am-top-faq" aria-selected="false" style="color:#2E3033; font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">FAQ</a>
         </li>
       </ul>
       <div class="tab-content">
@@ -299,10 +299,14 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-model-access-own-records-tab" data-bs-toggle="pill" href="#am-model-access-own-records" role="tab" aria-controls="am-model-access-own-records" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Own records only</a>
-              <a class="nav-link" id="am-model-access-readonly-model-tab" data-bs-toggle="pill" href="#am-model-access-readonly-model" role="tab" aria-controls="am-model-access-readonly-model" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Refuse operations</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-model-access-own-records-tab" data-bs-toggle="pill" href="#am-model-access-own-records" role="tab" aria-controls="am-model-access-own-records" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Own records only</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-model-access-readonly-model-tab" data-bs-toggle="pill" href="#am-model-access-readonly-model" role="tab" aria-controls="am-model-access-readonly-model" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Refuse operations</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
@@ -326,10 +330,14 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-first">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-fields-field-readonly-tab" data-bs-toggle="pill" href="#am-fields-field-readonly" role="tab" aria-controls="am-fields-field-readonly" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Read-only field</a>
-              <a class="nav-link" id="am-fields-field-hidden-tab" data-bs-toggle="pill" href="#am-fields-field-hidden" role="tab" aria-controls="am-fields-field-hidden" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden field</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-fields-field-readonly-tab" data-bs-toggle="pill" href="#am-fields-field-readonly" role="tab" aria-controls="am-fields-field-readonly" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Read-only field</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-fields-field-hidden-tab" data-bs-toggle="pill" href="#am-fields-field-hidden" role="tab" aria-controls="am-fields-field-hidden" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden field</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
@@ -353,10 +361,14 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-buttons-buttons-tab" data-bs-toggle="pill" href="#am-buttons-buttons" role="tab" aria-controls="am-buttons-buttons" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden buttons</a>
-              <a class="nav-link" id="am-buttons-tabs-tab" data-bs-toggle="pill" href="#am-buttons-tabs" role="tab" aria-controls="am-buttons-tabs" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden tab</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-buttons-buttons-tab" data-bs-toggle="pill" href="#am-buttons-buttons" role="tab" aria-controls="am-buttons-buttons" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden buttons</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-buttons-tabs-tab" data-bs-toggle="pill" href="#am-buttons-tabs" role="tab" aria-controls="am-buttons-tabs" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden tab</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
@@ -380,10 +392,14 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-first">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-menus-menus-tab" data-bs-toggle="pill" href="#am-menus-menus" role="tab" aria-controls="am-menus-menus" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden menu</a>
-              <a class="nav-link" id="am-menus-views-tab" data-bs-toggle="pill" href="#am-menus-views" role="tab" aria-controls="am-menus-views" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden view</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-menus-menus-tab" data-bs-toggle="pill" href="#am-menus-menus" role="tab" aria-controls="am-menus-menus" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden menu</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-menus-views-tab" data-bs-toggle="pill" href="#am-menus-views" role="tab" aria-controls="am-menus-views" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden view</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
@@ -407,11 +423,17 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-reports-reports-tab" data-bs-toggle="pill" href="#am-reports-reports" role="tab" aria-controls="am-reports-reports" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden report</a>
-              <a class="nav-link" id="am-reports-export-tab" data-bs-toggle="pill" href="#am-reports-export" role="tab" aria-controls="am-reports-export" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No export</a>
-              <a class="nav-link" id="am-reports-import-tab" data-bs-toggle="pill" href="#am-reports-import" role="tab" aria-controls="am-reports-import" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No import</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-reports-reports-tab" data-bs-toggle="pill" href="#am-reports-reports" role="tab" aria-controls="am-reports-reports" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden report</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-reports-export-tab" data-bs-toggle="pill" href="#am-reports-export" role="tab" aria-controls="am-reports-export" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No export</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-reports-import-tab" data-bs-toggle="pill" href="#am-reports-import" role="tab" aria-controls="am-reports-import" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No import</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
@@ -439,10 +461,14 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-first">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-chatter-chatter-parts-tab" data-bs-toggle="pill" href="#am-chatter-chatter-parts" role="tab" aria-controls="am-chatter-chatter-parts" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hide chatter buttons</a>
-              <a class="nav-link" id="am-chatter-chatter-hidden-tab" data-bs-toggle="pill" href="#am-chatter-chatter-hidden" role="tab" aria-controls="am-chatter-chatter-hidden" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hide the whole chatter</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-chatter-chatter-parts-tab" data-bs-toggle="pill" href="#am-chatter-chatter-parts" role="tab" aria-controls="am-chatter-chatter-parts" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hide chatter buttons</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-chatter-chatter-hidden-tab" data-bs-toggle="pill" href="#am-chatter-chatter-hidden" role="tab" aria-controls="am-chatter-chatter-hidden" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hide the whole chatter</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
@@ -466,10 +492,14 @@
       </div>
       <div class="row">
           <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <div class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <a class="nav-link active" id="am-readonly-readonly-user-tab" data-bs-toggle="pill" href="#am-readonly-readonly-user" role="tab" aria-controls="am-readonly-readonly-user" aria-selected="true" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Read-only user</a>
-              <a class="nav-link" id="am-readonly-debug-tab" data-bs-toggle="pill" href="#am-readonly-debug" role="tab" aria-controls="am-readonly-debug" aria-selected="false" style="font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No developer mode</a>
-            </div>
+            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="am-readonly-readonly-user-tab" data-bs-toggle="pill" href="#am-readonly-readonly-user" role="tab" aria-controls="am-readonly-readonly-user" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Read-only user</a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="am-readonly-debug-tab" data-bs-toggle="pill" href="#am-readonly-debug" role="tab" aria-controls="am-readonly-debug" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No developer mode</a>
+              </li>
+            </ul>
           </div>
           <div class="col-lg-9 col-12 mb-4">
             <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
