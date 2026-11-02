@@ -1,12 +1,14 @@
-from odoo import api, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
-class IrActionsActWindow(models.Model):
+class AccessRuleRestrictedView(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
-    _inherit = "ir.actions.act_window"
+    _name = "access.rule.restricted.view"
+    _description = "Easy Access Rule Restricted View"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -16,36 +18,27 @@ class IrActionsActWindow(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
+    rule_id = fields.Many2one("access.rule", "Rule", ondelete="cascade", required=True)
+    model_id = fields.Many2one(
+        "ir.model",
+        "Model",
+        required=True,
+        ondelete="cascade",
+        help="Model whose view is restricted.",
+    )
+    model = fields.Char("Model Name", related="model_id.model", store=True)
+    view_id = fields.Many2one(
+        "ir.ui.view",
+        "View",
+        required=True,
+        ondelete="cascade",
+        help="View the users can't open. Its view type (e.g. kanban) is "
+        "removed from the actions showing it.",
+    )
+
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
-
-    @api.depends(
-        "view_ids.view_mode", "view_mode", "view_id.type", "view_id.rule_ids"
-    )
-    def _compute_views(self):
-        result = super(IrActionsActWindow, self)._compute_views()
-        Rule = self.env["access.rule"]
-        for act in self:
-            # Views in the window action (set through default compute method)
-            views = {key: value for value, key in act.views}
-
-            # If the specific view_id is provided in the views,
-            # then check that specific view for restriction
-            # otherwise restrict by view type
-            model_rules = Rule.get_model_rules(model=act.res_model)
-            for restricted_view in model_rules.restrict_view_ids:
-                if (not views[restricted_view.type]) or (
-                    views[restricted_view.type]
-                    and views[restricted_view.type] == restricted_view.id
-                ):
-                    views.pop(restricted_view.type, False)
-
-            # Only update views, if any are restricted
-            if len(views) != len(act.views):
-                act.views = [(v, k) for k, v in views.items()]
-
-        return result
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
@@ -54,6 +47,23 @@ class IrActionsActWindow(models.Model):
     # ------------------------------------------------------------------
     # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
     # ------------------------------------------------------------------
+
+    @api.constrains("model_id", "view_id")
+    def _check_view_id(self):
+        for line in self:
+            if line.view_id.model != line.model:
+                raise ValidationError(
+                    _(
+                        "The view %(view)s doesn't belong to %(model)s.",
+                        view=line.view_id.name,
+                        model=line.model_id.name,
+                    )
+                )
+
+    @api.onchange("model_id")
+    def _onchange_model_id(self):
+        if self.view_id.model != self.model_id.model:
+            self.view_id = False
 
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
@@ -66,7 +76,3 @@ class IrActionsActWindow(models.Model):
     # ------------------------------------------------------------------
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
-
-    # def _get_action_dict(self):
-    #     result = super()._get_action_dict()
-    #     return result

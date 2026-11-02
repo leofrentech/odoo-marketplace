@@ -1,9 +1,8 @@
 from odoo import api, fields, models
-from odoo.tools import ormcache
-from odoo.tools.sql import table_columns, create_column
+from odoo.http import request
 
 
-class ResUser(models.Model):
+class ResUsers(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
@@ -25,36 +24,10 @@ class ResUser(models.Model):
         "ear_id",
         string="Easy Access Rules",
     )
-    access_rule_update_at = fields.Date(
-        "Access Rule Updated",
-        compute="_compute_access_rule_update_at",
-        store=True,
-    )
-    restricted_model_ids = fields.Many2many(
-        "ir.model",
-        string="Restricted Models",
-        compute="_compute_restricted_model_ids",
-    )
 
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
-
-    @api.depends("access_rule_ids", "access_rule_ids.write_date")
-    def _compute_access_rule_update_at(self):
-        for user in self:
-            if user.access_rule_ids:
-                user.access_rule_update_at = max(
-                    user.access_rule_ids.mapped("write_date")
-                )
-                self.env.registry.clear_cache()
-            else:
-                user.access_rule_update_at = False
-
-    @api.depends("access_rule_ids", "access_rule_ids.model_id")
-    def _compute_restricted_model_ids(self):
-        for user in self:
-            user.restricted_model_ids = user.access_rule_ids.model_id.ids
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
@@ -77,36 +50,38 @@ class ResUser(models.Model):
     # ------------------------------------------------------------------
 
     def _get_hidden_menus(self):
-        if not self:
-            self = self.env.user
+        """Menus hidden from the current user in the companies they work in."""
+        user = self or self.env.user
+        AccessRule = self.env["access.rule"].with_user(user).with_context(
+            allowed_company_ids=user._get_active_company_ids()
+        )
+        # sudo: users are hidden menus by rules they cannot read; the domain
+        # limits the search to their own rules.
+        rules = AccessRule.sudo().search(AccessRule._get_user_rules_domain())
+        return rules.hide_menu_ids
 
-        return self.access_rule_ids.hide_menu_ids
+    def _get_active_company_ids(self):
+        """Companies the user works in, also for requests without context.
 
-    def _get_hidden_reports(self):
-        if not self:
-            self = self.env.user
-
-        return self.access_rule_ids.hide_report_ids
+        The webclient loads its menus with a plain HTTP request, which only
+        carries the selected companies in the ``cids`` cookie; without it,
+        Odoo would apply the rules of all the user's companies.
+        """
+        self.ensure_one()
+        if self.env.context.get("allowed_company_ids") or not request:
+            return self.with_user(self).env.companies.ids
+        user_company_ids = self._get_company_ids()
+        cids = request.httprequest.cookies.get("cids", "").replace(",", "-").split("-")
+        company_ids = [
+            int(cid) for cid in cids
+            if cid.isdigit() and int(cid) in user_company_ids
+        ]
+        # Same fallback as the webclient: the user's default company
+        return company_ids or [self.company_id.id]
 
     @api.model
     def check_export_enable(self, model):
-        enabled = self.env.user.has_group("base.group_allow_export")
-
-        model_rules = self.env["access.rule"].get_model_rules(model)
-        if any(model_rules.mapped("restrict_export")):
-            enabled = False
-
-        return enabled
-
-    @api.model
-    def check_import_enabled(self, model):
-        model_rules = self.env["access.rule"].get_model_rules(model)
-        return any(model_rules.mapped("restrict_import_records"))
-
-    def _register_hook(self):
-        columns = table_columns(self.env.cr, self._table)
-        if "access_rule_update_at" not in columns:
-            create_column(
-                self.env.cr, self._table, "access_rule_update_at", "timestamp"
-            )
-        return super()._register_hook()
+        if not self.env.user.has_group("base.group_allow_export"):
+            return False
+        model_rules = self.env["access.rule"]._get_model_rules(model)
+        return not any(model_rules.mapped("restrict_export"))

@@ -42,7 +42,7 @@ class MailThread(models.AbstractModel):
 
     @api.model
     def get_chatter_data(self):
-        model_rules = self.env["access.rule"].get_model_rules(self._name)
+        model_rules = self.env["access.rule"]._get_model_rules(self._name)
         defaults = {
             "hideSendMessage": False,
             "hideLogNote": False,
@@ -66,11 +66,19 @@ class MailThread(models.AbstractModel):
             "hide_search_message": "hideSearchMessage",
             "hide_chatter": "hideChatter",
         }
-        # Collect all rule values once
+
+        # Check global booleans on parent rules
         rule_data = model_rules.read(list(field_map.keys()))
-        # If any rule has True for a given field, mark it hidden
         for field, key in field_map.items():
             if any(rule[field] for rule in rule_data):
+                defaults[key] = True
+
+        # Check per-model chatter settings for this model only
+        chatter_settings = model_rules.chatter_setting_ids.filtered(
+            lambda setting: setting.model_id.model == self._name
+        )
+        for field, key in field_map.items():
+            if any(chatter_settings.mapped(field)):
                 defaults[key] = True
 
         return defaults

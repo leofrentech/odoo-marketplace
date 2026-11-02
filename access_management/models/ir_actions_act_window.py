@@ -1,13 +1,12 @@
-from odoo import api, fields, models
+from odoo import api, models
 
 
-class FieldAccess(models.Model):
+class IrActionsActWindow(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
-    _name = "field.access"
-    _description = "Field access"
+    _inherit = "ir.actions.act_window"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -17,34 +16,41 @@ class FieldAccess(models.Model):
     # 3. FIELD DECLARATIONS
     # ------------------------------------------------------------------
 
-    rule_id = fields.Many2one(
-        "access.rule", "Rule", ondelete="cascade", required=True
-    )
-    model_id = fields.Many2one("ir.model", "Model", related="rule_id.model_id")
-
-    used_field_ids = fields.Many2many(
-        "ir.model.fields", compute="_compute_used_field_ids"
-    )
-    field_id = fields.Many2one("ir.model.fields", "Field")
-    access = fields.Selection(
-        [
-            ("readonly", "Readonly"),
-            ("required", "Required"),
-            ("invisible", "Hide"),
-        ],
-        string="Access",
-    )
-
     # ------------------------------------------------------------------
     # 4. COMPUTE, INVERSE AND SEARCH METHODS
     # ------------------------------------------------------------------
 
-    @api.depends("rule_id", "rule_id.field_access_ids")
-    def _compute_used_field_ids(self):
-        for access in self:
-            access.used_field_ids = (
-                access.rule_id.field_access_ids.field_id.ids
-            )
+    @api.depends("view_ids.view_mode", "view_mode", "view_id.type")
+    def _compute_views(self):
+        super()._compute_views()
+        restricted_views_by_model = {}
+        for action in self:
+            res_model = action.res_model
+            if not res_model:
+                continue
+            if res_model not in restricted_views_by_model:
+                model_rules = self.env["access.rule"]._get_model_rules(res_model)
+                restricted_views_by_model[res_model] = (
+                    model_rules.restricted_view_ids.filtered(
+                        lambda line: line.model == res_model
+                    ).view_id
+                )
+            restricted_views = restricted_views_by_model[res_model]
+            if not restricted_views:
+                continue
+
+            # A restricted view hides its type when the action uses the
+            # default view of that type or that view specifically
+            views = [
+                (view_id, view_type)
+                for view_id, view_type in action.views
+                if not any(
+                    view.type == view_type and view_id in (False, view.id)
+                    for view in restricted_views
+                )
+            ]
+            if len(views) != len(action.views):
+                action.views = views
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS
