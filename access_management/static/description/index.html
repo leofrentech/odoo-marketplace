@@ -278,17 +278,11 @@
 <section>
   <div class="container pt-5 pb-2">
     <div style="padding-left:24px; padding-right:24px">
-      <ul class="nav nav-pills justify-content-center" role="tablist" style="margin-bottom:28px">
-        <li class="nav-item" role="presentation">
-          <a class="nav-link active" id="am-top-overview-tab" data-bs-toggle="pill" href="#am-top-overview" role="tab" aria-controls="am-top-overview" aria-selected="true" style="color:#2E3033; font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">OVERVIEW</a>
-        </li>
-        <li class="nav-item" role="presentation">
-          <a class="nav-link" id="am-top-setup-tab" data-bs-toggle="pill" href="#am-top-setup" role="tab" aria-controls="am-top-setup" aria-selected="false" style="color:#2E3033; font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">SETUP</a>
-        </li>
-        <li class="nav-item" role="presentation">
-          <a class="nav-link" id="am-top-faq-tab" data-bs-toggle="pill" href="#am-top-faq" role="tab" aria-controls="am-top-faq" aria-selected="false" style="color:#2E3033; font-size:16px; font-weight:700; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px">FAQ</a>
-        </li>
-      </ul>
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:28px">
+        <a class="nav-link active" id="am-top-overview-tab" data-bs-toggle="pill" href="#am-top-overview" role="tab" aria-controls="am-top-overview" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:16px; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px"><span style="color:#2E3033">OVERVIEW</span></a>
+        <a class="nav-link" id="am-top-setup-tab" data-bs-toggle="pill" href="#am-top-setup" role="tab" aria-controls="am-top-setup" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:16px; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px"><span style="color:#2E3033">SETUP</span></a>
+        <a class="nav-link" id="am-top-faq-tab" data-bs-toggle="pill" href="#am-top-faq" role="tab" aria-controls="am-top-faq" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:16px; letter-spacing:1px; padding:12px 28px; margin:0 6px 8px 6px"><span style="color:#2E3033">FAQ</span></a>
+      </div>
       <div class="tab-content">
         <div class="tab-pane fade show active" id="am-top-overview" role="tabpanel" aria-labelledby="am-top-overview-tab">
           <!-- Showcase: Model Access Rights -->
@@ -297,19 +291,11 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Model Access Rights</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Decide which operations users may do on each model, on the records matching a domain. Odoo checks it on the server: the web client, imports, exports and the API all follow it.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-model-access-own-records-tab" data-bs-toggle="pill" href="#am-model-access-own-records" role="tab" aria-controls="am-model-access-own-records" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Own records only</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-model-access-readonly-model-tab" data-bs-toggle="pill" href="#am-model-access-readonly-model" role="tab" aria-controls="am-model-access-readonly-model" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Refuse operations</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-model-access-own-records-tab" data-bs-toggle="pill" href="#am-model-access-own-records" role="tab" aria-controls="am-model-access-own-records" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Own records only</span></a>
+        <a class="nav-link" id="am-model-access-readonly-model-tab" data-bs-toggle="pill" href="#am-model-access-readonly-model" role="tab" aria-controls="am-model-access-readonly-model" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Refuse operations</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-model-access-own-records" role="tabpanel" aria-labelledby="am-model-access-own-records-tab">
                 <img src="demo-own-records.gif" alt="Own records only: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">With the domain <code>[('user_id', '=', user.id)]</code>, Marc Demo sees and edits only his own quotations: 13 instead of 20.</p>
@@ -319,8 +305,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Only Read is ticked for contacts: the New button disappears, every field is locked, and the server refuses changes too.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
           <!-- Showcase: Field Access -->
           <div style="background-color:#FFF2E0; border-radius:10px; padding:36px 24px 20px 24px; margin-bottom:24px">
@@ -328,19 +313,11 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Field Access</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Make any field read-only, required or hidden in the form, list and kanban views of a model.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-first">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-fields-field-readonly-tab" data-bs-toggle="pill" href="#am-fields-field-readonly" role="tab" aria-controls="am-fields-field-readonly" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Read-only field</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-fields-field-hidden-tab" data-bs-toggle="pill" href="#am-fields-field-hidden" role="tab" aria-controls="am-fields-field-hidden" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden field</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-fields-field-readonly-tab" data-bs-toggle="pill" href="#am-fields-field-readonly" role="tab" aria-controls="am-fields-field-readonly" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Read-only field</span></a>
+        <a class="nav-link" id="am-fields-field-hidden-tab" data-bs-toggle="pill" href="#am-fields-field-hidden" role="tab" aria-controls="am-fields-field-hidden" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden field</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-fields-field-readonly" role="tabpanel" aria-labelledby="am-fields-field-readonly-tab">
                 <img src="demo-field-readonly.gif" alt="Read-only field: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Payment Terms stays visible but can't be changed.</p>
@@ -350,8 +327,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Tax ID disappears from the contact form.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
           <!-- Showcase: Buttons and Tabs -->
           <div style="background-color:#f8f9fa; border-radius:10px; padding:36px 24px 20px 24px; margin-bottom:24px">
@@ -359,19 +335,11 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Buttons and Tabs</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Hide any button, smart buttons included, and any tab of a form. Pick the model and its views are scanned for you.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-buttons-buttons-tab" data-bs-toggle="pill" href="#am-buttons-buttons" role="tab" aria-controls="am-buttons-buttons" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden buttons</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-buttons-tabs-tab" data-bs-toggle="pill" href="#am-buttons-tabs" role="tab" aria-controls="am-buttons-tabs" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden tab</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-buttons-buttons-tab" data-bs-toggle="pill" href="#am-buttons-buttons" role="tab" aria-controls="am-buttons-buttons" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden buttons</span></a>
+        <a class="nav-link" id="am-buttons-tabs-tab" data-bs-toggle="pill" href="#am-buttons-tabs" role="tab" aria-controls="am-buttons-tabs" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden tab</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-buttons-buttons" role="tabpanel" aria-labelledby="am-buttons-buttons-tab">
                 <img src="demo-buttons.gif" alt="Hidden buttons: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Both Send buttons and Cancel are removed from the quotation.</p>
@@ -381,8 +349,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The Other Info tab is removed from the quotation.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
           <!-- Showcase: Menus and Views -->
           <div style="background-color:#FFF2E0; border-radius:10px; padding:36px 24px 20px 24px; margin-bottom:24px">
@@ -390,19 +357,11 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Menus and Views</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Remove menus, with their sub-menus, from the navigation, and views from the view switcher.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-first">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-menus-menus-tab" data-bs-toggle="pill" href="#am-menus-menus" role="tab" aria-controls="am-menus-menus" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden menu</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-menus-views-tab" data-bs-toggle="pill" href="#am-menus-views" role="tab" aria-controls="am-menus-views" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden view</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-menus-menus-tab" data-bs-toggle="pill" href="#am-menus-menus" role="tab" aria-controls="am-menus-menus" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden menu</span></a>
+        <a class="nav-link" id="am-menus-views-tab" data-bs-toggle="pill" href="#am-menus-views" role="tab" aria-controls="am-menus-views" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden view</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-menus-menus" role="tabpanel" aria-labelledby="am-menus-menus-tab">
                 <img src="demo-menus.gif" alt="Hidden menu: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The Products menu of Sales is gone.</p>
@@ -412,8 +371,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The kanban view is gone from the view switcher of quotations.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
           <!-- Showcase: Reports, Import and Export -->
           <div style="background-color:#f8f9fa; border-radius:10px; padding:36px 24px 20px 24px; margin-bottom:24px">
@@ -421,22 +379,12 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Reports, Import and Export</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Hide one report or a model's whole Print menu, and restrict importing and exporting records.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-reports-reports-tab" data-bs-toggle="pill" href="#am-reports-reports" role="tab" aria-controls="am-reports-reports" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hidden report</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-reports-export-tab" data-bs-toggle="pill" href="#am-reports-export" role="tab" aria-controls="am-reports-export" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No export</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-reports-import-tab" data-bs-toggle="pill" href="#am-reports-import" role="tab" aria-controls="am-reports-import" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No import</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-reports-reports-tab" data-bs-toggle="pill" href="#am-reports-reports" role="tab" aria-controls="am-reports-reports" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden report</span></a>
+        <a class="nav-link" id="am-reports-export-tab" data-bs-toggle="pill" href="#am-reports-export" role="tab" aria-controls="am-reports-export" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">No export</span></a>
+        <a class="nav-link" id="am-reports-import-tab" data-bs-toggle="pill" href="#am-reports-import" role="tab" aria-controls="am-reports-import" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">No import</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-reports-reports" role="tabpanel" aria-labelledby="am-reports-reports-tab">
                 <img src="demo-reports.gif" alt="Hidden report: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">PDF Quote is removed from the Print menu; the other reports stay.</p>
@@ -450,8 +398,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Import records is removed; the server refuses imports too.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
           <!-- Showcase: Chatter -->
           <div style="background-color:#FFF2E0; border-radius:10px; padding:36px 24px 20px 24px; margin-bottom:24px">
@@ -459,19 +406,11 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Chatter</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Hide parts of the chatter on one model, or on every model at once.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-first">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-chatter-chatter-parts-tab" data-bs-toggle="pill" href="#am-chatter-chatter-parts" role="tab" aria-controls="am-chatter-chatter-parts" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hide chatter buttons</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-chatter-chatter-hidden-tab" data-bs-toggle="pill" href="#am-chatter-chatter-hidden" role="tab" aria-controls="am-chatter-chatter-hidden" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Hide the whole chatter</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-chatter-chatter-parts-tab" data-bs-toggle="pill" href="#am-chatter-chatter-parts" role="tab" aria-controls="am-chatter-chatter-parts" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hide chatter buttons</span></a>
+        <a class="nav-link" id="am-chatter-chatter-hidden-tab" data-bs-toggle="pill" href="#am-chatter-chatter-hidden" role="tab" aria-controls="am-chatter-chatter-hidden" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hide the whole chatter</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-chatter-chatter-parts" role="tabpanel" aria-labelledby="am-chatter-chatter-parts-tab">
                 <img src="demo-chatter-parts.gif" alt="Hide chatter buttons: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Send message is gone; Log note and Activity stay.</p>
@@ -481,8 +420,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The chatter is gone, on every model.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
           <!-- Showcase: Read-only Users and Developer Mode -->
           <div style="background-color:#f8f9fa; border-radius:10px; padding:36px 24px 20px 24px; margin-bottom:24px">
@@ -490,19 +428,11 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Read-only Users and Developer Mode</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Make users read-only everywhere with one checkbox, and keep developer mode switched off for them.</p>
       </div>
-      <div class="row">
-          <div class="col-lg-3 col-12 mb-4 order-lg-last">
-            <ul class="nav nav-pills flex-column" role="tablist" aria-orientation="vertical">
-              <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="am-readonly-readonly-user-tab" data-bs-toggle="pill" href="#am-readonly-readonly-user" role="tab" aria-controls="am-readonly-readonly-user" aria-selected="true" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">Read-only user</a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="am-readonly-debug-tab" data-bs-toggle="pill" href="#am-readonly-debug" role="tab" aria-controls="am-readonly-debug" aria-selected="false" style="color:#2E3033; font-size:15px; font-weight:600; border-radius:6px; padding:12px 16px; margin-bottom:8px; text-align:left">No developer mode</a>
-              </li>
-            </ul>
-          </div>
-          <div class="col-lg-9 col-12 mb-4">
-            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
+        <a class="nav-link active" id="am-readonly-readonly-user-tab" data-bs-toggle="pill" href="#am-readonly-readonly-user" role="tab" aria-controls="am-readonly-readonly-user" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Read-only user</span></a>
+        <a class="nav-link" id="am-readonly-debug-tab" data-bs-toggle="pill" href="#am-readonly-debug" role="tab" aria-controls="am-readonly-debug" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">No developer mode</span></a>
+      </div>
+            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-readonly-readonly-user" role="tabpanel" aria-labelledby="am-readonly-readonly-user-tab">
                 <img src="demo-readonly-user.gif" alt="Read-only user: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Ava Auditor can read everything but create, edit or delete nothing.</p>
@@ -512,8 +442,7 @@
                 <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Even with <code>?debug=1</code> in the URL, developer mode stays off.</p>
               </div>
             </div>
-          </div>
-      </div>
+
           </div>
         </div>
         <div class="tab-pane fade" id="am-top-setup" role="tabpanel" aria-labelledby="am-top-setup-tab">
