@@ -291,20 +291,28 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Model Access Rights</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Decide which operations users may do on each model, on the records matching a domain. Odoo checks it on the server: the web client, imports, exports and the API all follow it.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-model-access-own-records-tab" data-bs-toggle="pill" href="#am-model-access-own-records" role="tab" aria-controls="am-model-access-own-records" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Own records only</span></a>
-        <a class="nav-link" id="am-model-access-readonly-model-tab" data-bs-toggle="pill" href="#am-model-access-readonly-model" role="tab" aria-controls="am-model-access-readonly-model" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Refuse operations</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-model-access-own-records-tab" data-bs-toggle="pill" href="#am-model-access-own-records" role="tab" aria-controls="am-model-access-own-records" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Own records only</span></a>
+            <a class="nav-link" id="am-model-access-readonly-model-tab" data-bs-toggle="pill" href="#am-model-access-readonly-model" role="tab" aria-controls="am-model-access-readonly-model" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Refuse operations</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-model-access-own-records" role="tabpanel" aria-labelledby="am-model-access-own-records-tab">
-                <img src="demo-own-records.gif" alt="Own records only: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">With the domain <code>[('user_id', '=', user.id)]</code>, Marc Demo sees and edits only his own quotations: 13 instead of 20.</p>
+                <img src="demo-own-records.gif" alt="Own records only: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Model Access</b>, add Sales Order with the domain <code>[('user_id', '=', user.id)]</code> and Read, Write and Create ticked.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Marc Demo sees and edits only his own quotations: 13 instead of 20.</p>
               </div>
               <div class="tab-pane fade" id="am-model-access-readonly-model" role="tabpanel" aria-labelledby="am-model-access-readonly-model-tab">
-                <img src="demo-readonly-model.gif" alt="Refuse operations: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Only Read is ticked for contacts: the New button disappears, every field is locked, and the server refuses changes too.</p>
+                <img src="demo-readonly-model.gif" alt="Refuse operations: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Model Access</b>, add Contact with only Read ticked.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> The New button disappears, every field is locked, and the server refuses changes too.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
           <!-- Showcase: Field Access -->
@@ -313,20 +321,28 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Field Access</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Make any field read-only, required or hidden in the form, list and kanban views of a model.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-fields-field-readonly-tab" data-bs-toggle="pill" href="#am-fields-field-readonly" role="tab" aria-controls="am-fields-field-readonly" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Read-only field</span></a>
-        <a class="nav-link" id="am-fields-field-hidden-tab" data-bs-toggle="pill" href="#am-fields-field-hidden" role="tab" aria-controls="am-fields-field-hidden" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden field</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-fields-field-readonly-tab" data-bs-toggle="pill" href="#am-fields-field-readonly" role="tab" aria-controls="am-fields-field-readonly" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Read-only field</span></a>
+            <a class="nav-link" id="am-fields-field-hidden-tab" data-bs-toggle="pill" href="#am-fields-field-hidden" role="tab" aria-controls="am-fields-field-hidden" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hidden field</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-fields-field-readonly" role="tabpanel" aria-labelledby="am-fields-field-readonly-tab">
-                <img src="demo-field-readonly.gif" alt="Read-only field: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Payment Terms stays visible but can't be changed.</p>
+                <img src="demo-field-readonly.gif" alt="Read-only field: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Fields</b>, add Payment Terms of Sales Order as Read-only.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Payment Terms stays visible but can't be changed.</p>
               </div>
               <div class="tab-pane fade" id="am-fields-field-hidden" role="tabpanel" aria-labelledby="am-fields-field-hidden-tab">
-                <img src="demo-field-hidden.gif" alt="Hidden field: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Tax ID disappears from the contact form.</p>
+                <img src="demo-field-hidden.gif" alt="Hidden field: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Fields</b>, add Tax ID of Contact as Hidden.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Tax ID disappears from the contact form.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
           <!-- Showcase: Buttons and Tabs -->
@@ -335,20 +351,28 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Buttons and Tabs</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Hide any button, smart buttons included, and any tab of a form. Pick the model and its views are scanned for you.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-buttons-buttons-tab" data-bs-toggle="pill" href="#am-buttons-buttons" role="tab" aria-controls="am-buttons-buttons" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden buttons</span></a>
-        <a class="nav-link" id="am-buttons-tabs-tab" data-bs-toggle="pill" href="#am-buttons-tabs" role="tab" aria-controls="am-buttons-tabs" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden tab</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-buttons-buttons-tab" data-bs-toggle="pill" href="#am-buttons-buttons" role="tab" aria-controls="am-buttons-buttons" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hidden buttons</span></a>
+            <a class="nav-link" id="am-buttons-tabs-tab" data-bs-toggle="pill" href="#am-buttons-tabs" role="tab" aria-controls="am-buttons-tabs" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hidden tab</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-buttons-buttons" role="tabpanel" aria-labelledby="am-buttons-buttons-tab">
-                <img src="demo-buttons.gif" alt="Hidden buttons: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Both Send buttons and Cancel are removed from the quotation.</p>
+                <img src="demo-buttons.gif" alt="Hidden buttons: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Buttons</b>, pick Sales Order, then its Send and Cancel buttons.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Both Send buttons and Cancel are removed from the quotation.</p>
               </div>
               <div class="tab-pane fade" id="am-buttons-tabs" role="tabpanel" aria-labelledby="am-buttons-tabs-tab">
-                <img src="demo-tabs.gif" alt="Hidden tab: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The Other Info tab is removed from the quotation.</p>
+                <img src="demo-tabs.gif" alt="Hidden tab: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Pages</b>, pick Sales Order, then its Other Info page.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> The Other Info tab is removed from the quotation.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
           <!-- Showcase: Menus and Views -->
@@ -357,20 +381,28 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Menus and Views</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Remove menus, with their sub-menus, from the navigation, and views from the view switcher.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-menus-menus-tab" data-bs-toggle="pill" href="#am-menus-menus" role="tab" aria-controls="am-menus-menus" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden menu</span></a>
-        <a class="nav-link" id="am-menus-views-tab" data-bs-toggle="pill" href="#am-menus-views" role="tab" aria-controls="am-menus-views" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden view</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-menus-menus-tab" data-bs-toggle="pill" href="#am-menus-menus" role="tab" aria-controls="am-menus-menus" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hidden menu</span></a>
+            <a class="nav-link" id="am-menus-views-tab" data-bs-toggle="pill" href="#am-menus-views" role="tab" aria-controls="am-menus-views" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hidden view</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-menus-menus" role="tabpanel" aria-labelledby="am-menus-menus-tab">
-                <img src="demo-menus.gif" alt="Hidden menu: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The Products menu of Sales is gone.</p>
+                <img src="demo-menus.gif" alt="Hidden menu: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Menus</b>, add Sales / Products.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> The Products menu of Sales is gone.</p>
               </div>
               <div class="tab-pane fade" id="am-menus-views" role="tabpanel" aria-labelledby="am-menus-views-tab">
-                <img src="demo-views.gif" alt="Hidden view: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The kanban view is gone from the view switcher of quotations.</p>
+                <img src="demo-views.gif" alt="Hidden view: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Views</b>, add the kanban view of Sales Order.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> The kanban view is gone from the view switcher of quotations.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
           <!-- Showcase: Reports, Import and Export -->
@@ -379,25 +411,34 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Reports, Import and Export</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Hide one report or a model's whole Print menu, and restrict importing and exporting records.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-reports-reports-tab" data-bs-toggle="pill" href="#am-reports-reports" role="tab" aria-controls="am-reports-reports" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hidden report</span></a>
-        <a class="nav-link" id="am-reports-export-tab" data-bs-toggle="pill" href="#am-reports-export" role="tab" aria-controls="am-reports-export" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">No export</span></a>
-        <a class="nav-link" id="am-reports-import-tab" data-bs-toggle="pill" href="#am-reports-import" role="tab" aria-controls="am-reports-import" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">No import</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-reports-reports-tab" data-bs-toggle="pill" href="#am-reports-reports" role="tab" aria-controls="am-reports-reports" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hidden report</span></a>
+            <a class="nav-link" id="am-reports-export-tab" data-bs-toggle="pill" href="#am-reports-export" role="tab" aria-controls="am-reports-export" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">No export</span></a>
+            <a class="nav-link" id="am-reports-import-tab" data-bs-toggle="pill" href="#am-reports-import" role="tab" aria-controls="am-reports-import" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">No import</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-reports-reports" role="tabpanel" aria-labelledby="am-reports-reports-tab">
-                <img src="demo-reports.gif" alt="Hidden report: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">PDF Quote is removed from the Print menu; the other reports stay.</p>
+                <img src="demo-reports.gif" alt="Hidden report: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Reports</b>, add Sales Order with the PDF Quote report.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> PDF Quote is removed from the Print menu; the other reports stay.</p>
               </div>
               <div class="tab-pane fade" id="am-reports-export" role="tabpanel" aria-labelledby="am-reports-export-tab">
-                <img src="demo-export.gif" alt="No export: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Export is removed from the Actions menu, and the server refuses exports too.</p>
+                <img src="demo-export.gif" alt="No export: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>All Models</b>, tick Restrict Export.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Export is removed from the Actions menu, and the server refuses exports too.</p>
               </div>
               <div class="tab-pane fade" id="am-reports-import" role="tabpanel" aria-labelledby="am-reports-import-tab">
-                <img src="demo-import.gif" alt="No import: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Import records is removed; the server refuses imports too.</p>
+                <img src="demo-import.gif" alt="No import: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>All Models</b>, tick Restrict Import.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Import records is removed; the server refuses imports too.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
           <!-- Showcase: Chatter -->
@@ -406,20 +447,28 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Chatter</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Hide parts of the chatter on one model, or on every model at once.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-chatter-chatter-parts-tab" data-bs-toggle="pill" href="#am-chatter-chatter-parts" role="tab" aria-controls="am-chatter-chatter-parts" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hide chatter buttons</span></a>
-        <a class="nav-link" id="am-chatter-chatter-hidden-tab" data-bs-toggle="pill" href="#am-chatter-chatter-hidden" role="tab" aria-controls="am-chatter-chatter-hidden" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Hide the whole chatter</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-chatter-chatter-parts-tab" data-bs-toggle="pill" href="#am-chatter-chatter-parts" role="tab" aria-controls="am-chatter-chatter-parts" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hide chatter buttons</span></a>
+            <a class="nav-link" id="am-chatter-chatter-hidden-tab" data-bs-toggle="pill" href="#am-chatter-chatter-hidden" role="tab" aria-controls="am-chatter-chatter-hidden" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Hide the whole chatter</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-chatter-chatter-parts" role="tabpanel" aria-labelledby="am-chatter-chatter-parts-tab">
-                <img src="demo-chatter-parts.gif" alt="Hide chatter buttons: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Send message is gone; Log note and Activity stay.</p>
+                <img src="demo-chatter-parts.gif" alt="Hide chatter buttons: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>Chatter</b>, add Sales Order with Hide Send Message ticked.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Send message is gone; Log note and Activity stay.</p>
               </div>
               <div class="tab-pane fade" id="am-chatter-chatter-hidden" role="tabpanel" aria-labelledby="am-chatter-chatter-hidden-tab">
-                <img src="demo-chatter-hidden.gif" alt="Hide the whole chatter: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">The chatter is gone, on every model.</p>
+                <img src="demo-chatter-hidden.gif" alt="Hide the whole chatter: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> In <b>All Models</b>, tick Hide Chatter.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> The chatter is gone, on every model.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
           <!-- Showcase: Read-only Users and Developer Mode -->
@@ -428,20 +477,28 @@
         <h2 style="font-size:28px; font-weight:700; color:#010101; margin-bottom:8px">Read-only Users and Developer Mode</h2>
         <p style="font-size:15.5px; color:#2E3033; margin:0 auto; max-width:760px">Make users read-only everywhere with one checkbox, and keep developer mode switched off for them.</p>
       </div>
-      <div class="nav nav-underline justify-content-center" role="tablist" style="margin-bottom:16px">
-        <a class="nav-link active" id="am-readonly-readonly-user-tab" data-bs-toggle="pill" href="#am-readonly-readonly-user" role="tab" aria-controls="am-readonly-readonly-user" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">Read-only user</span></a>
-        <a class="nav-link" id="am-readonly-debug-tab" data-bs-toggle="pill" href="#am-readonly-debug" role="tab" aria-controls="am-readonly-debug" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 4px 8px 4px"><span style="color:#2E3033">No developer mode</span></a>
-      </div>
-            <div class="tab-content" style="margin-bottom:16px; background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
+      <div class="row">
+        <div class="col-lg-3 col-12 mb-3">
+          <div class="nav nav-underline flex-column" role="tablist" aria-orientation="vertical">
+            <a class="nav-link active" id="am-readonly-readonly-user-tab" data-bs-toggle="pill" href="#am-readonly-readonly-user" role="tab" aria-controls="am-readonly-readonly-user" aria-selected="true" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">Read-only user</span></a>
+            <a class="nav-link" id="am-readonly-debug-tab" data-bs-toggle="pill" href="#am-readonly-debug" role="tab" aria-controls="am-readonly-debug" aria-selected="false" style="color:#FFA500; border-bottom-width:5px; background-color:#ffffff; border-top:1px solid #DCDFE2; border-left:1px solid #DCDFE2; border-right:1px solid #DCDFE2; border-radius:6px; font-size:15px; padding:12px 16px; margin:0 0 10px 0; text-align:left"><span style="color:#2E3033">No developer mode</span></a>
+          </div>
+        </div>
+        <div class="col-lg-9 col-12 mb-3">
+            <div class="tab-content" style="background-color:#ffffff; border:1px solid #DCDFE2; border-radius:10px; padding:18px">
               <div class="tab-pane fade show active" id="am-readonly-readonly-user" role="tabpanel" aria-labelledby="am-readonly-readonly-user-tab">
-                <img src="demo-readonly-user.gif" alt="Read-only user: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Ava Auditor can read everything but create, edit or delete nothing.</p>
+                <img src="demo-readonly-user.gif" alt="Read-only user: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> Tick <b>Read-only</b> on the rule.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Ava Auditor can read everything but create, edit or delete nothing.</p>
               </div>
               <div class="tab-pane fade" id="am-readonly-debug" role="tabpanel" aria-labelledby="am-readonly-debug-tab">
-                <img src="demo-debug.gif" alt="No developer mode: before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
-                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0">Even with <code>?debug=1</code> in the URL, developer mode stays off.</p>
+                <img src="demo-debug.gif" alt="No developer mode: the setting, then before and after the access rule" style="width:100%; height:auto; display:block; border-radius:6px; border:1px solid #DCDFE2; margin-bottom:14px">
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:4px"><b style="color:#A65C00">How:</b> Tick <b>Restrict Debug Mode</b> on the rule.</p>
+                <p style="font-size:14.5px; color:#2E3033; margin-bottom:0"><b>Result:</b> Even with <code>?debug=1</code> in the URL, developer mode stays off.</p>
               </div>
             </div>
+        </div>
+      </div>
 
           </div>
         </div>
