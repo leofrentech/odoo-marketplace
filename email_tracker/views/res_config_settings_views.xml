@@ -3,13 +3,18 @@
     <record id="res_config_settings_view_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.email_tracker</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base_setup.res_config_settings_view_form" />
+        <field name="inherit_id" ref="mail.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@id='companies']" position="after">
-                <block title="Email Tracker" name="email_tracker_settings">
-                    <setting id="mail_open_notification" string="Recipient email open notification"
-                        help="Receive a notification when the recipient opens the email.">
-                        <field name="mail_open_notification" />
+            <xpath expr="//block[@id='emails']" position="after">
+                <block title="Email Tracker" id="email_tracker_settings">
+                    <setting id="email_tracker_track_opens"
+                             help="Add an invisible pixel to emails sent from documents and log the first open of each recipient in the chatter.">
+                        <field name="email_tracker_track_opens"/>
+                    </setting>
+                    <setting id="email_tracker_open_notification"
+                             invisible="not email_tracker_track_opens"
+                             help="Notify the sender and the document responsible when a recipient opens an email. Default for all users: each user can change it in their preferences.">
+                        <field name="email_tracker_open_notification"/>
                     </setting>
                 </block>
             </xpath>
