@@ -1,78 +1,65 @@
-import werkzeug
-
 from markupsafe import Markup
 
-from odoo import api, models, tools
+from odoo import models, tools
+
+from .mail_message import strip_tracking_pixels
+
+PARAM_TRACK_OPENS = "email_tracker.track_opens"
 
 
 class MailMail(models.Model):
-    # ------------------------------------------------------------------
-    # 1. PRIVATE ATTRIBUTES
-    # ------------------------------------------------------------------
-
     _inherit = "mail.mail"
 
     # ------------------------------------------------------------------
-    # 2. DEFAULT METHODS AND default_get
+    # BUSINESS METHODS
     # ------------------------------------------------------------------
 
-    # ------------------------------------------------------------------
-    # 3. FIELD DECLARATIONS
-    # ------------------------------------------------------------------
+    def _personalize_outgoing_body(self, body, partner=False, recipients_follower_status=None):
+        """Inject a per-recipient tracking pixel at send time.
 
-    # ------------------------------------------------------------------
-    # 4. COMPUTE, INVERSE AND SEARCH METHODS
-    # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
-    # 5. SELECTION METHODS
-    # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
-    # 6. CONSTRAINS METHODS AND ONCHANGE METHODS
-    # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
-    # 7. CRUD METHODS
-    # ------------------------------------------------------------------
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        mails = super(MailMail, self).create(vals_list)
-        # Add tracker link
-        for mail in mails:
-            body_html = tools.mail.append_content_to_html(
-                mail.body_html,
-                '<img src="%s"/>' % mail._get_email_tracking_url(),
-                plaintext=False,
-            )
-            mail.body_html = Markup(body_html)
-        return mails
-
-    # ------------------------------------------------------------------
-    # 8. ACTION METHODS
-    # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
-    # 9. BUSINESS METHODS
-    # ------------------------------------------------------------------
-
-    def _get_email_tracking_url(self):
+        Doing it here (instead of in ``create``) means the pixel is never
+        stored in the message body, and each recipient gets their own
+        tracker (``email.tracker.recipient``) with its own signed URL.
         """
-        Generate and return tracker link with token to verify
+        body = super()._personalize_outgoing_body(
+            body, partner=partner, recipients_follower_status=recipients_follower_status
+        )
+        # drop pixels copied from another email (quoted reply, forward...)
+        body = strip_tracking_pixels(body)
+        if body and self._email_tracker_is_trackable(partner):
+            tracker = self.env["email.tracker.recipient"]._get_or_create_for_mail(self, partner)
+            url = tracker._get_tracking_url()
+            pixel = Markup(
+                '<img src="%s" alt="" width="1" height="1" border="0" '
+                'style="height:1px !important;width:1px !important;'
+                'border-width:0 !important;margin:0 !important;padding:0 !important;"/>'
+            ) % url
+            body = tools.mail.append_content_to_html(body, pixel, plaintext=False)
+        return body
+
+    def _email_tracker_is_trackable(self, partner=False):
+        """Whether an open of this email by ``partner`` should be tracked.
+
+        Only emails linked to a chatter-enabled document are tracked (open
+        events are logged on that document). Internal users and the
+        "email opened" notifications themselves are never tracked.
         """
         self.ensure_one()
-        token = tools.hmac(
-            self.env(su=True), "email_tracker-mail_mail-open", self.id
-        )
-        return werkzeug.urls.url_join(
-            self.get_base_url(),
-            "/mail/track/%s/%s/%s/%s/%s/blank.gif"
-            % (
-                self.model,
-                self.res_id,
-                self.mail_message_id.id,
-                self.id,
-                token,
-            ),
-        )
+        if not self.env["ir.config_parameter"].sudo().get_param(PARAM_TRACK_OPENS):
+            return False
+        # Email Marketing (mass_mailing, marketing_automation) has its own
+        # open/click statistics: never add our pixel nor log on contacts.
+        if "mailing_id" in self._fields and self.mailing_id:
+            return False
+        message = self.mail_message_id
+        if not (message and self.model and self.res_id):
+            return False
+        if self.model not in self.env or not isinstance(
+            self.env[self.model], self.env.registry["mail.thread"]
+        ):
+            return False
+        if message.message_type == "user_notification" or message.email_open_origin_message_id:
+            return False
+        if partner and partner.sudo().user_ids.filtered(lambda user: not user.share):
+            return False
+        return True
