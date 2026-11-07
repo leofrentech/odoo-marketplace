@@ -234,7 +234,7 @@ class EmailTrackerRecipient(models.Model):
             email_open_origin_message_id=origin.id,
         )
 
-        notified =self.with_context(lang=lang)._get_notified_partners(record)
+        notified = self.with_context(lang=lang)._get_notified_partners(record)
         if notified:
             record.with_context(lang=lang).message_notify(
                 partner_ids=notified.ids,
