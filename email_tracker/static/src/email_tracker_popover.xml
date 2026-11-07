@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="email_tracker.EmailTrackerPopover">
+        <div class="o-email-tracker-popover m-2">
+            <div class="fw-bold small text-muted mb-1">Email opens</div>
+            <div t-foreach="trackers" t-as="tracker" t-key="tracker.id" class="o-email-tracker-popover-line d-flex align-items-baseline gap-2 py-1">
+                <i class="fa fa-fw" t-att-class="tracker.isOpened ? 'fa-eye text-success' : 'fa-eye-slash text-muted'" role="img"
+                   t-att-aria-label="tracker.isOpened ? 'Opened' : 'Not opened'"/>
+                <div>
+                    <div t-esc="tracker.recipient_label or tracker.email"/>
+                    <div class="small text-muted">
+                        <t t-if="tracker.isOpened">
+                            <span t-att-title="formatDate(tracker.firstOpenDate)">Opened <RelativeTime datetime="tracker.firstOpenDate"/></span>
+                            <t t-if="tracker.open_count > 1">
+                                · <span t-att-title="formatDate(tracker.lastOpenDate)"><t t-esc="tracker.open_count"/> times, last <RelativeTime datetime="tracker.lastOpenDate"/></span>
+                            </t>
+                        </t>
+                        <t t-else="">Not opened yet</t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

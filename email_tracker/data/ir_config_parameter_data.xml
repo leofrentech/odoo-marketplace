@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <!-- Tracking is enabled by default on install; can be switched off in Settings. -->
+    <record id="config_track_opens" model="ir.config_parameter">
+        <field name="key">email_tracker.track_opens</field>
+        <field name="value">True</field>
+    </record>
+</odoo>
