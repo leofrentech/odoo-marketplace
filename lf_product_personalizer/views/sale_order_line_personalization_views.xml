@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sale_order_line_personalization_view_list" model="ir.ui.view">
+        <field name="name">sale.order.line.personalization.list</field>
+        <field name="model">sale.order.line.personalization</field>
+        <field name="arch" type="xml">
+            <tree create="0">
+                <field name="product_image" widget="image" options="{'size': [48, 48]}" string=" "/>
+                <field name="order_id"/>
+                <field name="partner_id" optional="show"/>
+                <field name="product_id"/>
+                <field name="design_type"/>
+                <field name="price_extra" optional="hide"/>
+                <field name="approval_state" widget="badge"
+                       decoration-warning="approval_state == 'pending'"
+                       decoration-danger="approval_state == 'rejected'"
+                       decoration-success="approval_state == 'approved'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="sale_order_line_personalization_view_kanban" model="ir.ui.view">
+        <field name="name">sale.order.line.personalization.kanban</field>
+        <field name="model">sale.order.line.personalization</field>
+        <field name="arch" type="xml">
+            <kanban create="0">
+                <field name="approval_state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="text-center">
+                                <field name="product_image" widget="image"
+                                       options="{'size': [0, 220], 'img_class': 'object-fit-contain'}"/>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <strong><field name="design_type"/></strong>
+                                <field name="approval_state" widget="badge"
+                                       invisible="approval_state == 'not_required'"
+                                       decoration-warning="approval_state == 'pending'"
+                                       decoration-danger="approval_state == 'rejected'"
+                                       decoration-success="approval_state == 'approved'"/>
+                            </div>
+                            <div class="text-muted small"><field name="product_id"/></div>
+                            <div class="text-muted small"><field name="order_id"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="sale_order_line_personalization_view_form" model="ir.ui.view">
+        <field name="name">sale.order.line.personalization.form</field>
+        <field name="model">sale.order.line.personalization</field>
+        <field name="arch" type="xml">
+            <form string="Design" create="0">
+                <header>
+                    <button name="action_approve" type="object" string="Approve"
+                            class="btn-primary"
+                            invisible="approval_state != 'pending'"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="approval_state != 'pending'"/>
+                    <button name="action_reset_to_review" type="object" string="Back to Review"
+                            invisible="approval_state not in ('approved', 'rejected')"/>
+                    <field name="approval_state" widget="statusbar"
+                           statusbar_visible="pending,approved"
+                           invisible="approval_state == 'not_required'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_order" type="object" class="oe_stat_button"
+                                icon="fa-dollar" string="Order"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="design_type" readonly="1"/></h1>
+                        <field name="product_id" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="order_id" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="sale_order_line_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="price_extra" readonly="1"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="design_config_id" readonly="1" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                    <field name="approval_note" invisible="approval_state == 'not_required'"
+                           placeholder="Note to the customer (required to reject)..."/>
+                    <notebook>
+                        <page string="Preview" name="preview">
+                            <field name="product_image" widget="image" readonly="1"
+                                   options="{'size': [0, 500], 'img_class': 'object-fit-contain'}"/>
+                        </page>
+                        <page string="Print Files" name="print_files">
+                            <group>
+                                <field name="print_image" filename="print_image_filename" readonly="1"/>
+                                <field name="print_image_filename" invisible="1"/>
+                                <field name="print_svg" filename="print_svg_filename" readonly="1"/>
+                                <field name="print_svg_filename" invisible="1"/>
+                                <field name="artwork_attachment_ids" widget="many2many_binary"
+                                       readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Design Data" name="data" groups="base.group_no_one">
+                            <field name="personalized_json" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sale_order_line_personalization_view_search" model="ir.ui.view">
+        <field name="name">sale.order.line.personalization.search</field>
+        <field name="model">sale.order.line.personalization</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="order_id"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <filter string="To Review" name="to_review"
+                        domain="[('approval_state', '=', 'pending')]"/>
+                <filter string="Rejected" name="rejected"
+                        domain="[('approval_state', '=', 'rejected')]"/>
+                <separator/>
+                <filter string="Confirmed Orders" name="confirmed"
+                        domain="[('order_id.state', '=', 'sale')]"/>
+                <group>
+                    <filter string="Order" name="group_order" context="{'group_by': 'order_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'approval_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="sale_order_line_personalization_action" model="ir.actions.act_window">
+        <field name="name">Customer Designs</field>
+        <field name="res_model">sale.order.line.personalization</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_customized', '=', True)]</field>
+        <field name="context">{'search_default_confirmed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No customer design yet</p>
+            <p>Designs made by customers on your website appear here, ready to
+               review and print.</p>
+        </field>
+    </record>
+</odoo>

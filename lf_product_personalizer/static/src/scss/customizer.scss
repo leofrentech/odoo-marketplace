@@ -1,0 +1,277 @@
+// Product personalization: editor page, product page block, cart and portal.
+
+$lf-sidebar-width: 360px;
+$lf-tools-width: 76px;
+
+.o_lf_personalizer {
+    --lf-stage-bg: #{$gray-200};
+    --lf-panel-bg: #{$white};
+    background: var(--lf-stage-bg);
+    overflow-x: hidden;
+
+    // Only the selected tool panel is shown (also before the editor starts).
+    .o_lf_panel {
+        display: none;
+        &.o_lf_panel_active {
+            display: block;
+        }
+    }
+
+    .o_lf_topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        .o_lf_qty {
+            width: 7.5rem;
+        }
+        @include media-breakpoint-down(md) {
+            .o_lf_add_to_cart {
+                flex: 1 1 auto;
+            }
+        }
+    }
+
+    .o_lf_body {
+        display: flex;
+        flex-direction: column;
+        @include media-breakpoint-up(lg) {
+            flex-direction: row-reverse;
+            min-height: calc(100vh - 140px);
+        }
+    }
+
+    // Canvas
+    .o_lf_stage {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: map-get($spacers, 3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: map-get($spacers, 2);
+    }
+    .o_lf_areas {
+        max-width: 100%;
+        overflow-x: auto;
+        gap: map-get($spacers, 1);
+        .nav-link {
+            white-space: nowrap;
+            position: relative;
+            &:not(.active) {
+                background: $white;
+            }
+        }
+    }
+    .o_lf_area_dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-left: 6px;
+        border-radius: 50%;
+        background: $success;
+        vertical-align: middle;
+    }
+    .o_lf_canvas_wrapper {
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        justify-content: center;
+        .canvas-container {
+            box-shadow: $box-shadow-sm;
+            border-radius: $border-radius;
+            overflow: hidden;
+            touch-action: none;
+        }
+    }
+    .o_lf_loading {
+        padding: 6rem 0;
+    }
+
+    // Sidebar
+    .o_lf_sidebar {
+        min-width: 0;
+        background: var(--lf-panel-bg);
+        border-top: $border-width solid $border-color;
+        display: flex;
+        flex-direction: column;
+        @include media-breakpoint-up(lg) {
+            flex: 0 0 $lf-sidebar-width + $lf-tools-width;
+            flex-direction: row;
+            border-top: 0;
+            border-right: $border-width solid $border-color;
+        }
+    }
+    .o_lf_tools {
+        display: flex;
+        overflow-x: auto;
+        border-bottom: $border-width solid $border-color;
+        @include media-breakpoint-up(lg) {
+            flex: 0 0 $lf-tools-width;
+            flex-direction: column;
+            border-bottom: 0;
+            border-right: $border-width solid $border-color;
+            background: $gray-100;
+        }
+    }
+    .o_lf_tool {
+        flex: 1 0 auto;
+        min-width: 64px;
+        border: 0;
+        background: transparent;
+        color: $gray-700;
+        padding: map-get($spacers, 2) map-get($spacers, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: $font-size-sm;
+        .fa {
+            font-size: 1.25rem;
+        }
+        &:hover {
+            color: $primary;
+        }
+        &.active {
+            color: $primary;
+            background: rgba($primary, 0.08);
+            box-shadow: inset 0 -3px 0 $primary;
+            @include media-breakpoint-up(lg) {
+                box-shadow: inset 3px 0 0 $primary;
+            }
+        }
+        @include media-breakpoint-up(lg) {
+            flex: 0 0 auto;
+        }
+    }
+    .o_lf_panels {
+        flex: 1 1 auto;
+        padding: map-get($spacers, 3);
+        min-width: 0;
+        @include media-breakpoint-up(lg) {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+        h6 {
+            margin-bottom: map-get($spacers, 3);
+        }
+    }
+
+    // Tiles (shapes, clipart, presets, variants)
+    .o_lf_tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        min-height: 84px;
+        padding: map-get($spacers, 2);
+        border: $border-width solid $border-color;
+        border-radius: $border-radius;
+        background: $white;
+        color: $gray-700;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        img {
+            max-width: 100%;
+            max-height: 96px;
+            object-fit: contain;
+        }
+        &:hover,
+        &.active {
+            border-color: $primary;
+            box-shadow: 0 0 0 2px rgba($primary, 0.2);
+        }
+    }
+
+    // Upload
+    .o_lf_dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: map-get($spacers, 4);
+        border: 2px dashed $border-color;
+        border-radius: $border-radius-lg;
+        color: $gray-600;
+        cursor: pointer;
+        text-align: center;
+        &:hover,
+        &.o_lf_dragover {
+            border-color: $primary;
+            color: $primary;
+            background: rgba($primary, 0.04);
+        }
+    }
+
+    // Layers
+    .o_lf_layer {
+        &.active {
+            background: rgba($primary, 0.08);
+            color: inherit;
+            border-color: $border-color;
+        }
+        .o_lf_layer_name {
+            color: inherit;
+            text-decoration: none;
+        }
+    }
+    .o_lf_layer_thumb {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: $border-width solid $border-color;
+        border-radius: $border-radius-sm;
+        background: $white;
+        overflow: hidden;
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    }
+}
+
+// Colour swatches (editor and product page)
+.o_lf_palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.o_lf_swatch {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid $white;
+    box-shadow: 0 0 0 1px $gray-400;
+    cursor: pointer;
+    &.active {
+        box-shadow: 0 0 0 2px $primary;
+    }
+}
+.o_lf_swatch_custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+    color: $white;
+    margin: 0;
+    .fa {
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+        font-size: 0.8rem;
+    }
+}
+
+// Cart
+.o_lf_cart_thumb {
+    width: 64px;
+    text-decoration: none;
+    img {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        background: $white;
+    }
+}
