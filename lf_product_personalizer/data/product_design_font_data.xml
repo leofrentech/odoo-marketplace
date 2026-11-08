@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="font_arial" model="product.design.font">
+        <field name="name">Arial</field>
+        <field name="family">Arial</field>
+        <field name="source">system</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="font_helvetica" model="product.design.font">
+        <field name="name">Helvetica</field>
+        <field name="family">Helvetica</field>
+        <field name="source">system</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="font_verdana" model="product.design.font">
+        <field name="name">Verdana</field>
+        <field name="family">Verdana</field>
+        <field name="source">system</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="font_tahoma" model="product.design.font">
+        <field name="name">Tahoma</field>
+        <field name="family">Tahoma</field>
+        <field name="source">system</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="font_trebuchet_ms" model="product.design.font">
+        <field name="name">Trebuchet MS</field>
+        <field name="family">Trebuchet MS</field>
+        <field name="source">system</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="font_georgia" model="product.design.font">
+        <field name="name">Georgia</field>
+        <field name="family">Georgia</field>
+        <field name="source">system</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="font_times_new_roman" model="product.design.font">
+        <field name="name">Times New Roman</field>
+        <field name="family">Times New Roman</field>
+        <field name="source">system</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="font_garamond" model="product.design.font">
+        <field name="name">Garamond</field>
+        <field name="family">Garamond</field>
+        <field name="source">system</field>
+        <field name="sequence">80</field>
+    </record>
+    <record id="font_courier_new" model="product.design.font">
+        <field name="name">Courier New</field>
+        <field name="family">Courier New</field>
+        <field name="source">system</field>
+        <field name="sequence">90</field>
+    </record>
+    <record id="font_impact" model="product.design.font">
+        <field name="name">Impact</field>
+        <field name="family">Impact</field>
+        <field name="source">system</field>
+        <field name="sequence">100</field>
+    </record>
+    <record id="font_comic_sans_ms" model="product.design.font">
+        <field name="name">Comic Sans MS</field>
+        <field name="family">Comic Sans MS</field>
+        <field name="source">system</field>
+        <field name="sequence">110</field>
+    </record>
+    <record id="font_brush_script_mt" model="product.design.font">
+        <field name="name">Brush Script MT</field>
+        <field name="family">Brush Script MT</field>
+        <field name="source">system</field>
+        <field name="sequence">120</field>
+    </record>
+    <!-- Google Fonts are archived by default: activate the ones you want.
+         Visitors' browsers then load them from fonts.googleapis.com. -->
+    <record id="font_google_roboto" model="product.design.font">
+        <field name="name">Roboto</field>
+        <field name="family">Roboto</field>
+        <field name="source">google</field>
+        <field name="sequence">130</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_open_sans" model="product.design.font">
+        <field name="name">Open Sans</field>
+        <field name="family">Open Sans</field>
+        <field name="source">google</field>
+        <field name="sequence">140</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_montserrat" model="product.design.font">
+        <field name="name">Montserrat</field>
+        <field name="family">Montserrat</field>
+        <field name="source">google</field>
+        <field name="sequence">150</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_oswald" model="product.design.font">
+        <field name="name">Oswald</field>
+        <field name="family">Oswald</field>
+        <field name="source">google</field>
+        <field name="sequence">160</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_playfair_display" model="product.design.font">
+        <field name="name">Playfair Display</field>
+        <field name="family">Playfair Display</field>
+        <field name="source">google</field>
+        <field name="sequence">170</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_lobster" model="product.design.font">
+        <field name="name">Lobster</field>
+        <field name="family">Lobster</field>
+        <field name="source">google</field>
+        <field name="sequence">180</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_pacifico" model="product.design.font">
+        <field name="name">Pacifico</field>
+        <field name="family">Pacifico</field>
+        <field name="source">google</field>
+        <field name="sequence">190</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_dancing_script" model="product.design.font">
+        <field name="name">Dancing Script</field>
+        <field name="family">Dancing Script</field>
+        <field name="source">google</field>
+        <field name="sequence">200</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_bebas_neue" model="product.design.font">
+        <field name="name">Bebas Neue</field>
+        <field name="family">Bebas Neue</field>
+        <field name="source">google</field>
+        <field name="sequence">210</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_permanent_marker" model="product.design.font">
+        <field name="name">Permanent Marker</field>
+        <field name="family">Permanent Marker</field>
+        <field name="source">google</field>
+        <field name="sequence">220</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_great_vibes" model="product.design.font">
+        <field name="name">Great Vibes</field>
+        <field name="family">Great Vibes</field>
+        <field name="source">google</field>
+        <field name="sequence">230</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="font_google_anton" model="product.design.font">
+        <field name="name">Anton</field>
+        <field name="family">Anton</field>
+        <field name="source">google</field>
+        <field name="sequence">240</field>
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

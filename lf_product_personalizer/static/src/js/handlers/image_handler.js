@@ -1,292 +1,216 @@
-/** @odoo-module **/
+import { _t } from "@web/core/l10n/translation";
+import { ObjectUtils, isImage } from "../utils/object_utils";
+import { EDITOR_SIZE } from "../utils/fabric_loader";
+import { imageSize, readFileAsDataUrl } from "../utils/dom_utils";
 
-// Image Handler - Handles image upload and placement on the canvas
+const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const FILTERS = {
+    brightness: (value) => new window.fabric.Image.filters.Brightness({ brightness: value }),
+    contrast: (value) => new window.fabric.Image.filters.Contrast({ contrast: value }),
+    saturation: (value) => new window.fabric.Image.filters.Saturation({ saturation: value }),
+};
+const FILTER_TYPES = { brightness: "Brightness", contrast: "Contrast", saturation: "Saturation" };
 
 export class ImageHandler {
-    /**
-     * @param {fabric.Canvas} fabricCanvas - Fabric.js canvas instance
-     * @param {Object|null} zone - Optional restricted zone object
-     */
-    constructor(fabricCanvas, zone) {
-        this.fabricCanvas = fabricCanvas;
-        this.zone = zone;
+    constructor(editor) {
+        this.editor = editor;
         this.cropRect = null;
-        this.cropTimer = null;
+        this.cropTarget = null;
     }
 
-    /**
-     * Add uploaded images to the canvas
-     * @param {FileList} files - Selected image files
-     */
-    addImages(files) {
-        if (!files || !files.length) {
-            alert("Please select an image file");
-            return;
+    get canvas() {
+        return this.editor.canvasManager.canvas;
+    }
+
+    get isCropping() {
+        return Boolean(this.cropRect);
+    }
+
+    async addFiles(files) {
+        const { min_image_px: minPx } = this.editor.state.settings;
+        const maxBytes = (this.editor.state.data.max_upload_mb || 15) * 1024 * 1024;
+        for (const file of files) {
+            if (!ACCEPTED_TYPES.includes(file.type)) {
+                this.editor.notify(_t("%s: only PNG, JPG or WebP images are accepted.", file.name), "warning");
+                continue;
+            }
+            if (file.size > maxBytes) {
+                this.editor.notify(_t("%s is too large.", file.name), "warning");
+                continue;
+            }
+            const dataUrl = await readFileAsDataUrl(file);
+            if (minPx) {
+                const { width, height } = await imageSize(dataUrl);
+                if (Math.min(width, height) < minPx) {
+                    this.editor.notify(
+                        _t(
+                            "%(name)s is small (%(width)s x %(height)s px): it may look blurry once printed.",
+                            { name: file.name, width, height }
+                        ),
+                        "warning"
+                    );
+                }
+            }
+            await this.addFromUrl(dataUrl, file.name);
         }
+    }
 
-        const self = this;
-
-        Array.from(files).forEach(function (file, i) {
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                fabric.Image.fromURL(e.target.result, function (img) {
-                    if (!img) return;
-
-                    img.scaleToWidth(150);
-
-                    // Default placement
-                    let left = 100 + i * 20;
-                    let top = 100 + i * 20;
-
-                    // If zone exists, center inside zone
-                    if (self.zone) {
-                        left = self.zone.bound_x + self.zone.width / 2 + i * 10;
-                        top = self.zone.bound_y + self.zone.height / 2 + i * 10;
+    addFromUrl(url, label) {
+        return new Promise((resolve) => {
+            window.fabric.Image.fromURL(
+                url,
+                (img) => {
+                    if (!img || !img.width) {
+                        this.editor.notify(_t("This image could not be loaded."), "danger");
+                        resolve(null);
+                        return;
                     }
-
-                    img.set({ left: left, top: top });
-
-                    // Store file name for later referencing
-                    try { if (img._element) img._element.name = file.name; } catch (e) {}
-                    try { img.__label = file.name; } catch (e) {}
-
-                    self.fabricCanvas.add(img);
-                    self.fabricCanvas.setActiveObject(img);
-                    self.fabricCanvas.renderAll();
-                });
-            };
-
-            reader.readAsDataURL(file);
+                    const zone = this.editor.canvasManager.zone;
+                    img.set({ lfLabel: label });
+                    ObjectUtils.center(img, zone, EDITOR_SIZE);
+                    ObjectUtils.fit(img, zone, EDITOR_SIZE);
+                    this.canvas.add(img);
+                    this.canvas.setActiveObject(img);
+                    this.canvas.requestRenderAll();
+                    resolve(img);
+                },
+                { crossOrigin: "anonymous" }
+            );
         });
     }
 
-    /**
-     * Apply or update a filter on the image
-     * @param {fabric.Image} img - Target image
-     * @param {fabric.Image.filters} filter - Fabric.js filter to apply
-     */
-    applyFilter(img, filter) {
-        if (!img || img.type !== 'image') {
-            console.warn('Invalid image for filter application');
+    operate(img, op) {
+        if (!isImage(img)) {
             return;
         }
-
-        const filters = img.filters || [];
-        const idx = filters.findIndex(f => f.type === filter.type);
-
-        if (idx !== -1) {
-            filters[idx] = filter;
-        } else {
-            filters.push(filter);
+        if (op === "flipX" || op === "flipY") {
+            img.toggle(op);
+        } else if (op === "grayscale") {
+            this._setFilter(img, "Grayscale", new window.fabric.Image.filters.Grayscale());
+            this._removeFilter(img, "Sepia");
+        } else if (op === "sepia") {
+            this._setFilter(img, "Sepia", new window.fabric.Image.filters.Sepia());
+            this._removeFilter(img, "Grayscale");
+        } else if (op === "resetFilters") {
+            img.filters = [];
+            img.applyFilters();
         }
+        this.canvas.requestRenderAll();
+        this.canvas.fire("object:modified", { target: img });
+    }
 
+    setAdjustment(img, name, value) {
+        if (!isImage(img) || !FILTERS[name]) {
+            return;
+        }
+        value = parseFloat(value) || 0;
+        if (value) {
+            this._setFilter(img, FILTER_TYPES[name], FILTERS[name](value));
+        } else {
+            this._removeFilter(img, FILTER_TYPES[name]);
+        }
+        this.canvas.requestRenderAll();
+    }
+
+    adjustmentValues(img) {
+        const values = {};
+        for (const [name, type] of Object.entries(FILTER_TYPES)) {
+            const filter = (img?.filters || []).find((f) => f && f.type === type);
+            values[name] = filter ? filter[name] : 0;
+        }
+        return values;
+    }
+
+    _setFilter(img, type, filter) {
+        const filters = (img.filters || []).filter((f) => f && f.type !== type);
+        filters.push(filter);
         img.filters = filters;
         img.applyFilters();
-        this.fabricCanvas.requestRenderAll();
     }
 
-    /**
-     * Unified method to handle all image operations
-     * @param {string} operation - The operation to perform
-     * @param {*} value - Optional value for the operation (e.g., brightness level)
-     */
-    handleImageOperation(operation, value = null) {
-        const img = this.fabricCanvas.getActiveObject();
-        
-        // Validate image selection for most operations (except crop cancel)
-        if (!img || img.type !== 'image') {
-            alert('Please select an image first');
+    _removeFilter(img, type) {
+        img.filters = (img.filters || []).filter((f) => f && f.type !== type);
+        img.applyFilters();
+    }
+
+    // ------------------------------------------------------------------
+    // Crop: first click shows a frame, second click applies it
+    // ------------------------------------------------------------------
+
+    startCrop(img) {
+        if (!isImage(img)) {
+            return false;
+        }
+        if (img.angle) {
+            this.editor.notify(_t("Straighten the image (rotation 0°) before cropping it."), "warning");
+            return false;
+        }
+        const box = img.getBoundingRect(true, true);
+        this.cropTarget = img;
+        this.cropRect = new window.fabric.Rect({
+            left: box.left + box.width * 0.1,
+            top: box.top + box.height * 0.1,
+            width: box.width * 0.8,
+            height: box.height * 0.8,
+            fill: "rgba(13, 110, 253, 0.12)",
+            stroke: "#0d6efd",
+            strokeWidth: 2,
+            strokeDashArray: [6, 4],
+            strokeUniform: true,
+            lockRotation: true,
+            hasRotatingPoint: false,
+            isCropRect: true,
+            excludeFromExport: true,
+        });
+        this.cropRect.setControlsVisibility({ mtr: false });
+        img.set({ selectable: false, evented: false });
+        this.canvas.add(this.cropRect);
+        this.canvas.setActiveObject(this.cropRect);
+        this.canvas.requestRenderAll();
+        return true;
+    }
+
+    applyCrop() {
+        const img = this.cropTarget;
+        const rect = this.cropRect;
+        if (!img || !rect) {
             return;
         }
-
-        switch (operation) {
-            case 'flipX':
-                img.toggle('flipX');
-                this.fabricCanvas.requestRenderAll();
-                break;
-
-            case 'flipY':
-                img.toggle('flipY');
-                this.fabricCanvas.requestRenderAll();
-                break;
-
-            case 'blur':
-                this.applyFilter(img, new fabric.Image.filters.Blur({
-                    blur: parseFloat(value || 0),
-                }));
-                break;
-
-            case 'brightness':
-                this.applyFilter(img, new fabric.Image.filters.Brightness({
-                    brightness: parseFloat(value || 0),
-                }));
-                break;
-
-            case 'contrast':
-                this.applyFilter(img, new fabric.Image.filters.Contrast({
-                    contrast: parseFloat(value || 0),
-                }));
-                break;
-
-            case 'saturation':
-                this.applyFilter(img, new fabric.Image.filters.Saturation({
-                    saturation: parseFloat(value || 0),
-                }));
-                break;
-
-            case 'grayscale':
-                img.filters = [new fabric.Image.filters.Grayscale()];
-                img.applyFilters();
-                this.fabricCanvas.requestRenderAll();
-                break;
-
-            case 'sepia':
-                img.filters = [new fabric.Image.filters.Sepia()];
-                img.applyFilters();
-                this.fabricCanvas.requestRenderAll();
-                break;
-
-            case 'resetFilters':
-                img.filters = [];
-                img.applyFilters();
-                this.fabricCanvas.requestRenderAll();
-                break;
-
-            case 'crop':
-                this.cropImage();
-                break;
-
+        const imgBox = img.getBoundingRect(true, true);
+        const rectBox = rect.getBoundingRect(true, true);
+        const left = Math.max(rectBox.left, imgBox.left);
+        const top = Math.max(rectBox.top, imgBox.top);
+        const right = Math.min(rectBox.left + rectBox.width, imgBox.left + imgBox.width);
+        const bottom = Math.min(rectBox.top + rectBox.height, imgBox.top + imgBox.height);
+        if (right - left > 2 && bottom - top > 2) {
+            const sx = Math.abs(img.scaleX);
+            const sy = Math.abs(img.scaleY);
+            // Offsets in source pixels, mirrored when the image is flipped.
+            const offsetX = img.flipX ? imgBox.left + imgBox.width - right : left - imgBox.left;
+            const offsetY = img.flipY ? imgBox.top + imgBox.height - bottom : top - imgBox.top;
+            img.set({
+                cropX: (img.cropX || 0) + offsetX / sx,
+                cropY: (img.cropY || 0) + offsetY / sy,
+                width: (right - left) / sx,
+                height: (bottom - top) / sy,
+            });
+            img.setPositionByOrigin(new window.fabric.Point(left, top), "left", "top");
+            img.setCoords();
         }
-        this.syncFiltersToUI(img);
+        this.cancelCrop();
+        this.canvas.setActiveObject(img);
+        this.canvas.fire("object:modified", { target: img });
     }
 
-    /**
-     * Initiate crop mode for the selected image
-     */
-    cropImage() {
-        const img = this.fabricCanvas.getActiveObject();
-    
+    cancelCrop() {
         if (this.cropRect) {
-            this.fabricCanvas.remove(this.cropRect);
-            this.cropRect = null;
+            this.canvas.remove(this.cropRect);
         }
-
-        if (this.cropTimer) {
-            clearTimeout(this.cropTimer);
-            this.cropTimer = null;
+        if (this.cropTarget) {
+            this.cropTarget.set({ selectable: true, evented: true });
         }
-
-        // Create crop rectangle
-        this.cropRect = new fabric.Rect({
-            left: img.left,
-            top: img.top,
-            width: img.width * img.scaleX * 0.6,
-            height: img.height * img.scaleY * 0.6,
-            fill: 'rgba(0, 123, 255, 0.2)',
-            stroke: 'rgba(0, 123, 255, 0.8)',
-            strokeWidth: 2,
-            strokeDashArray: [5, 5],
-            hasRotatingPoint: false,
-            cornerColor: '#007bff',
-            cornerSize: 10,
-            transparentCorners: false,
-            lockRotation: true,
-            selectable: true,
-            evented: true,
-            isCropRect: true,
-        });
-
-        this.fabricCanvas.add(this.cropRect);
-        this.fabricCanvas.setActiveObject(this.cropRect);
-        this.fabricCanvas.requestRenderAll();
-        this.cropRect._targetImage = img;
-
-        // Handle crop rectangle modification events
-        const resetTimer = () => {
-            if (this.cropTimer) {
-                clearTimeout(this.cropTimer);
-            }
-
-            this.cropTimer = setTimeout(() => {
-                this._applyCrop(img, this.cropRect);
-            }, 2000);
-        };
-
-        // Reset timer on any movement or scaling
-        this.cropRect.on('moving', resetTimer);
-        this.cropRect.on('scaling', resetTimer);
-        this.cropRect.on('modified', resetTimer);
-
-        // Start initial timer
-        resetTimer();
-    }
-
-    /**
-     * Apply the crop based on crop rectangle dimensions
-     * @param {fabric.Image} img - Image to crop
-     * @param {fabric.Rect} cropRect - Crop rectangle
-     * @private
-     */
-    _applyCrop(img, cropRect) {
-        if (!img || !cropRect) return;
-
-        if (this.cropTimer) {
-            clearTimeout(this.cropTimer);
-            this.cropTimer = null;
-        }
-
-        const scaleX = img.scaleX;
-        const scaleY = img.scaleY;
-
-        // Calculate crop coordinates relative to image
-        const cropX = (cropRect.left - img.left) / scaleX;
-        const cropY = (cropRect.top - img.top) / scaleY;
-        const cropWidth = (cropRect.width * cropRect.scaleX) / scaleX;
-        const cropHeight = (cropRect.height * cropRect.scaleY) / scaleY;
-
-        // Apply crop to image
-        img.set({
-            cropX: Math.max(0, cropX),
-            cropY: Math.max(0, cropY),
-            width: Math.max(10, cropWidth),
-            height: Math.max(10, cropHeight),
-        });
-
-        cropRect.off('moving');
-        cropRect.off('scaling');
-        cropRect.off('modified');
-
-        this.fabricCanvas.remove(cropRect);
         this.cropRect = null;
-
-        this.fabricCanvas.setActiveObject(img);
-        this.fabricCanvas.requestRenderAll();
-    }
-
-    /**
-     * Sync image filter values with UI sliders
-     * @param {fabric.Image} img
-     */
-    syncFiltersToUI(img) {
-        if (!img || img.type !== 'image') return;
-
-        const getFilterValue = (type, key) => {
-            const f = (img.filters || []).find(fl => fl.type === type);
-            return f ? (f[key] ?? 0) : 0;
-        };
-
-        $('#img_blur').val(getFilterValue('Blur', 'blur'));
-        $('#img_brightness').val(getFilterValue('Brightness', 'brightness'));
-        $('#img_contrast').val(getFilterValue('Contrast', 'contrast'));
-        $('#img_saturation').val(getFilterValue('Saturation', 'saturation'));
-    }
-
-    /**
-     * Update restricted zone reference
-     * @param {Object} zone
-     */
-    updateZone(zone) {
-        this.zone = zone;
+        this.cropTarget = null;
+        this.canvas.requestRenderAll();
     }
 }

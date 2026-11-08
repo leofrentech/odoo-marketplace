@@ -1,97 +1,87 @@
-/** @odoo-module **/
+import { isImage, isText, isUserObject } from "../utils/object_utils";
 
-// Controls Updater - Updates UI panels based on the selected canvas object
+function toHex(color) {
+    if (!color || typeof color !== "string") {
+        return "#000000";
+    }
+    if (color.startsWith("#")) {
+        return color.length === 4
+            ? "#" + [...color.slice(1)].map((c) => c + c).join("")
+            : color.slice(0, 7);
+    }
+    const rgb = color.match(/\d+/g);
+    if (!rgb || rgb.length < 3) {
+        return "#000000";
+    }
+    return "#" + rgb.slice(0, 3).map((x) => parseInt(x).toString(16).padStart(2, "0")).join("");
+}
 
+/** Shows the controls matching the selected object and fills their values. */
 export class ControlsUpdater {
-    /**
-     * @param {jQuery} $element - Root UI container
-     */
-    constructor($element) {
-        this.$element = $element;
+    constructor(rootEl) {
+        this.root = rootEl;
     }
 
-    /**
-     * Update the UI control panels based on selected object
-     * @param {fabric.Object|null} obj
-     * @param {fabric.Rect|null} zoneRect
-     */
-    updateControls(obj, zoneRect) {
-        if (!obj || obj === zoneRect) {
-            this.hideControls();
-            return;
+    q(selector) {
+        return this.root.querySelector(selector);
+    }
+
+    update(obj, imageValues) {
+        const valid = isUserObject(obj);
+        const text = valid && isText(obj);
+        const image = valid && isImage(obj);
+        const shape = valid && !text && !image;
+        this.q(".o_lf_text_controls").classList.toggle("d-none", !text);
+        this.q(".o_lf_image_controls").classList.toggle("d-none", !image);
+        this.q(".o_lf_shape_controls").classList.toggle("d-none", !shape);
+
+        if (text) {
+            const edit = this.q(".o_lf_text_edit");
+            if (document.activeElement !== edit) {
+                edit.value = obj.text;
+            }
+            this.q(".o_lf_font").value = obj.fontFamily;
+            this.q(".o_lf_font_size").value = Math.round(obj.fontSize);
+            this._toggle('.o_lf_style[data-style="bold"]', obj.fontWeight === "bold");
+            this._toggle('.o_lf_style[data-style="italic"]', obj.fontStyle === "italic");
+            this._toggle('.o_lf_style[data-style="underline"]', Boolean(obj.underline));
+            for (const button of this.root.querySelectorAll(".o_lf_align")) {
+                button.classList.toggle("active", button.dataset.align === (obj.textAlign || "center"));
+            }
+            this._markSwatch("text", obj.fill);
         }
-
-        const isText = obj.type === "i-text" || obj.type === "text";
-        const isImage = obj.type === "image";
-        const isShape = !isText && !isImage;
-
-        this.$element.find("#text_controls").toggle(isText);
-        this.$element.find("#shape_controls").toggle(isShape);
-        this.$element.find("#layer_controls").show();
-
-        if (isText) {
-            this._updateTextControls(obj);
-        } else if (isShape) {
-            this._updateShapeControls(obj);
+        if (image && imageValues) {
+            for (const input of this.root.querySelectorAll(".o_lf_image_filter")) {
+                input.value = imageValues[input.dataset.op] || 0;
+            }
+        }
+        if (shape) {
+            this._markSwatch("fill", obj.type === "line" ? obj.stroke : obj.fill);
+            this._markSwatch("stroke", obj.stroke);
+            this.q(".o_lf_stroke_width").value = obj.type === "line" ? obj.strokeWidth : obj.strokeWidth || 0;
         }
     }
 
-    /**
-     * Update text control UI inputs
-     * @private
-     */
-    _updateTextControls(obj) {
-        this.$element.find("#text_font_family").val(obj.fontFamily || "Arial");
-        this.$element.find("#text_font_size").val(obj.fontSize || 40);
-        this.$element.find("#text_color").val(this._toHex(obj.fill));
-        this.$element.find("#text_bold").toggleClass("active", obj.fontWeight === "bold");
-        this.$element.find("#text_italic").toggleClass("active", obj.fontStyle === "italic");
-        this.$element.find("#text_underline").toggleClass("active", obj.underline);
+    _toggle(selector, active) {
+        const node = this.q(selector);
+        node.classList.toggle("active", active);
+        node.setAttribute("aria-pressed", active ? "true" : "false");
     }
 
-    /**
-     * Update shape control UI inputs
-     * @private
-     */
-    _updateShapeControls(obj) {
-        this.$element.find("#shape_fill_color").val(this._toHex(obj.fill));
-        this.$element.find("#shape_stroke_color").val(this._toHex(obj.stroke));
-        this.$element.find("#shape_stroke_width").val(obj.strokeWidth || 2);
+    _markSwatch(target, color) {
+        const hex = toHex(color).toLowerCase();
+        const palette = this.q(`.o_lf_palette[data-target="${target}"]`);
+        for (const swatch of palette.querySelectorAll(".o_lf_swatch[data-color]")) {
+            swatch.classList.toggle("active", swatch.dataset.color.toLowerCase() === hex);
+        }
+        const custom = palette.querySelector(".o_lf_color_input");
+        if (custom) {
+            custom.value = hex;
+        }
     }
 
-    /** Hide all control panels and reset UI state */
-    hideControls() {
-        this.$element.find("#text_controls, #shape_controls, #layer_controls").hide();
-        this.$element.find("#personalization_text, #add_text_button").show();
-        this.$element.find("#shapes_grid").show();
-    }
-
-    /**
-     * Update undo/redo button enabled state
-     * @param {boolean} canUndo
-     * @param {boolean} canRedo
-     */
-    updateHistoryButtons(canUndo, canRedo) {
-        this.$element.find("#undo_button").prop("disabled", !canUndo);
-        this.$element.find("#redo_button").prop("disabled", !canRedo);
-    }
-
-    /**
-     * Convert rgb/rgba color to hex format
-     * @private
-     */
-    _toHex(color) {
-        if (!color || color.startsWith("#")) return color || "#000000";
-
-        const rgb = color.match(/\d+/g);
-        if (!rgb || rgb.length < 3) return "#000000";
-
-        return (
-            "#" +
-            rgb
-                .slice(0, 3)
-                .map(x => parseInt(x).toString(16).padStart(2, "0"))
-                .join("")
-        );
+    updateHistory(canUndo, canRedo) {
+        this.q(".o_lf_undo").disabled = !canUndo;
+        this.q(".o_lf_redo").disabled = !canRedo;
     }
 }

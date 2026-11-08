@@ -1,0 +1,36 @@
+.o_lf_palette_field {
+    .o_lf_palette_swatch {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border-radius: 50%;
+        border: 2px solid $white;
+        box-shadow: 0 0 0 1px $gray-400;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        .fa {
+            opacity: 0;
+            color: $white;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+            font-size: 0.8rem;
+        }
+        &:hover:not(:disabled) .fa {
+            opacity: 1;
+        }
+    }
+    .o_lf_palette_add {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.o_form_view .o_lf_short_input {
+    width: 3.5rem;
+    flex: 0 0 3.5rem;
+}

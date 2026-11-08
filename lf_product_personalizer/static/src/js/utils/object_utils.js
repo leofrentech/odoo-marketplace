@@ -1,94 +1,67 @@
-/** @odoo-module **/
+/**
+ * Helpers to place, serialize and restore the customer's Fabric objects.
+ * The zone rectangle (printable area outline) is never part of the design.
+ */
 
-// Object Utils - Helper functions for fabric object positioning and serialization
+const TEXT_TYPES = ["i-text", "text", "textbox"];
+const EXTRA_PROPS = ["lfLabel", "lfLocked"];
+
+export function isText(obj) {
+    return Boolean(obj) && TEXT_TYPES.includes(obj.type);
+}
+
+export function isImage(obj) {
+    return Boolean(obj) && obj.type === "image";
+}
+
+export function isUserObject(obj) {
+    return Boolean(obj) && !obj.isZoneRect && !obj.isCropRect;
+}
 
 export class ObjectUtils {
-    /**
-     * Center object inside the given zone
-     * @param {fabric.Object} obj
-     * @param {Object} zone
-     */
-    static positionInZoneCenter(obj, zone) {
-        if (!obj || !zone) return;
-
-        const cx = zone.bound_x + zone.width / 2;
-        const cy = zone.bound_y + zone.height / 2;
-
-        obj.set({
-            left: cx,
-            top: cy,
-            originX: "center",
-            originY: "center"
-        });
-
+    /** Center an object in the zone, or in the canvas when there is none. */
+    static center(obj, zone, size) {
+        const cx = zone ? zone.x + zone.width / 2 : size / 2;
+        const cy = zone ? zone.y + zone.height / 2 : size / 2;
+        obj.set({ originX: "center", originY: "center", left: cx, top: cy });
         obj.setCoords();
     }
 
-    /**
-     * Scale object so it fits inside the zone (with padding)
-     * @param {fabric.Object} obj
-     * @param {Object} zone
-     */
-    static scaleToFitZone(obj, zone) {
-        if (!obj || !zone) return;
-
-        const br = obj.getBoundingRect(true, true);
-
-        if (br.width > zone.width - 20 || br.height > zone.height - 20) {
-            const scaleX = (zone.width - 40) / obj.width;
-            const scaleY = (zone.height - 40) / obj.height;
-            const scale = Math.min(scaleX, scaleY);
-
-            obj.set({ scaleX: scale, scaleY: scale });
+    /** Scale an object down so it fits in the zone (80% of it). */
+    static fit(obj, zone, size) {
+        const maxW = (zone ? zone.width : size) * 0.8;
+        const maxH = (zone ? zone.height : size) * 0.8;
+        const ratio = Math.min(maxW / obj.getScaledWidth(), maxH / obj.getScaledHeight(), 1);
+        if (ratio < 1) {
+            obj.scale((obj.scaleX || 1) * ratio);
             obj.setCoords();
         }
     }
 
-    /**
-     * Remove zone rectangles from object list
-     * @param {Array} objects
-     * @returns {Array}
-     */
-    static filterZoneRects(objects) {
-        return objects.filter(obj => !obj.isZoneRect && obj.name !== "zoneRect");
-    }
-
-    /**
-     * Serialize canvas to custom JSON (excluding zone rects)
-     * @param {fabric.Canvas} canvas
-     * @returns {Object}
-     */
-    static serializeCanvas(canvas) {
-        const objs = canvas.getObjects().filter(
-            obj => !obj.isZoneRect && obj.name !== "zoneRect"
-        );
-
+    /** @returns {{objects: Object[]}} */
+    static serialize(canvas) {
         return {
-            objects: objs.map(obj => obj.toObject())
+            objects: canvas.getObjects().filter(isUserObject).map((obj) => obj.toObject(EXTRA_PROPS)),
         };
     }
 
-    /**
-     * Restore canvas from cleaned JSON (excluding zone rects)
-     * @param {fabric.Canvas} canvas
-     * @param {Object} json
-     * @param {Function} callback
-     */
-    static restoreCanvas(canvas, json, callback) {
-        if (!json || !json.objects) {
-            callback?.();
-            return;
+    /** Add the objects of a design JSON to a canvas. */
+    static restore(canvas, json) {
+        const objects = (json?.objects || []).filter((obj) => !obj.isZoneRect);
+        if (!objects.length) {
+            return Promise.resolve([]);
         }
-
-        const filtered = {
-            objects: (json.objects || []).filter(
-                obj => obj.isZoneRect !== true && obj.name !== "zoneRect"
-            )
-        };
-
-        fabric.util.enlivenObjects(filtered.objects, enlivened => {
-            enlivened.forEach(obj => canvas.add(obj));
-            callback?.();
+        return new Promise((resolve) => {
+            window.fabric.util.enlivenObjects(objects, (enlivened) => {
+                for (const obj of enlivened) {
+                    canvas.add(obj);
+                }
+                resolve(enlivened);
+            });
         });
+    }
+
+    static isEmpty(json) {
+        return !(json?.objects || []).length;
     }
 }

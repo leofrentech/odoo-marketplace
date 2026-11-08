@@ -3,15 +3,47 @@
     <record id="view_order_form" model="ir.ui.view">
         <field name="name">sale.order.form.personalization</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_personalizations" type="object"
+                        class="oe_stat_button" icon="fa-paint-brush"
+                        invisible="personalization_count == 0">
+                    <field name="personalization_count" widget="statinfo" string="Designs"/>
+                </button>
+            </div>
+            <header position="inside">
+                <button name="action_download_artwork" type="object"
+                        string="Download Artwork" icon="fa-download"
+                        invisible="artwork_state == 'none'"/>
+            </header>
+            <group name="order_details" position="inside">
+                <field name="artwork_state" widget="badge" invisible="artwork_state == 'none'"
+                       decoration-warning="artwork_state == 'pending'"
+                       decoration-danger="artwork_state == 'rejected'"
+                       decoration-success="artwork_state == 'approved'"/>
+            </group>
             <xpath expr="//field[@name='order_line']/list" position="inside">
-                <button name="action_view_personalizations"
-                    string="View Design"
-                    type="object"
-                    class="oe_highlight"
-                    invisible="not personalization_ids" />
+                <field name="has_personalization" column_invisible="True"/>
+                <button name="action_view_personalizations" type="object"
+                        icon="fa-paint-brush" title="View Design"
+                        invisible="not has_personalization"/>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_sales_order_filter" model="ir.ui.view">
+        <field name="name">sale.order.search.personalization</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <filter name="my_sale_orders_filter" position="after">
+                <separator/>
+                <filter string="Artwork to Review" name="artwork_pending"
+                        domain="[('artwork_state', '=', 'pending')]"/>
+                <filter string="Personalized" name="personalized"
+                        domain="[('artwork_state', '!=', 'none')]"/>
+            </filter>
         </field>
     </record>
 </odoo>

@@ -1,108 +1,67 @@
-/** @odoo-module **/
-
-// Text Handler - Handles adding and styling text objects
+import { ObjectUtils, isText } from "../utils/object_utils";
+import { EDITOR_SIZE } from "../utils/fabric_loader";
 
 export class TextHandler {
-    /**
-     * @param {fabric.Canvas} fabricCanvas - Fabric.js canvas instance
-     * @param {Object|null} zone - Optional restricted zone
-     */
-    constructor(fabricCanvas, zone) {
-        this.fabricCanvas = fabricCanvas;
-        this.zone = zone;
+    constructor(editor) {
+        this.editor = editor;
     }
 
-    /**
-     * Add text object to canvas
-     * @param {string} text
-     * @param {Object} options
-     * @returns {fabric.IText|null}
-     */
-    addText(text, options = {}) {
-        if (!text.trim()) {
-            alert("Please enter some text");
-            return null;
-        }
+    get canvas() {
+        return this.editor.canvasManager.canvas;
+    }
 
-        let left = 100, top = 100;
-
-        if (this.zone) {
-            left = this.zone.bound_x + this.zone.width / 2;
-            top = this.zone.bound_y + this.zone.height / 2;
-        }
-
-        const textObj = new fabric.IText(text, {
-            left,
-            top,
-            fontFamily: options.fontFamily || "Arial",
-            fill: options.fill || "#000000",
-            fontSize: options.fontSize || 40,
-            ...options
+    add(text, { fontFamily, fill }) {
+        const zone = this.editor.canvasManager.zone;
+        const obj = new window.fabric.IText(text, {
+            fontFamily,
+            fill,
+            fontSize: 48,
+            textAlign: "center",
+            lfLabel: text,
         });
-
-        try { textObj.__label = text; } catch (e) {}
-
-        this.fabricCanvas.add(textObj);
-        this.fabricCanvas.setActiveObject(textObj);
-        this.fabricCanvas.renderAll();
-
-        return textObj;
+        ObjectUtils.center(obj, zone, EDITOR_SIZE);
+        ObjectUtils.fit(obj, zone, EDITOR_SIZE);
+        this.canvas.add(obj);
+        this.canvas.setActiveObject(obj);
+        this.canvas.requestRenderAll();
+        return obj;
     }
 
-    /**
-     * Update text property (font, color, alignment, etc.)
-     * @param {fabric.IText} textObj
-     * @param {string} property
-     * @param {any} value
-     */
-    updateTextProperty(textObj, property, value) {
-        if (!textObj || (textObj.type !== "i-text" && textObj.type !== "text")) return;
-        textObj.set(property, value);
-        this.fabricCanvas.renderAll();
+    update(obj, props) {
+        if (!isText(obj)) {
+            return;
+        }
+        obj.set(props);
+        if ("text" in props) {
+            obj.set("lfLabel", props.text);
+        }
+        obj.setCoords();
+        this.editor.canvasManager.clampToZone(obj);
+        this.canvas.requestRenderAll();
+        this.canvas.fire("object:modified", { target: obj });
     }
 
-    /**
-     * Toggle style such as bold/italic/underline
-     * @param {fabric.IText} textObj
-     * @param {string} style
-     */
-    toggleTextStyle(textObj, style) {
-        if (!textObj || (textObj.type !== "i-text" && textObj.type !== "text")) return;
-
-        const styleMap = {
-            bold: ["fontWeight", textObj.fontWeight === "bold" ? "normal" : "bold"],
-            italic: ["fontStyle", textObj.fontStyle === "italic" ? "normal" : "italic"],
-            underline: ["underline", !textObj.underline],
+    toggleStyle(obj, style) {
+        if (!isText(obj)) {
+            return;
+        }
+        const toggles = {
+            bold: { fontWeight: obj.fontWeight === "bold" ? "normal" : "bold" },
+            italic: { fontStyle: obj.fontStyle === "italic" ? "normal" : "italic" },
+            underline: { underline: !obj.underline },
         };
-
-        const cfg = styleMap[style];
-        if (cfg) {
-            textObj.set(cfg[0], cfg[1]);
-            this.fabricCanvas.renderAll();
+        if (toggles[style]) {
+            this.update(obj, toggles[style]);
         }
     }
 
-    /**
-     * Convert scale into actual font size (keeps text crisp)
-     * @param {fabric.IText} textObj
-     */
-    updateFontSizeOnScale(textObj) {
-        const scale = Math.max(textObj.scaleX, textObj.scaleY);
-        const newFontSize = (textObj.fontSize || 20) * scale;
-
-        textObj.set({
-            fontSize: newFontSize,
-            scaleX: 1,
-            scaleY: 1
-        });
-
-        if (textObj.type === "curved-text") {
-            textObj.set("diameter", (textObj.diameter || 250) * scale);
+    /** Turn scaling into a font size so the text stays crisp. */
+    bakeScale(obj) {
+        if (!isText(obj) || (obj.scaleX === 1 && obj.scaleY === 1)) {
+            return;
         }
-    }
-
-    /** Update restricted zone reference */
-    updateZone(zone) {
-        this.zone = zone;
+        const scale = Math.max(obj.scaleX, obj.scaleY);
+        obj.set({ fontSize: Math.round(obj.fontSize * scale), scaleX: 1, scaleY: 1 });
+        obj.setCoords();
     }
 }

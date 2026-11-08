@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reusable design template -->
+    <record id="demo_design_set_tshirt" model="product.design.set">
+        <field name="name">T-shirt (front / back)</field>
+    </record>
+    <record id="demo_area_tshirt_front" model="product.design.config">
+        <field name="design_set_id" ref="demo_design_set_tshirt"/>
+        <field name="sequence">1</field>
+        <field name="design_type">Front</field>
+        <field name="design_image" type="base64" file="lf_product_personalizer/static/img/demo/tshirt_front.png"/>
+        <field name="is_restricted_area" eval="True"/>
+        <field name="bound_x">280</field>
+        <field name="bound_y">200</field>
+        <field name="bound_width">240</field>
+        <field name="bound_height">300</field>
+    </record>
+    <record id="demo_area_tshirt_back" model="product.design.config">
+        <field name="design_set_id" ref="demo_design_set_tshirt"/>
+        <field name="sequence">2</field>
+        <field name="design_type">Back</field>
+        <field name="design_image" type="base64" file="lf_product_personalizer/static/img/demo/tshirt_back.png"/>
+        <field name="is_restricted_area" eval="True"/>
+        <field name="bound_x">270</field>
+        <field name="bound_y">180</field>
+        <field name="bound_width">260</field>
+        <field name="bound_height">340</field>
+        <field name="price_extra">3.0</field>
+    </record>
+
+    <!-- Design editor product -->
+    <record id="demo_product_tshirt" model="product.template">
+        <field name="name">Personalized T-Shirt</field>
+        <field name="list_price">19.0</field>
+        <field name="type">consu</field>
+        <field name="is_published" eval="True"/>
+        <field name="image_1920" type="base64" file="lf_product_personalizer/static/img/demo/tshirt_front.png"/>
+        <field name="is_product_personalization" eval="True"/>
+        <field name="design_set_id" ref="demo_design_set_tshirt"/>
+        <field name="personalization_fee">5.0</field>
+        <field name="personalization_min_image_px">600</field>
+        <field name="personalization_requires_approval" eval="True"/>
+        <field name="description_ecommerce" type="html">
+            <p>Add your text, logo or photo on the front and back.</p>
+        </field>
+    </record>
+
+    <!-- Text-only product: only the Text tool is enabled -->
+    <record id="demo_product_sign" model="product.template">
+        <field name="name">Engraved Wooden Sign</field>
+        <field name="list_price">29.0</field>
+        <field name="type">consu</field>
+        <field name="is_published" eval="True"/>
+        <field name="image_1920" type="base64" file="lf_product_personalizer/static/img/demo/wood_sign.png"/>
+        <field name="is_product_personalization" eval="True"/>
+        <field name="personalization_allow_image" eval="False"/>
+        <field name="personalization_allow_clipart" eval="False"/>
+        <field name="personalization_allow_shape" eval="False"/>
+        <field name="personalization_required" eval="True"/>
+        <field name="personalization_max_text_length">30</field>
+        <field name="personalization_palette">#3E2723,#000000,#FFFFFF</field>
+    </record>
+    <record id="demo_area_sign" model="product.design.config">
+        <field name="product_tmpl_id" ref="demo_product_sign"/>
+        <field name="design_type">Engraving</field>
+        <field name="design_image" type="base64" file="lf_product_personalizer/static/img/demo/wood_sign.png"/>
+        <field name="is_restricted_area" eval="True"/>
+        <field name="is_required" eval="True"/>
+        <field name="bound_x">130</field>
+        <field name="bound_y">280</field>
+        <field name="bound_width">540</field>
+        <field name="bound_height">240</field>
+    </record>
+</odoo>

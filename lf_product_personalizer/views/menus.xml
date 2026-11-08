@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Website > eCommerce -->
+    <menuitem id="menu_website_customer_designs"
+              name="Customer Designs"
+              parent="website_sale.menu_orders"
+              action="sale_order_line_personalization_action"
+              sequence="40"/>
+    <menuitem id="menu_website_design_sets"
+              name="Design Templates"
+              parent="website_sale.menu_catalog"
+              action="product_design_set_action"
+              sequence="40"/>
+
+    <!-- Website > Configuration > eCommerce -->
+    <menuitem id="menu_personalization_config"
+              name="Personalization"
+              parent="website_sale.menu_ecommerce_settings"
+              sequence="60">
+        <menuitem id="menu_personalization_fonts" name="Fonts"
+                  action="product_design_font_action" sequence="10"/>
+        <menuitem id="menu_personalization_cliparts" name="Clipart"
+                  action="product_design_clipart_action" sequence="20"/>
+        <menuitem id="menu_personalization_clipart_categories" name="Clipart Categories"
+                  action="product_design_clipart_category_action" sequence="30"/>
+        <menuitem id="menu_personalization_presets" name="Ready-made Designs"
+                  action="product_design_preset_action" sequence="40"/>
+        <menuitem id="menu_personalization_saved" name="Saved Customer Designs"
+                  action="product_design_saved_action" sequence="50"/>
+    </menuitem>
+
+    <!-- Sales > Orders -->
+    <menuitem id="menu_sale_customer_designs"
+              name="Customer Designs"
+              parent="sale.sale_order_menu"
+              action="sale_order_line_personalization_action"
+              sequence="40"/>
+</odoo>

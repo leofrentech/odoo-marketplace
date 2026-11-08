@@ -1,91 +1,73 @@
-/** @odoo-module **/
+import { ObjectUtils } from "../utils/object_utils";
 
-// State Manager - Manages design state across different design types
-
+/**
+ * Editor data: product configuration from the server and the design of
+ * each area (keyed by area id).
+ */
 export class StateManager {
     constructor() {
-        this.designData = {};
-        this.activeDesignType = null;
-        this.activeVariantId = null;
-        this.productData = null;
+        this.data = null;
+        this.designs = {};
+        this.activeAreaKey = null;
     }
 
-    /** Store product data received from backend */
-    setProductData(data) {
-        this.productData = data;
-        this.activeVariantId = data.active_variant_id;
-    }
-
-    /**
-     * Save canvas JSON for a design type
-     * @param {string} designType
-     * @param {Object} canvasJSON
-     */
-    saveDesignState(designType, canvasJSON) {
-        if (!designType) return;
-
-        if (!this.designData[designType]) {
-            this.designData[designType] = {};
+    setData(data) {
+        this.data = data;
+        const keys = new Set(this.areas.map((area) => area.key));
+        // Keep designs of areas that still exist (e.g. after a variant switch).
+        for (const key of Object.keys(this.designs)) {
+            if (!keys.has(key)) {
+                delete this.designs[key];
+            }
         }
-
-        this.designData[designType].json = canvasJSON;
+        if (!keys.has(this.activeAreaKey)) {
+            this.activeAreaKey = this.areas[0]?.key || null;
+        }
     }
 
-    /**
-     * Retrieve saved design state
-     * @param {string} designType
-     * @returns {Object|null}
-     */
-    getDesignState(designType) {
-        return this.designData[designType] || null;
+    get areas() {
+        return this.data?.areas || [];
     }
 
-    /**
-     * Set current active design type
-     * @param {string} designType
-     */
-    setActiveDesignType(designType) {
-        this.activeDesignType = designType;
+    get settings() {
+        return this.data?.settings || {};
     }
 
-    /** Get current active design type */
-    getActiveDesignType() {
-        return this.activeDesignType;
+    get activeArea() {
+        return this.areaByKey(this.activeAreaKey);
     }
 
-    /**
-     * Set selected variant ID
-     * @param {number} variantId
-     */
-    setActiveVariant(variantId) {
-        this.activeVariantId = variantId;
+    areaByKey(key) {
+        return this.areas.find((area) => area.key === key) || null;
     }
 
-    /** Get selected variant ID */
-    getActiveVariant() {
-        return this.activeVariantId;
+    setDesign(key, json) {
+        this.designs[key] = { json };
     }
 
-    /** Remove all saved design states */
-    clearDesignData() {
-        this.designData = {};
+    getDesign(key) {
+        return this.designs[key]?.json || { objects: [] };
     }
 
-    /** Get all stored design states */
-    getAllDesignData() {
-        return this.designData;
+    loadDesigns(designs) {
+        const keys = new Set(this.areas.map((area) => area.key));
+        for (const [key, design] of Object.entries(designs || {})) {
+            if (keys.has(key)) {
+                this.setDesign(key, design?.json || { objects: [] });
+            }
+        }
     }
 
-    /**
-     * Load design data (typically in edit mode)
-     * @param {Object} data
-     */
-    setDesignData(data) {
-        this.designData = data;
+    customizedAreas() {
+        return this.areas.filter((area) => !ObjectUtils.isEmpty(this.getDesign(area.key)));
     }
 
-    /** Get stored product data */
-    getProductData() {
-        return this.productData;
+    /** Designs as saved in an account or template: only customized areas. */
+    exportDesigns() {
+        const result = {};
+        for (const area of this.customizedAreas()) {
+            result[area.key] = { json: this.getDesign(area.key) };
+        }
+        return result;
     }
 }

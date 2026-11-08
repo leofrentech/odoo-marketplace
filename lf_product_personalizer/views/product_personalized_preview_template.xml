@@ -1,83 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Preview Modal -->
-    <template id="personalization_preview_modal"
-        inherit_id="lf_product_personalizer.product_personalization_page"
-        name="Personalization Preview Modal">
+    <template id="personalization_modals" inherit_id="lf_product_personalizer.product_personalization_page"
+              name="Personalization Modals">
         <xpath expr="//div[@id='wrap']" position="inside">
-            <div class="modal fade" id="preview_personalization_modal" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-xl" style="max-width: 1200px;">
+            <!-- Preview -->
+            <div class="modal fade o_lf_preview_modal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Design Preview</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close" />
+                            <h5 class="modal-title">Your design</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
                         </div>
-                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                            <div class="container-fluid">
-                                <div class="row g-4" id="preview_grid">
-                                    <!-- Dynamically populated -->
-                                </div>
-                            </div>
+                        <div class="modal-body">
+                            <div class="o_lf_preview_grid row g-3"/>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Close</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep editing</button>
+                            <button type="button" class="btn btn-primary o_lf_add_to_cart" data-bs-dismiss="modal">
+                                <i class="fa fa-shopping-cart me-1" role="img" aria-hidden="true"/>
+                                <t t-if="revision">Send for review</t>
+                                <t t-else="">Add to cart</t>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </xpath>
-    </template>
 
-    <!-- Download Modal -->
-    <template id="personalization_download_modal"
-        inherit_id="lf_product_personalizer.product_personalization_page"
-        name="Personalization Download Modal">
-        <xpath expr="//div[@id='wrap']" position="inside">
-            <div class="modal fade" id="download_personalization_modal" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-xl" style="max-width: 1200px;">
-                    <div class="modal-content">
+            <!-- Text prompt (save design / save template) -->
+            <div class="modal fade o_lf_name_modal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form class="modal-content o_lf_name_form">
                         <div class="modal-header">
-                            <h5 class="modal-title">Download Designs</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close" />
+                            <h5 class="modal-title o_lf_name_title">Name your design</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
                         </div>
                         <div class="modal-body">
-                            <div class="mb-4 text-center">
-                                <h6 class="mb-3">Select Format to Download:</h6>
-                                <div class="d-flex justify-content-center gap-3">
-                                    <button type="button"
-                                        class="btn btn-lg btn-outline-primary download-format-btn"
-                                        data-format="png">
-                                        <i class="fa fa-file-image-o fa-2x d-block mb-2"></i>
-                                        Download as PNG </button>
-                                    <button type="button"
-                                        class="btn btn-lg btn-outline-primary download-format-btn"
-                                        data-format="jpeg">
-                                        <i class="fa fa-file-image-o fa-2x d-block mb-2"></i>
-                                        Download as JPG </button>
-                                    <button type="button"
-                                        class="btn btn-lg btn-outline-primary download-format-btn"
-                                        data-format="webp">
-                                        <i class="fa fa-file-image-o fa-2x d-block mb-2"></i>
-                                        Download as WebP </button>
-                                </div>
-                            </div>
-                            <hr />
-                            <div style="max-height: 50vh; overflow-y: auto;">
-                                <div class="container-fluid">
-                                    <div class="row g-4" id="download_preview_grid">
-                                        <!-- Dynamically populated -->
-                                    </div>
-                                </div>
-                            </div>
+                            <input type="text" class="form-control o_lf_name_input" maxlength="100"
+                                   required="required" aria-label="Name"/>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancel</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </xpath>
