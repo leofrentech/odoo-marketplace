@@ -23,14 +23,14 @@
                     <setting id="lf_personalizer_resources_setting"
                              string="Design Resources"
                              help="Fonts, clipart and ready-made designs offered to customers.">
-                        <div class="mt-2 d-flex flex-column align-items-start">
-                            <button name="%(lf_product_personalizer.product_design_font_action)d"
-                                    type="action" string="Fonts" class="btn-link" icon="oi-arrow-right"/>
-                            <button name="%(lf_product_personalizer.product_design_clipart_action)d"
-                                    type="action" string="Clipart" class="btn-link" icon="oi-arrow-right"/>
-                            <button name="%(lf_product_personalizer.product_design_set_action)d"
+                        <div class="mt-2">
+                            <div><button name="%(lf_product_personalizer.product_design_font_action)d"
+                                    type="action" string="Fonts" class="btn-link" icon="oi-arrow-right"/></div>
+                            <div><button name="%(lf_product_personalizer.product_design_clipart_action)d"
+                                    type="action" string="Clipart" class="btn-link" icon="oi-arrow-right"/></div>
+                            <div><button name="%(lf_product_personalizer.product_design_set_action)d"
                                     type="action" string="Design Templates" class="btn-link"
-                                    icon="oi-arrow-right"/>
+                                    icon="oi-arrow-right"/></div>
                         </div>
                     </setting>
                 </block>

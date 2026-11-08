@@ -1,5 +1,5 @@
 {
-    "name": "Product Personalization Editor",
+    "name": "Product Personalizer - Online Product Designer, Custom Printing & Engraving",
     "version": "19.0.2.0.0",
     "category": "Website/eCommerce",
     "summary": "Let customers design products online: text, images, clipart, "
@@ -82,6 +82,7 @@ jerseys, signs...) directly from the product page.
             "lf_product_personalizer/static/tests/tours/*.js",
         ],
     },
+    "images": ["static/description/banner/lf_product_personalizer_cover.png"],
     "installable": True,
     "application": False,
     "license": "LGPL-3",

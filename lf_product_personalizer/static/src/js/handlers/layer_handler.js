@@ -85,7 +85,7 @@ export class LayerHandler {
             this.editor.canvasManager.clampToZone(clone);
             this.canvas.setActiveObject(clone);
             this.editor.onCanvasChanged();
-        }, ["lfLabel", "lfLocked"]);
+        }, ["lfLabel", "lfLocked", "lfClipart"]);
     }
 
     toggleLock(obj) {

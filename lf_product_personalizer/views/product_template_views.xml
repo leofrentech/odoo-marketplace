@@ -34,6 +34,12 @@
                         Add at least one area (e.g. Front, Back) or pick a design template
                         to show the <b>Personalize</b> button on your website.
                     </div>
+                    <div class="alert alert-info d-flex flex-wrap align-items-center gap-2" role="status"
+                         invisible="not design_set_id or design_config_ids">
+                        <span>Uses the areas of the design template:</span>
+                        <field name="design_set_area_ids" widget="many2many_tags" readonly="1" nolabel="1"/>
+                        <span class="text-muted">Add areas below only to replace them for this product.</span>
+                    </div>
                     <div class="text-muted mb-2" invisible="not design_set_id or not design_config_ids">
                         Areas of this product replace the areas of the design template.
                     </div>

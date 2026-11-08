@@ -398,8 +398,8 @@ export class ProductPersonalizer extends Interaction {
         }
         const clipart = ev.target.closest(".o_lf_clipart");
         if (clipart) {
-            this.waitFor(this.imageHandler.addFromUrl(clipart.dataset.url, clipart.dataset.name)).then(
-                (img) => img?.set({ lfClipart: true })
+            this.waitFor(
+                this.imageHandler.addFromUrl(clipart.dataset.url, clipart.dataset.name, { lfClipart: true })
             );
             return;
         }

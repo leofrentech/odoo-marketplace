@@ -55,7 +55,7 @@ export class ImageHandler {
         }
     }
 
-    addFromUrl(url, label) {
+    addFromUrl(url, label, extra = {}) {
         return new Promise((resolve) => {
             window.fabric.Image.fromURL(
                 url,
@@ -66,7 +66,7 @@ export class ImageHandler {
                         return;
                     }
                     const zone = this.editor.canvasManager.zone;
-                    img.set({ lfLabel: label });
+                    img.set({ lfLabel: label, ...extra });
                     ObjectUtils.center(img, zone, EDITOR_SIZE);
                     ObjectUtils.fit(img, zone, EDITOR_SIZE);
                     this.canvas.add(img);

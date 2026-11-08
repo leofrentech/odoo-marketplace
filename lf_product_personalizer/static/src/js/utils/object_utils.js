@@ -4,7 +4,7 @@
  */
 
 const TEXT_TYPES = ["i-text", "text", "textbox"];
-const EXTRA_PROPS = ["lfLabel", "lfLocked"];
+const EXTRA_PROPS = ["lfLabel", "lfLocked", "lfClipart"];
 
 export function isText(obj) {
     return Boolean(obj) && TEXT_TYPES.includes(obj.type);

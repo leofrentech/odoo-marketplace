@@ -1,26 +1,37 @@
 /**
  * Load the fonts offered in the editor (Google Fonts or uploaded files) so the
- * canvas renders with the right font. Device fonts need no loading.
+ * canvas measures and draws text with the right font. Device fonts need no
+ * loading.
  */
-const loaded = new Set();
+const loaded = new Map();
 
+/** Add a stylesheet once and resolve when the browser has parsed it. */
 function addStylesheet(url) {
-    if (document.querySelector(`link[data-lf-font="${CSS.escape(url)}"]`)) {
-        return;
+    const existing = document.querySelector(`link[data-lf-font="${CSS.escape(url)}"]`);
+    if (existing) {
+        return existing.lfLoaded;
     }
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = url;
     link.dataset.lfFont = url;
+    link.lfLoaded = new Promise((resolve) => {
+        link.onload = resolve;
+        link.onerror = resolve;
+    });
     document.head.appendChild(link);
+    return link.lfLoaded;
+}
+
+function withTimeout(promise, ms) {
+    return Promise.race([promise, new Promise((resolve) => setTimeout(resolve, ms))]);
 }
 
 async function loadFont(font) {
-    if (loaded.has(font.family)) {
-        return;
-    }
     if (font.source === "google" && font.url) {
-        addStylesheet(font.url);
+        // The @font-face rules must exist before asking the browser to load
+        // the font, otherwise document.fonts.load() resolves with nothing.
+        await withTimeout(addStylesheet(font.url), 5000);
     } else if (font.source === "upload" && font.url) {
         try {
             const face = new FontFace(font.family, `url("${font.url}")`);
@@ -30,28 +41,27 @@ async function loadFont(font) {
         }
     }
     try {
-        // Wait (max 3s) until the font can be used by the canvas.
-        await Promise.race([
+        await withTimeout(
             Promise.all([
                 document.fonts.load(`40px "${font.family}"`),
                 document.fonts.load(`bold 40px "${font.family}"`),
             ]),
-            new Promise((resolve) => setTimeout(resolve, 3000)),
-        ]);
+            5000
+        );
     } catch {
         // The browser falls back on a default font.
     }
-    loaded.add(font.family);
+    // Fabric caches character widths per font: drop measures taken earlier.
+    window.fabric?.util?.clearFabricFontCache?.(font.family);
 }
 
 export function loadFonts(fonts) {
-    return Promise.all((fonts || []).map(loadFont));
-}
-
-/** Families used by a canvas JSON, to load before rendering it. */
-export function fontsOfDesign(json, fonts) {
-    const families = new Set(
-        (json?.objects || []).filter((obj) => obj.fontFamily).map((obj) => obj.fontFamily)
+    return Promise.all(
+        (fonts || []).map((font) => {
+            if (!loaded.has(font.family)) {
+                loaded.set(font.family, loadFont(font));
+            }
+            return loaded.get(font.family);
+        })
     );
-    return (fonts || []).filter((font) => families.has(font.family));
 }

@@ -22,6 +22,9 @@ class ProductTemplate(models.Model):
         string="Design Template",
         help="Reuse the areas of a design template. Areas defined on the product take priority.",
     )
+    design_set_area_ids = fields.One2many(
+        related="design_set_id.area_ids", string="Template Areas"
+    )
     design_config_ids = fields.One2many(
         "product.design.config",
         "product_tmpl_id",
