@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form.personalization</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="sale_product_catalog_settings" position="after">
+                <block title="Product Personalization" id="lf_personalizer_settings">
+                    <setting id="lf_personalizer_upload_setting"
+                             string="Customer Uploads"
+                             help="Largest image customers can upload in the design editor.">
+                        <div class="mt-2">
+                            <field name="lf_personalizer_max_upload_mb" class="oe_inline"/>
+                            <span class="ms-1">MB</span>
+                        </div>
+                    </setting>
+                    <setting id="lf_personalizer_print_quality_setting"
+                             string="Print File Quality"
+                             help="Resolution of the print files generated for production.">
+                        <field name="lf_personalizer_print_quality" class="mt-2"/>
+                    </setting>
+                    <setting id="lf_personalizer_resources_setting"
+                             string="Design Resources"
+                             help="Fonts, clipart and ready-made designs offered to customers.">
+                        <div class="mt-2">
+                            <div><button name="%(lf_product_personalizer.product_design_font_action)d"
+                                    type="action" string="Fonts" class="btn-link" icon="oi-arrow-right"/></div>
+                            <div><button name="%(lf_product_personalizer.product_design_clipart_action)d"
+                                    type="action" string="Clipart" class="btn-link" icon="oi-arrow-right"/></div>
+                            <div><button name="%(lf_product_personalizer.product_design_set_action)d"
+                                    type="action" string="Design Templates" class="btn-link"
+                                    icon="oi-arrow-right"/></div>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

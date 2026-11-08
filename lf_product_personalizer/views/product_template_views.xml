@@ -3,66 +3,90 @@
     <record id="product_template_form_view_personalization" model="ir.ui.view">
         <field name="name">product.template.form.personalization</field>
         <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_form_view" />
+        <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@name='options']" position="inside">
                 <span class="d-inline-flex" invisible="type == 'combo'">
-                    <field name="is_product_personalization" />
-                    <label for="is_product_personalization" />
+                    <field name="is_product_personalization"/>
+                    <label for="is_product_personalization"/>
                 </span>
             </xpath>
             <xpath expr="//notebook" position="inside">
-                <page string="Design Personalization" invisible="not is_product_personalization">
+                <page string="Personalization" name="personalization"
+                      invisible="not is_product_personalization">
                     <group>
-                        <field name="design_config_ids" nolabel="1">
-                            <list>
-                                <field name="design_type" />
-                                <field name="is_restricted_area" />
-                                <field name="bound_x" />
-                                <field name="bound_y" />
-                                <field name="bound_width" />
-                                <field name="bound_height" />
-                            </list>
-                            <form>
-                                <sheet>
-                                    <group>
-                                        <group>
-                                            <field name="design_type" required="1" />
-                                        </group>
-                                        <group>
-                                            <field name="design_image" widget="image"
-                                                class="oe_avatar" />
-                                        </group>
-                                    </group>
-                                    <group>
-                                        <field name="is_restricted_area" />
-                                    </group>
-                                    <notebook>
-                                        <page string="Restricted Area"
-                                            invisible="not is_restricted_area">
-                                            <group>
-                                                <field name="design_image" invisible="1" />
-                                                <field name="design_image"
-                                                    widget="design_area_widget" nolabel="1" />
-                                            </group>
-                                            <group string="Coordinates">
-                                                <group>
-                                                    <field name="bound_x" />
-                                                    <field name="bound_y" />
-                                                </group>
-                                                <group>
-                                                    <field name="bound_width" />
-                                                    <field name="bound_height" />
-                                                </group>
-                                            </group>
-                                        </page>
-                                    </notebook>
-                                </sheet>
-                            </form>
-                        </field>
+                        <group string="Setup">
+                            <field name="design_set_id"
+                                   placeholder="Reuse areas of a design template..."/>
+                            <field name="personalization_required"/>
+                            <field name="personalization_requires_approval"/>
+                        </group>
+                        <group string="Pricing">
+                            <field name="personalization_fee"/>
+                            <div colspan="2" class="text-muted">
+                                Plus the extra price of each area the customer customizes.
+                            </div>
+                        </group>
+                    </group>
+                    <separator string="Areas"/>
+                    <div class="alert alert-info" role="status"
+                         invisible="design_config_ids or design_set_id">
+                        Add at least one area (e.g. Front, Back) or pick a design template
+                        to show the <b>Personalize</b> button on your website.
+                    </div>
+                    <div class="alert alert-info d-flex flex-wrap align-items-center gap-2" role="status"
+                         invisible="not design_set_id or design_config_ids">
+                        <span>Uses the areas of the design template:</span>
+                        <field name="design_set_area_ids" widget="many2many_tags" readonly="1" nolabel="1"/>
+                        <span class="text-muted">Add areas below only to replace them for this product.</span>
+                    </div>
+                    <div class="text-muted mb-2" invisible="not design_set_id or not design_config_ids">
+                        Areas of this product replace the areas of the design template.
+                    </div>
+                    <field name="design_config_ids"
+                           context="{'default_product_tmpl_id': id}"/>
+                    <group>
+                        <group string="Customer Tools">
+                            <field name="personalization_allow_text"/>
+                            <field name="personalization_allow_image"/>
+                            <field name="personalization_allow_clipart"/>
+                            <field name="personalization_allow_shape"/>
+                            <div colspan="2" class="text-muted">
+                                Keep only Text for engraving, names or numbers.
+                            </div>
+                        </group>
+                        <group string="Rules">
+                            <label for="personalization_max_text_length"/>
+                            <div class="d-flex align-items-center gap-2">
+                                <field name="personalization_max_text_length" class="o_lf_short_input"/>
+                                <span invisible="not personalization_max_text_length">characters</span>
+                                <span class="text-muted" invisible="personalization_max_text_length">No limit</span>
+                            </div>
+                            <label for="personalization_min_image_px"/>
+                            <div class="d-flex align-items-center gap-2">
+                                <field name="personalization_min_image_px" class="o_lf_short_input"/>
+                                <span invisible="not personalization_min_image_px">px</span>
+                                <span class="text-muted" invisible="personalization_min_image_px">No warning</span>
+                            </div>
+                            <field name="personalization_font_ids" widget="many2many_tags"
+                                   placeholder="All active fonts"/>
+                            <field name="personalization_palette" widget="lf_color_palette"/>
+                        </group>
                     </group>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_personalization" model="ir.ui.view">
+        <field name="name">product.template.search.personalization</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="filter_to_sell" position="after">
+                <filter string="Personalizable" name="personalizable"
+                        domain="[('is_product_personalization', '=', True)]"/>
+            </filter>
         </field>
     </record>
 </odoo>

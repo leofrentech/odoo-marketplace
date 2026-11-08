@@ -1,64 +1,70 @@
 {
-    "name": "Product Personalization Editor",
-    "version": "1.0",
+    "name": "Product Personalizer - Online Product Designer, Custom Printing & Engraving",
+    "version": "18.0.2.0.0",
     "category": "Website/eCommerce",
-    "summary": "Allows customers to customize products directly from the product details page.",
-    "description": """
-        Product Personalization Editor
-        ==============================
-        The Product Personalization module allows customers to customize products directly from the product details page.
-        A "Customize" button is added to products, which opens an interactive editor where customers can:
-        - Upload or set logos, images, or artwork.
-        - Add and edit custom text with different fonts, sizes, and colors.
-        - Position, resize, and rotate elements on the product preview (e.g., t-shirts, mugs, or other customizable items).
-        Once the personalization is complete, the customized product can be added to the cart.
-        The module ensures that the personalized design is saved and linked to the corresponding sale order line,
-        allowing easy tracking of customer-specific customizations.
-        This module is ideal for eCommerce stores offering made-to-order or personalized products.
-    """,
+    "summary": "Let customers design products online: text, images, clipart, "
+    "personalization fees, print-ready artwork and artwork approval.",
     "author": "Leofren Technologies",
     "website": "https://leofren.com",
-    "depends": ["website_sale", "product"],
+    "depends": ["website_sale"],
     "data": [
         "security/ir.model.access.csv",
+        "security/security.xml",
+        "data/product_design_font_data.xml",
+        "views/product_design_config_views.xml",
+        "views/product_design_set_views.xml",
+        "views/product_design_font_views.xml",
+        "views/product_design_clipart_views.xml",
+        "views/product_design_preset_views.xml",
+        "views/product_design_saved_views.xml",
         "views/product_template_views.xml",
+        "views/sale_order_line_personalization_views.xml",
+        "views/sale_order_views.xml",
+        "views/res_config_settings_views.xml",
+        "views/menus.xml",
         "views/website_templates.xml",
         "views/product_personalized_preview_template.xml",
         "views/cart_templates.xml",
-        "views/sale_order_line_personalization_views.xml",
-        "views/sale_order_views.xml",
+        "views/portal_templates.xml",
+        "report/sale_order_report.xml",
+    ],
+    "demo": [
+        "demo/product_demo.xml",
     ],
     "assets": {
         "web.assets_backend": [
+            "lf_product_personalizer/static/src/js/utils/fabric_loader.js",
             "lf_product_personalizer/static/src/js/design_area_widget.js",
             "lf_product_personalizer/static/src/xml/design_area_widget.xml",
-            "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js",
+            "lf_product_personalizer/static/src/backend/color_palette_field.js",
+            "lf_product_personalizer/static/src/backend/color_palette_field.xml",
+            "lf_product_personalizer/static/src/backend/color_palette_field.scss",
         ],
         "web.assets_frontend": [
-            "lf_product_personalizer/static/src/css/customizer.css",
-            # Core modules
+            "lf_product_personalizer/static/src/scss/customizer.scss",
+            "lf_product_personalizer/static/src/js/utils/fabric_loader.js",
+            "lf_product_personalizer/static/src/js/utils/dom_utils.js",
+            "lf_product_personalizer/static/src/js/utils/font_loader.js",
+            "lf_product_personalizer/static/src/js/utils/object_utils.js",
+            "lf_product_personalizer/static/src/js/utils/preview_generator.js",
+            "lf_product_personalizer/static/src/js/core/editor_base.js",
             "lf_product_personalizer/static/src/js/core/canvas_manager.js",
             "lf_product_personalizer/static/src/js/core/history_manager.js",
             "lf_product_personalizer/static/src/js/core/state_manager.js",
-            # Handlers
             "lf_product_personalizer/static/src/js/handlers/text_handler.js",
             "lf_product_personalizer/static/src/js/handlers/image_handler.js",
             "lf_product_personalizer/static/src/js/handlers/shape_handler.js",
             "lf_product_personalizer/static/src/js/handlers/layer_handler.js",
-            # UI
             "lf_product_personalizer/static/src/js/ui/menu_controller.js",
             "lf_product_personalizer/static/src/js/ui/controls_updater.js",
-            # Utils
-            "lf_product_personalizer/static/src/js/utils/object_utils.js",
-            "lf_product_personalizer/static/src/js/utils/preview_generator.js",
-            # Main
             "lf_product_personalizer/static/src/js/product_customizer.js",
-            "lf_product_personalizer/static/src/js/cart_personalization.js",
-            "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js",
+            "lf_product_personalizer/static/src/js/personalize_button.js",
+            "lf_product_personalizer/static/src/js/portal_designs.js",
+        ],
+        "web.assets_tests": [
+            "lf_product_personalizer/static/tests/tours/*.js",
         ],
     },
-    "installable": True,
-    "application": False,
-    "auto_install": False,
+    "images": ["static/description/banner/lf_product_personalizer_cover.png"],
     "license": "LGPL-3",
 }

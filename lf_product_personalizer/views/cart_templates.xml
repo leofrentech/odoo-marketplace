@@ -1,53 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Add personalization buttons to cart lines -->
-    <template id="cart_line_personalization_buttons" inherit_id="website_sale.cart_lines"
-        name="Cart Line Personalization Buttons">
-        <xpath expr="//a[hasclass('js_delete_product')]" position="before">
-            <div t-if="line.personalization_ids" class="d-flex gap-2">
-                <!-- Edit Design Button -->
-                <a href="#"
-                    class="btn btn-sm btn-warning edit-design-btn"
-                    t-att-data-line-id="line.id"
-                    title="Edit the custom design">
-                    <i class="fa fa-edit" /> Edit Design </a>
-
-                <!-- Preview Design Button -->
-                <a href="#"
-                    class="btn btn-sm btn-info preview-design-btn"
-                    t-att-data-line-id="line.id"
-                    title="Preview the custom design">
-                    <i class="fa fa-eye" /> Preview </a>
+    <template id="cart_line_personalization" inherit_id="website_sale.cart_lines"
+              name="Cart Line Personalization">
+        <xpath expr="//t[@t-call='website_sale.cart_line_description_following_lines']" position="after">
+            <div t-if="line.personalization_ids.filtered('is_customized')"
+                 class="o_lf_cart_designs d-flex flex-wrap gap-2 mt-2">
+                <t t-foreach="line.personalization_ids.filtered('is_customized')" t-as="design">
+                    <a t-att-href="design._lf_image_url()" target="_blank"
+                       class="o_lf_cart_thumb" t-att-title="design.design_type">
+                        <img t-att-src="design._lf_image_url()" t-att-alt="design.design_type"
+                             class="border rounded" loading="lazy"/>
+                        <small class="d-block text-muted text-truncate" t-out="design.design_type"/>
+                    </a>
+                </t>
             </div>
         </xpath>
-    </template>
-
-    <!-- Cart Personalization Preview Modal -->
-    <template id="cart_preview_modal" inherit_id="website_sale.cart" name="Cart Preview Modal">
-        <xpath expr="//div" position="inside">
-            <div class="modal fade" id="preview_personalization_modal" tabindex="-1" role="dialog"
-                aria-labelledby="previewLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Design Preview</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close" />
-                        </div>
-                        <div class="modal-body">
-                            <div class="container-fluid">
-                                <div class="row" id="preview_grid" data-previews="[]">
-                                    <!-- Previews will be rendered from JavaScript -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/a[hasclass('js_delete_product')]"
+               position="before">
+            <a t-if="line.personalization_ids" t-attf-href="/shop/personalize/edit/#{line.id}"
+               class="small o_lf_edit_design">
+                <i class="fa fa-pencil me-1" role="img" aria-hidden="true"/>Edit design
+            </a>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/button[hasclass('js_delete_product')]"
+               position="before">
+            <a t-if="line.personalization_ids" t-attf-href="/shop/personalize/edit/#{line.id}"
+               class="btn btn-link px-2 o_lf_edit_design" title="Edit design" aria-label="Edit design">
+                <i class="fa fa-fw fa-pencil" role="img" aria-hidden="true"/>
+            </a>
         </xpath>
     </template>
 </odoo>

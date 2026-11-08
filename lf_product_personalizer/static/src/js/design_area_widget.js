@@ -1,312 +1,214 @@
-/** @odoo-module **/
-
 import { registry } from "@web/core/registry";
-import { Component, onMounted, onWillUnmount, onPatched, useRef, useState } from "@odoo/owl";
+import { Component, onWillUnmount, useEffect, useRef, useState } from "@odoo/owl";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { EDITOR_SIZE, loadFabric } from "./utils/fabric_loader";
 
-class DesignAreaWidget extends Component {
-    static props = {
-        ...standardFieldProps,
-    };
-
+/**
+ * Draw the printable zone on the mockup image of a personalization area.
+ * Values are stored in the 800x800 coordinate space used by the website editor.
+ */
+export class DesignAreaWidget extends Component {
     static template = "lf_product_personalizer.DesignAreaWidget";
+    static props = { ...standardFieldProps };
 
     setup() {
         this.canvasRef = useRef("canvas");
-        this.state = useState({
-            initialized: false,
-            hasImage: false,
-            isRestricted: false,
-        });
-        this.fabricCanvas = null;
-        this.restrictedRect = null;
-        this.previousImageId = null;
-        this.previousRestricted = null;
-        this.isUpdatingFromRect = false;
-        
-        // Track previous field values
-        this.previousBounds = {
-            x: null,
-            y: null,
-            width: null,
-            height: null
-        };
+        this.containerRef = useRef("container");
+        this.state = useState({ ready: false });
+        this.canvas = null;
+        this.rect = null;
+        this.imageKey = null;
+        this.syncing = false;
 
-        onMounted(async () => {
-            await this.initCanvas();
-        });
-
-        onPatched(async () => {
-            // Re-initialize when is_restricted_area or image changes
-            const hasImage = !!this.record.data.design_image;
-            const isRestricted = this.record.data.is_restricted_area;
-            const recordId = this.record.resId;
-            
-            // Check if image or restriction state changed
-            if (this.previousImageId !== recordId || this.previousRestricted !== isRestricted) {
-                this.previousImageId = recordId;
-                this.previousRestricted = isRestricted;
-                await this.initCanvas();
-                return;
+        useEffect(
+            (image) => {
+                this.renderImage(image);
+            },
+            () => [this.props.record.data[this.props.name]]
+        );
+        useEffect(
+            () => {
+                this.syncRectFromRecord();
+            },
+            () => {
+                const data = this.props.record.data;
+                return [data.bound_x, data.bound_y, data.bound_width, data.bound_height];
             }
-            
-            if (this.fabricCanvas && this.restrictedRect && this.state.initialized) {
-                if (!this.isUpdatingFromRect) {
-                    this.updateRectFromFields();
-                }
-            }
-        });
-
+        );
         onWillUnmount(() => {
-            if (this.fabricCanvas) {
-                this.fabricCanvas.dispose();
-                this.fabricCanvas = null;
-            }
+            this.resizeObserver?.disconnect();
+            this.canvas?.dispose();
         });
     }
 
-    get record() {
-        return this.props.record;
+    get hasImage() {
+        return Boolean(this.props.record.data[this.props.name]);
     }
 
-    async initCanvas() {
-        await new Promise(resolve => setTimeout(resolve, 150));
-
-        const hasImage = !!this.record.data.design_image;
-        const isRestricted = this.record.data.is_restricted_area;
-        const recordId = this.record.resId;
-                
-        this.state.hasImage = hasImage;
-        this.state.isRestricted = isRestricted;
-
-        // Dispose existing canvas
-        if (this.fabricCanvas) {
-            this.fabricCanvas.dispose();
-            this.fabricCanvas = null;
-            this.restrictedRect = null;
+    get imageUrl() {
+        const record = this.props.record;
+        const value = record.data[this.props.name];
+        if (record.resId && !record.dirtyFields?.has?.(this.props.name) && !String(value).startsWith("data:")) {
+            const unique = encodeURIComponent(record.data.write_date || "");
+            return `/web/image/${record.resModel}/${record.resId}/${this.props.name}?unique=${unique}`;
         }
+        return `data:image/png;base64,${value}`;
+    }
 
-        if (!hasImage) {
-            this.state.initialized = false;
+    async renderImage(image) {
+        if (!image) {
+            // The canvas element leaves the DOM with the image: start over next time.
+            this.resizeObserver?.disconnect();
+            this.canvas?.dispose();
+            this.canvas = null;
+            this.rect = null;
+            this.imageKey = null;
+            this.state.ready = false;
             return;
         }
-
-        if (!isRestricted) {
-            this.state.initialized = false;
+        const key = `${this.props.record.resId}-${String(image).length}-${String(image).slice(-16)}`;
+        if (key === this.imageKey && this.canvas) {
             return;
         }
-
-        try {
-            this.fabricCanvas = new fabric.Canvas(this.canvasRef.el, {
-                width: 800,
-                height: 800,
+        this.imageKey = key;
+        const fabric = await loadFabric();
+        if (!this.canvasRef.el) {
+            return;
+        }
+        if (!this.canvas) {
+            this.canvas = new fabric.Canvas(this.canvasRef.el, {
+                width: EDITOR_SIZE,
+                height: EDITOR_SIZE,
                 backgroundColor: "#f5f5f5",
+                selection: false,
             });
-
-            // Load image
-            const imageUrl = `/web/image/product.design.config/${recordId}/design_image`;
-            
-            await this.loadBackgroundImage(imageUrl);            
-            this.createRestrictedRect();
-            this.setupEvents();
-
-            // Initialize previous bounds
-            this.updatePreviousBounds();
-
-            this.state.initialized = true;
-        } catch (error) {
-            console.error('Error initializing canvas:', error);
+            this.canvas.on("object:moving", () => this.clampRect());
+            this.canvas.on("object:scaling", () => this.clampRect());
+            this.canvas.on("object:modified", () => this.writeRect());
+            this.resizeObserver = new ResizeObserver(() => this.resize());
+            this.resizeObserver.observe(this.containerRef.el);
         }
-    }
-
-    async loadBackgroundImage(imageUrl) {
-        return new Promise((resolve, reject) => {
-            fabric.Image.fromURL(imageUrl, (img) => {
-                if (!img || !img.width || !img.height) {
-                    reject(new Error('Image load failed'));
-                    return;
+        fabric.Image.fromURL(
+            this.imageUrl,
+            (img) => {
+                if (img && img.width) {
+                    const scale = Math.min(EDITOR_SIZE / img.width, EDITOR_SIZE / img.height);
+                    img.set({
+                        left: (EDITOR_SIZE - img.width * scale) / 2,
+                        top: (EDITOR_SIZE - img.height * scale) / 2,
+                        scaleX: scale,
+                        scaleY: scale,
+                        selectable: false,
+                        evented: false,
+                    });
+                    this.canvas.setBackgroundImage(img, () => this.canvas.requestRenderAll());
                 }
-
-                const w = this.fabricCanvas.getWidth();
-                const h = this.fabricCanvas.getHeight();
-                const scale = Math.min(w / img.width, h / img.height);
-
-                img.set({
-                    left: (w - img.width * scale) / 2,
-                    top: (h - img.height * scale) / 2,
-                    scaleX: scale,
-                    scaleY: scale,
-                    selectable: false,
-                    evented: false,
-                });
-
-                this.fabricCanvas.setBackgroundImage(
-                    img,
-                    this.fabricCanvas.renderAll.bind(this.fabricCanvas)
-                );
-                
-                resolve();
-            }, { crossOrigin: 'anonymous' });
-        });
+                this.ensureRect();
+                this.resize();
+                this.state.ready = true;
+            },
+            { crossOrigin: "anonymous" }
+        );
     }
 
-    createRestrictedRect() {
-        // Get existing values or use defaults
-        const x = this.record.data.bound_x || 100;
-        const y = this.record.data.bound_y || 100;
-        const w = this.record.data.bound_width || 100;
-        const h = this.record.data.bound_height || 100;
+    resize() {
+        if (!this.canvas || !this.containerRef.el) {
+            return;
+        }
+        const size = Math.min(this.containerRef.el.clientWidth || EDITOR_SIZE, EDITOR_SIZE);
+        this.canvas.setDimensions({ width: size, height: size });
+        this.canvas.setZoom(size / EDITOR_SIZE);
+        this.canvas.requestRenderAll();
+    }
 
-        this.restrictedRect = new fabric.Rect({
-            left: x,
-            top: y,
-            width: w,
-            height: h,
-            fill: "rgba(0, 150, 255, 0.2)",
-            stroke: "#0096FF",
-            strokeWidth: 3,
-            strokeDashArray: [10, 5],
-            cornerColor: "#0096FF",
-            cornerSize: 14,
+    ensureRect() {
+        if (this.rect) {
+            return;
+        }
+        const data = this.props.record.data;
+        this.rect = new window.fabric.Rect({
+            left: data.bound_x || 200,
+            top: data.bound_y || 200,
+            width: data.bound_width || 400,
+            height: data.bound_height || 400,
+            fill: "rgba(13, 110, 253, 0.15)",
+            stroke: "#0d6efd",
+            strokeWidth: 2,
+            strokeDashArray: [8, 6],
+            strokeUniform: true,
+            cornerColor: "#0d6efd",
+            cornerSize: 12,
             transparentCorners: false,
-            cornerStyle: "circle",
-            borderColor: "#0096FF",
             lockRotation: true,
-            hasRotatingPoint: false,
         });
-
-        this.fabricCanvas.add(this.restrictedRect);
-        this.fabricCanvas.setActiveObject(this.restrictedRect);
-        this.fabricCanvas.renderAll();
-    }
-
-    setupEvents() {
-        this.fabricCanvas.on("object:modified", () => this.onRectModified());
-        this.fabricCanvas.on("object:moving", () => this.clampRect());
-        this.fabricCanvas.on("object:scaling", () => this.clampRect());
+        this.rect.setControlsVisibility({ mtr: false });
+        this.canvas.add(this.rect);
+        this.canvas.setActiveObject(this.rect);
+        if (!data.bound_width || !data.bound_height) {
+            this.writeRect();
+        }
     }
 
     clampRect() {
-        if (!this.restrictedRect) return;
-
-        const rect = this.restrictedRect;
-        const canvasW = this.fabricCanvas.getWidth();
-        const canvasH = this.fabricCanvas.getHeight();
-
+        const rect = this.rect;
         rect.setCoords();
-        const br = rect.getBoundingRect();
-
-        let left = rect.left;
-        let top = rect.top;
-
-        if (br.left < 0) left -= br.left;
-        if (br.top < 0) top -= br.top;
-        if (br.left + br.width > canvasW) {
-            left -= br.left + br.width - canvasW;
-        }
-        if (br.top + br.height > canvasH) {
-            top -= br.top + br.height - canvasH;
-        }
-
-        rect.set({ left, top });
-        rect.setCoords();
-        this.fabricCanvas.renderAll();
-    }
-
-    onRectModified() {
-        if (!this.restrictedRect) return;
-        
-        // Set flag to prevent circular updates
-        this.isUpdatingFromRect = true;
-        
-        const br = this.restrictedRect.getBoundingRect();
-        this.record.update({
-            bound_x: Math.round(br.left),
-            bound_y: Math.round(br.top),
-            bound_width: Math.round(br.width),
-            bound_height: Math.round(br.height),
+        const width = Math.min(rect.getScaledWidth(), EDITOR_SIZE);
+        const height = Math.min(rect.getScaledHeight(), EDITOR_SIZE);
+        rect.set({
+            left: Math.max(0, Math.min(rect.left, EDITOR_SIZE - width)),
+            top: Math.max(0, Math.min(rect.top, EDITOR_SIZE - height)),
         });
-        
-        this.updatePreviousBounds();
-        
-        // Reset flag after a short delay
-        setTimeout(() => {
-            this.isUpdatingFromRect = false;
-        }, 100);
+        rect.setCoords();
     }
 
-    updatePreviousBounds() {
-        this.previousBounds = {
-            x: this.record.data.bound_x,
-            y: this.record.data.bound_y,
-            width: this.record.data.bound_width,
-            height: this.record.data.bound_height
-        };
+    writeRect() {
+        const rect = this.rect;
+        // Bake the scale into width/height so stored values are real sizes.
+        const width = Math.round(Math.min(rect.getScaledWidth(), EDITOR_SIZE));
+        const height = Math.round(Math.min(rect.getScaledHeight(), EDITOR_SIZE));
+        rect.set({ width, height, scaleX: 1, scaleY: 1 });
+        this.clampRect();
+        this.syncing = true;
+        this.props.record.update({
+            bound_x: Math.round(rect.left),
+            bound_y: Math.round(rect.top),
+            bound_width: width,
+            bound_height: height,
+        });
     }
 
-    updateRectFromFields() {
-        const currentBounds = {
-            x: this.record.data.bound_x,
-            y: this.record.data.bound_y,
-            width: this.record.data.bound_width,
-            height: this.record.data.bound_height
-        };
-
-        // Check if any bound value changed
-        const hasChanged = 
-            currentBounds.x !== this.previousBounds.x ||
-            currentBounds.y !== this.previousBounds.y ||
-            currentBounds.width !== this.previousBounds.width ||
-            currentBounds.height !== this.previousBounds.height;
-
-        if (!hasChanged) return;
-
-        // Validate values
-        const canvasW = this.fabricCanvas.getWidth();
-        const canvasH = this.fabricCanvas.getHeight();
-
-        let x = Math.max(0, currentBounds.x || 0);
-        let y = Math.max(0, currentBounds.y || 0);
-        let w = Math.max(10, Math.min(currentBounds.width || 100, canvasW));
-        let h = Math.max(10, Math.min(currentBounds.height || 100, canvasH));
-
-        // Ensure rect doesn't go outside canvas
-        if (x + w > canvasW) x = canvasW - w;
-        if (y + h > canvasH) y = canvasH - h;
-
-        // Update the rectangle
-        this.restrictedRect.set({
-            left: x,
-            top: y,
-            width: w,
-            height: h,
+    syncRectFromRecord() {
+        if (!this.rect) {
+            return;
+        }
+        if (this.syncing) {
+            this.syncing = false;
+            return;
+        }
+        const data = this.props.record.data;
+        const width = Math.max(10, Math.min(data.bound_width || 10, EDITOR_SIZE));
+        const height = Math.max(10, Math.min(data.bound_height || 10, EDITOR_SIZE));
+        this.rect.set({
+            left: Math.max(0, Math.min(data.bound_x || 0, EDITOR_SIZE - width)),
+            top: Math.max(0, Math.min(data.bound_y || 0, EDITOR_SIZE - height)),
+            width,
+            height,
             scaleX: 1,
-            scaleY: 1
+            scaleY: 1,
         });
-
-        this.restrictedRect.setCoords();
-        this.fabricCanvas.renderAll();
-
-        // Update previous bounds
-        this.updatePreviousBounds();
-
-        // If values were clamped, update the fields
-        if (x !== currentBounds.x || y !== currentBounds.y || 
-            w !== currentBounds.width || h !== currentBounds.height) {
-            this.isUpdatingFromRect = true;
-            this.record.update({
-                bound_x: Math.round(x),
-                bound_y: Math.round(y),
-                bound_width: Math.round(w),
-                bound_height: Math.round(h),
-            });
-            setTimeout(() => {
-                this.isUpdatingFromRect = false;
-            }, 100);
-        }
+        this.rect.setCoords();
+        this.canvas.requestRenderAll();
     }
 }
 
 registry.category("fields").add("design_area_widget", {
     component: DesignAreaWidget,
+    supportedTypes: ["binary"],
+    fieldDependencies: [
+        { name: "bound_x", type: "float" },
+        { name: "bound_y", type: "float" },
+        { name: "bound_width", type: "float" },
+        { name: "bound_height", type: "float" },
+        { name: "write_date", type: "datetime" },
+    ],
 });

@@ -1,494 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Customize button -->
-    <template id="product_personalization_button" inherit_id="website_sale.product_quantity"
-        name="Product Personalization Button">
+    <!-- ================================================================
+         Product page
+         ================================================================ -->
+    <template id="product_personalization_button" inherit_id="website_sale.product"
+              name="Product Personalization Button">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="before">
+            <t t-set="lf_product" t-value="product.sudo()"/>
+            <t t-set="lf_personalizable" t-value="lf_product._lf_is_personalizable()"/>
+        </xpath>
         <xpath expr="//a[@id='add_to_cart']" position="before">
-            <a role="button" id="customize_product_button" class="btn btn-primary m-2"
-                t-if="product.is_product_personalization and product.design_config_ids"
-                t-att-href="'/shop/personalize/%s' % product.id">
-                <i class="fa fa-paint-brush" /> Customize Product </a>
-            <input type="hidden" name="product_template_id" t-att-value="product.id" />
+            <a t-if="lf_personalizable"
+               role="button" id="customize_product_button"
+               t-attf-class="btn {{'btn-primary' if lf_product.personalization_required else 'btn-outline-primary'}} o_lf_personalize_btn flex-grow-1"
+               t-att-href="'/shop/personalize/%s' % product.id">
+                <i class="fa fa-paint-brush me-2" role="img" aria-hidden="true"/>Personalize
+            </a>
+        </xpath>
+        <xpath expr="//a[@id='add_to_cart']" position="attributes">
+            <attribute name="t-attf-class" add="{{'d-none' if lf_personalizable and lf_product.personalization_required else ''}}" separator=" "/>
         </xpath>
     </template>
 
-    <!-- Personalization page -->
+    <!-- ================================================================
+         Design editor page
+         ================================================================ -->
     <template id="product_personalization_page" name="Product Personalization Page">
         <t t-call="website.layout">
-            <div id="wrap" class="o_product_personalize_page" t-att-data-product-id="product.id"
-                style="position: relative;">
-                <div
-                    style="position: absolute; top: 20px; right: 10px; z-index: 1050;
-                    display: flex; flex-direction: column; gap: 8px;">
+            <t t-set="additional_title">Personalize <t t-out="product.name"/></t>
+            <div id="wrap" class="o_lf_personalizer"
+                 t-att-data-product-id="product.id"
+                 t-att-data-variant-id="variant_id"
+                 t-att-data-line-id="line.id if line else ''"
+                 t-att-data-design-id="saved_design.id if saved_design else ''"
+                 t-att-data-access-token="access_token or ''"
+                 t-att-data-revision="'1' if revision else ''"
+                 t-att-data-quantity="quantity or 1">
 
-                    <button type="button" id="preview_designs_button"
-                        class="btn btn-info d-flex align-items-center"
-                        style="height: 48px;">
-                        <i class="fa fa-eye" style="margin-right:5px;"/> Preview Designs </button>
-
-                    <button type="button" id="download_designs_button"
-                        class="btn btn-success d-flex align-items-center"
-                        style="height: 48px;">
-                        <i class="fa fa-download" style="margin-right:5px;"/> Download Designs </button>
-
-                    <div class="form-group mb-3">
-                        <label>
-                            <strong>Quantity</strong>
-                        </label>
-                        <t t-if="edit_mode">
-                            <t t-set="line" t-value="env['sale.order.line'].sudo().browse(line_id)" />
-                        </t>
-                        <input type="number" id="product_qty" class="form-control" min="1"
-                            t-att-value="line.product_uom_qty if edit_mode else 1" />
+                <!-- Top bar -->
+                <div class="o_lf_topbar border-bottom bg-white">
+                    <div class="container-fluid d-flex flex-wrap align-items-center gap-2 py-2">
+                        <a t-att-href="back_url or product.website_url" class="btn btn-link px-1"
+                           title="Back to product" aria-label="Back to product">
+                            <i class="fa fa-arrow-left" role="img" aria-hidden="true"/>
+                        </a>
+                        <div class="me-auto min-w-0">
+                            <div class="h6 mb-0 text-truncate" t-out="product.name"/>
+                            <small class="text-muted o_lf_price_info"/>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="History">
+                            <button type="button" class="btn btn-light o_lf_undo" title="Undo (Ctrl+Z)"
+                                    aria-label="Undo" disabled="disabled">
+                                <i class="fa fa-undo" role="img" aria-hidden="true"/>
+                            </button>
+                            <button type="button" class="btn btn-light o_lf_redo" title="Redo (Ctrl+Y)"
+                                    aria-label="Redo" disabled="disabled">
+                                <i class="fa fa-repeat" role="img" aria-hidden="true"/>
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-light dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-ellipsis-h" role="img" aria-hidden="true"/>
+                                <span class="d-none d-md-inline ms-1">More</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><button type="button" class="dropdown-item o_lf_preview">
+                                    <i class="fa fa-eye fa-fw me-1"/>Preview</button></li>
+                                <li><button type="button" class="dropdown-item o_lf_download">
+                                    <i class="fa fa-download fa-fw me-1"/>Download image</button></li>
+                                <li><button type="button" class="dropdown-item o_lf_save_design">
+                                    <i class="fa fa-heart-o fa-fw me-1"/>Save to my account</button></li>
+                                <li><button type="button" class="dropdown-item o_lf_share d-none">
+                                    <i class="fa fa-share-alt fa-fw me-1"/>Copy share link</button></li>
+                                <li class="o_lf_manager_only d-none"><hr class="dropdown-divider"/></li>
+                                <li class="o_lf_manager_only d-none">
+                                    <button type="button" class="dropdown-item o_lf_save_preset">
+                                        <i class="fa fa-star-o fa-fw me-1"/>Save as template</button></li>
+                                <li><hr class="dropdown-divider"/></li>
+                                <li><button type="button" class="dropdown-item text-danger o_lf_clear">
+                                    <i class="fa fa-trash-o fa-fw me-1"/>Clear this side</button></li>
+                            </ul>
+                        </div>
+                        <div t-if="not revision" class="input-group o_lf_qty">
+                            <span class="input-group-text">Qty</span>
+                            <input type="number" class="form-control o_lf_quantity" min="1" step="1"
+                                   t-att-value="quantity or 1" aria-label="Quantity"/>
+                        </div>
+                        <button type="button" class="btn btn-primary o_lf_add_to_cart">
+                            <i class="fa fa-shopping-cart me-1" role="img" aria-hidden="true"/>
+                            <t t-if="revision">Send for review</t>
+                            <t t-elif="line">Update cart</t>
+                            <t t-else="">Add to cart</t>
+                        </button>
                     </div>
-                    <button type="button" id="add_to_cart_personalized"
-                        class="btn btn-primary d-flex align-items-center"
-                        style="height: 48px;">
-                        <i class="fa fa-shopping-cart" style="margin-right:5px;"/>
-                        <t t-if="edit_mode">Update Design</t>
-                        <t t-else="">Add to Cart</t>
-                    </button>
-                    <a t-attf-href="/shop/product/#{product.id}"
-                        class="btn btn-outline-secondary d-flex align-items-center"
-                        style="height: 48px;">
-                        <i class="fa fa-times" style="margin-right:5px;"/> Cancel </a>
                 </div>
 
-                <div class="container-fluid mt-4">
-                    <div class="row">
-                        <!-- Sidebar -->
-                        <div class="col-lg-3"
-                            style="display: flex; background-color: #f8f9fa; min-height: calc(100vh - 100px); padding: 0;">
-                            <!-- Left Menu Bar -->
-                            <div
-                                style="width: 80px; background-color: #2d3748; display: flex; flex-direction: column; align-items: center; padding-top: 20px;">
-                                <div class="menu-item active" data-menu="variant"
-                                    style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; background-color: #4a5568; color: white;">
-                                    <i class="fa fa-cube" style="font-size: 24px;" />
-                                    <span style="font-size: 10px; margin-top: 4px;">Variant</span>
-                                </div>
-                                <div class="menu-item" data-menu="text"
-                                    style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; color: #a0aec0;">
-                                    <i class="fa fa-font" style="font-size: 24px;" />
-                                    <span style="font-size: 10px; margin-top: 4px;">Text</span>
-                                </div>
-                                <div class="menu-item" data-menu="image"
-                                    style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; color: #a0aec0;">
-                                    <i class="fa fa-image" style="font-size: 24px;" />
-                                    <span style="font-size: 10px; margin-top: 4px;">Image</span>
-                                </div>
-                                <div class="menu-item" data-menu="shape"
-                                    style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; color: #a0aec0;">
-                                    <svg width="24" height="24" fill="currentColor"
-                                        viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M128,256A128,128,0,1,0,256,384,128,128,0,0,0,128,256Zm379-54.86L400.07,18.29a37.26,37.26,0,0,0-64.14,
-                                        0L229,201.14C214.76,225.52,232.58,256,261.09,256H474.91C503.42,256,521.24,225.52,507,201.14ZM480,288H320a32,32,
-                                        0,0,0-32,32V480a32,32,0,0,0,32,32H480a32,32,0,0,0,32-32V320A32,32,0,0,0,480,288Z"></path>
-                                    </svg>
-                                    <span style="font-size: 10px; margin-top: 4px;">Shapes</span>
-                                </div>
-                                <div class="menu-item" data-menu="layers"
-                                    style="width: 60px; height: 60px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; color: #a0aec0;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        fill="currentColor" class="bi bi-stack" viewBox="0 0 16 16">
-                                        <path
-                                            d="m14.12 10.163 1.715.858c.22.11.22.424 0 .534L8.267 15.34a.6.6 0 0 1-.534 0L.165 11.555a.299.299 0 0 1 
-                                        0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.66zM7.733.063a.6.6 0 0 1 .534 0l7.568 3.784a.3.3 
-                                        0 0 1 0 .535L8.267 8.165a.6.6 0 0 1-.534 0L.165 4.382a.299.299 0 0 1 0-.535z" />
-                                        <path
-                                            d="m14.12 6.576 1.715.858c.22.11.22.424 0 .534l-7.568 3.784a.6.6 0 0 1-.534 0L.165 7.968a.299.299 0 0 1 
-                                        0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0z" />
-                                    </svg>
-                                    <span style="font-size: 10px; margin-top: 4px;">Layers</span>
-                                </div>
-                            </div>
-
-                            <!-- Right Panel Content -->
-                            <div
-                                style="flex: 1; padding: 20px; overflow: hidden; position: relative; display: flex; flex-direction: column;">
-                                <div
-                                    style="position: sticky; top: 0; z-index: 50; background: #f8f9fa; padding-bottom: 15px; flex-shrink: 0;">
-                                    <div class="btn-group w-100 mb-3" role="group"
-                                        style="display: flex; gap:6px;">
-                                        <button id="undo_button"
-                                            class="btn btn-outline-secondary btn-sm"
-                                            title="Undo (Ctrl+Z)">
-                                            <i class="fa fa-undo" />
-                                        </button>
-                                        <button id="redo_button"
-                                            class="btn btn-outline-secondary btn-sm"
-                                            title="Redo (Ctrl+Y)">
-                                            <i class="fa fa-repeat" />
-                                        </button>
-                                    </div>
-                                    <hr />
-                                    <div class="mb-4 d-flex align-items-center">
-                                        <h5 class="me-3 mb-0">Select Design:</h5>
-                                        <select id="design_type_selector"
-                                            class="form-select form-select-lg w-auto rounded">
-                                            <option value="">Select Area</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Panels Container - This scrolls independently -->
-                                <div
-                                    style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                                    <!-- Variant Panel -->
-
-                                    <div id="variant_panel" class="menu-panel">
-                                        <h5 class="mb-3">Select Variant</h5>
-                                        <div id="variants_grid" class="row g-2">
-                                            <!-- Populated by JS with variant images in 2 columns -->
-                                        </div>
-                                    </div>
-
-                                    <!-- Text Panel -->
-                                    <div id="text_panel" class="menu-panel"
-                                        style="display: none; margin-top: 10px;">
-                                        <h5 class="mb-3">Add Text</h5>
-                                        <div class="form-group mb-2">
-                                            <input type="text" id="personalization_text"
-                                                class="form-control mb-2" placeholder="Enter text" />
-                                        </div>
-                                        <button id="add_text_button"
-                                            class="btn btn-primary w-100 mb-3"><i class="fa fa-plus" />
-                                            Add Text</button>
-
-                                        <!-- Text Edit Sub-Menus -->
-                                        <div id="text_controls" style="display: none;">
-                                            <!-- Font Style Sub-Menu -->
-                                            <div class="text-submenu mb-3">
-                                                <div class="text-submenu-content"
-                                                    id="font-style-content"
-                                                    style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                                                    <div class="form-group mb-2">
-                                                        <label class="small">Font Family</label>
-                                                        <select id="text_font_family"
-                                                            class="form-control">
-                                                            <option value="Arial">Arial</option>
-                                                            <option value="Helvetica">Helvetica</option>
-                                                            <option value="Times New Roman">Times
-                                                                New Roman</option>
-                                                            <option value="Courier New">Courier New</option>
-                                                            <option value="Verdana">Verdana</option>
-                                                            <option value="Georgia">Georgia</option>
-                                                            <option value="Palatino">Palatino</option>
-                                                            <option value="Garamond">Garamond</option>
-                                                            <option value="Comic Sans MS">Comic Sans
-                                                                MS</option>
-                                                            <option value="Trebuchet MS">Trebuchet
-                                                                MS</option>
-                                                            <option value="Impact">Impact</option>
-                                                            <option value="Lucida Console">Lucida
-                                                                Console</option>
-                                                            <option value="Tahoma">Tahoma</option>
-                                                            <option value="Century Gothic">Century
-                                                                Gothic</option>
-                                                            <option value="Brush Script MT">Brush
-                                                                Script MT</option>
-                                                            <option value="Copperplate">Copperplate</option>
-                                                            <option value="Papyrus">Papyrus</option>
-                                                            <option value="Rockwell">Rockwell</option>
-                                                            <option value="Consolas">Consolas</option>
-                                                            <option value="Monaco">Monaco</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="row mb-2">
-                                                        <div class="col-12">
-                                                            <label class="small">Size</label>
-                                                            <input type="number" id="text_font_size"
-                                                                class="form-control" min="8"
-                                                                max="200" value="40" />
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="btn-group w-100 mb-2" role="group">
-                                                        <button id="text_bold"
-                                                            class="btn btn-outline-secondary btn-sm"
-                                                            title="Bold">
-                                                            <i class="fa fa-bold" />
-                                                        </button>
-                                                        <button id="text_italic"
-                                                            class="btn btn-outline-secondary btn-sm"
-                                                            title="Italic">
-                                                            <i class="fa fa-italic" />
-                                                        </button>
-                                                        <button id="text_underline"
-                                                            class="btn btn-outline-secondary btn-sm"
-                                                            title="Underline">
-                                                            <i class="fa fa-underline" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Color Sub-Menu -->
-                                            <div class="text-submenu mb-3">
-                                                <div class="text-submenu-content" id="color-content"
-                                                    style="margin-top: 8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                                                    <div class="form-group mb-2">
-                                                        <label class="small">Text Color</label>
-                                                        <input type="color" id="text_color"
-                                                            class="form-control" value="#000000"
-                                                            style="height: 40px;" />
-                                                    </div>
-                                                    <label class="small">Quick Colors</label>
-                                                    <div class="d-flex flex-wrap">
-                                                        <div class="preset-color"
-                                                            data-color="#000000"
-                                                            style="width: 30px; height: 30px; background: #000000; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Black"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#FFFFFF"
-                                                            style="width: 30px; height: 30px; background: #FFFFFF; cursor: pointer; margin: 2px; border: 1px solid #ddd; border-radius: 4px;"
-                                                            title="White"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#FF0000"
-                                                            style="width: 30px; height: 30px; background: #FF0000; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Red"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#00FF00"
-                                                            style="width: 30px; height: 30px; background: #00FF00; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Green"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#0000FF"
-                                                            style="width: 30px; height: 30px; background: #0000FF; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Blue"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#FFFF00"
-                                                            style="width: 30px; height: 30px; background: #FFFF00; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Yellow"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#FF00FF"
-                                                            style="width: 30px; height: 30px; background: #FF00FF; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Magenta"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#00FFFF"
-                                                            style="width: 30px; height: 30px; background: #00FFFF; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Cyan"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#FFA500"
-                                                            style="width: 30px; height: 30px; background: #FFA500; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Orange"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#800080"
-                                                            style="width: 30px; height: 30px; background: #800080; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Purple"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#FFC0CB"
-                                                            style="width: 30px; height: 30px; background: #FFC0CB; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Pink"></div>
-                                                        <div class="preset-color"
-                                                            data-color="#A52A2A"
-                                                            style="width: 30px; height: 30px; background: #A52A2A; cursor: pointer; margin: 2px; border-radius: 4px;"
-                                                            title="Brown"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-                                        </div>
-                                    </div>
-
-                                    <!-- Image Panel -->
-                                    <div id="image_panel" class="menu-panel"
-                                        style="display: none; margin-top: 10px;">
-                                        <h5 class="mb-3">Add Image</h5>
-                                        <div class="form-group mb-2">
-                                            <input type="file" id="personalization_image_upload"
-                                                class="form-control mb-2" accept="image/*"
-                                                multiple="multiple" />
-                                        </div>
-                                        <button id="add_image_button" class="btn btn-primary w-100"><i
-                                                class="fa fa-plus" /> Add Image</button>
-                                    </div>
-
-                                    <!-- Image Panel -->
-                                    <div id="image_panel" class="menu-panel"
-                                        style="display: none; margin-top: 10px;">
-                                        <h5 class="mb-3">Add Image</h5>
-                                        <div class="form-group mb-2">
-                                            <input type="file" id="personalization_image_upload"
-                                                class="form-control mb-2" accept="image/*"
-                                                multiple="multiple" />
-                                        </div>
-                                        <button id="add_image_button" class="btn btn-primary w-100"><i
-                                                class="fa fa-plus" /> Add Image</button>
-
-                                        <!-- Image Editor Panel -->
-                                        <div id="image_editor_panel" style="margin-top:20px; display:none;">
-                                            <!-- <h5 class="mb-3">Image Editor</h5> -->
-                                            
-                                            <div class="mb-3">
-                                                <h6 class="text-uppercase text-muted small mb-2">
-                                                    <i class="fa fa-arrows"/> Transform
-                                                </h6>
-                                                <div class="btn-group w-100 mb-2" role="group">
-                                                    <button class="btn btn-outline-secondary" id="flip_x_btn" title="Mirror Horizontally">
-                                                        <i class="fa fa-arrows-h"/> Flip H
-                                                    </button>
-                                                    <button class="btn btn-outline-secondary" id="flip_y_btn" title="Mirror Vertically">
-                                                        <i class="fa fa-arrows-v"/> Flip V
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <!-- Adjustments Section -->
-                                            <div class="mb-2">
-                                                <h6 class="text-uppercase text-muted small mb-3">
-                                                    <i class="fa fa-sliders"/> Adjustments
-                                                </h6>
-                                                
-                                                <!-- Blur -->
-                                                <div class="mb-3">
-                                                    <label class="form-label d-flex justify-content-between">
-                                                        <strong><i class="fa fa-circle-o-notch"/> Blur</strong>
-                                                    </label>
-                                                    <input type="range" class="w-100" id="img_blur" 
-                                                        min="0" max="1" step="0.1" value="0"/>
-                                                </div>
-                                                
-                                                <!-- Brightness -->
-                                                <div class="mb-3">
-                                                    <label class="form-label d-flex justify-content-between">
-                                                        <strong><i class="fa fa-sun-o"/> Brightness</strong>
-                                                    </label>
-                                                    <input type="range" class="w-100" id="img_brightness" 
-                                                        min="-1" max="1" step="0.05" value="0"/>
-                                                </div>
-
-                                                <!-- Contrast -->
-                                                <div class="mb-3">
-                                                    <label class="form-label d-flex justify-content-between">
-                                                        <strong><i class="fa fa-adjust"/> Contrast</strong>
-                                                    </label>
-                                                    <input type="range" class="w-100" id="img_contrast" 
-                                                        min="-1" max="1" step="0.05" value="0"/>
-                                                </div>
-
-                                                <!-- Saturation -->
-                                                <div class="mb-3">
-                                                    <label class="form-label d-flex justify-content-between">
-                                                        <strong><i class="fa fa-tint"/> Saturation</strong>
-                                                    </label>
-                                                    <input type="range" class="w-100" id="img_saturation" 
-                                                        min="-1" max="1" step="0.05" value="0"/>
-                                                </div>
-                                            </div>
-
-                                            <!-- Filters Section -->
-                                            <div class="mb-3">
-                                                <h6 class="text-uppercase text-muted small mb-2">
-                                                    <i class="fa fa-magic"/> Filters
-                                                </h6>
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    <button class="btn btn-outline-dark flex-fill" id="grayscale_btn">
-                                                        <i class="fa fa-adjust"/> Grayscale
-                                                    </button>
-                                                    <button class="btn btn-outline-warning flex-fill" id="sepia_btn">
-                                                        <i class="fa fa-picture-o"/> Sepia
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <!-- Actions Section -->
-                                            <div class="mb-2">
-                                                <h6 class="text-uppercase text-muted small mb-2">
-                                                    <i class="fa fa-cog"/> Actions
-                                                </h6>
-                                                <div class="row g-2">
-                                                    <div class="col-6">
-                                                        <button class="btn btn-warning w-100 action-btn" id="crop_image_btn">
-                                                            <i class="fa fa-crop action-icon"/> Crop
-                                                        </button>
-                                                    </div>
-
-                                                    <div class="col-6">
-                                                        <button class="btn btn-danger w-100 action-btn" id="reset_filters_btn">
-                                                            <i class="fa fa-refresh action-icon"/> Reset
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Shape Panel -->
-                                    <div id="shape_panel" class="menu-panel"
-                                        style="display: none; margin-top: 10px;">
-                                        <h5 class="mb-3">Add Shape</h5>
-                                        <div id="shapes_grid" class="row g-2"
-                                            style="margin-bottom: 15px;">
-                                            <!-- Populated by JS with shape icons in 2 columns -->
-                                        </div>
-
-                                        <div id="shape_controls" style="display: none;">
-                                            <div class="form-group mb-2">
-                                                <label class="small">Fill Color</label>
-                                                <input type="color" id="shape_fill_color"
-                                                    class="form-control" value="#3b82f6" />
-                                            </div>
-
-                                            <div class="form-group mb-2">
-                                                <label class="small">Border Color</label>
-                                                <input type="color" id="shape_stroke_color"
-                                                    class="form-control" value="#1e40af" />
-                                            </div>
-
-                                            <div class="form-group mb-2">
-                                                <label class="small">Border Width</label>
-                                                <input type="number" id="shape_stroke_width"
-                                                    class="form-control" min="0" max="20" value="2" />
-                                            </div>
-
-                                            <div class="mb-2">
-                                                <label class="small">Quick Colors</label>
-                                                <div class="d-flex flex-wrap">
-                                                    <div class="preset-color" data-color="#3b82f6"
-                                                        style="width: 30px; height: 30px; background: #3b82f6; cursor: pointer; margin: 2px; border-radius: 4px;"></div>
-                                                    <div class="preset-color" data-color="#ef4444"
-                                                        style="width: 30px; height: 30px; background: #ef4444; cursor: pointer; margin: 2px; border-radius: 4px;"></div>
-                                                    <div class="preset-color" data-color="#10b981"
-                                                        style="width: 30px; height: 30px; background: #10b981; cursor: pointer; margin: 2px; border-radius: 4px;"></div>
-                                                    <div class="preset-color" data-color="#f59e0b"
-                                                        style="width: 30px; height: 30px; background: #f59e0b; cursor: pointer; margin: 2px; border-radius: 4px;"></div>
-                                                    <div class="preset-color" data-color="#8b5cf6"
-                                                        style="width: 30px; height: 30px; background: #8b5cf6; cursor: pointer; margin: 2px; border-radius: 4px;"></div>
-                                                    <div class="preset-color" data-color="#ec4899"
-                                                        style="width: 30px; height: 30px; background: #ec4899; cursor: pointer; margin: 2px; border-radius: 4px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Layers Panel (NEW) -->
-                                    <div id="layers_panel" class="menu-panel"
-                                        style="display: none; margin-top: 10px;">
-                                        <h5 class="mb-3">Layers</h5>
-                                        <div id="layers_list" style="margin-top:10px;">
-                                            <!-- Populated by JS -->
-                                        </div>
-                                    </div>
-                                </div>
+                <div t-if="revision" class="alert alert-warning rounded-0 mb-0 o_lf_revision_notice" role="alert">
+                    <strong>Changes needed.</strong>
+                    Update your design, then click <b>Send for review</b>. Your order and its price do not change.
+                    <ul class="mb-0 mt-1">
+                        <li t-foreach="rejected" t-as="design">
+                            <b t-out="design.design_type"/>: <t t-out="design.approval_note"/>
+                        </li>
+                    </ul>
+                </div>
+                <div class="o_lf_body">
+                    <!-- Canvas -->
+                    <main class="o_lf_stage">
+                        <div class="o_lf_areas nav nav-pills justify-content-center flex-nowrap"
+                             role="tablist" aria-label="Areas"/>
+                        <div class="o_lf_canvas_wrapper">
+                            <div class="o_lf_loading text-muted">
+                                <i class="fa fa-circle-o-notch fa-spin me-2" role="img" aria-hidden="true"/>
+                                Loading the editor...
                             </div>
                         </div>
-
-                        <!-- Canvas Area -->
-                        <div class="col-lg-9 d-flex align-items-center justify-content-center"
-                            style="background-color: #e9ecef; min-height: calc(100vh - 100px); position: relative;">
-                            <input type="hidden" id="product_id" t-att-value="product.id" />
-                            <input type="hidden" id="edit_mode"
-                                t-att-value="'true' if edit_mode else 'false'" />
-                            <input type="hidden" id="line_id"
-                                t-att-value="line_id if edit_mode else ''" />
-                            <input type="hidden" id="edit_variant_id"
-                                t-att-value="variant_id if edit_mode else ''" />
-                            <div id="canvas_wrapper" />
+                        <div class="o_lf_hint small text-muted text-center d-none">
+                            Your design must stay inside the dashed zone.
                         </div>
-                    </div>
+                    </main>
+
+                    <!-- Tools -->
+                    <aside class="o_lf_sidebar">
+                        <nav class="o_lf_tools" aria-label="Design tools">
+                            <button type="button" class="o_lf_tool d-none" data-panel="templates">
+                                <i class="fa fa-magic" role="img" aria-hidden="true"/><span>Templates</span>
+                            </button>
+                            <button type="button" class="o_lf_tool" data-panel="text" data-tool="text">
+                                <i class="fa fa-font" role="img" aria-hidden="true"/><span>Text</span>
+                            </button>
+                            <button type="button" class="o_lf_tool" data-panel="image" data-tool="image">
+                                <i class="fa fa-upload" role="img" aria-hidden="true"/><span>Upload</span>
+                            </button>
+                            <button type="button" class="o_lf_tool" data-panel="clipart" data-tool="clipart">
+                                <i class="fa fa-smile-o" role="img" aria-hidden="true"/><span>Clipart</span>
+                            </button>
+                            <button type="button" class="o_lf_tool" data-panel="shape" data-tool="shape">
+                                <i class="fa fa-star-o" role="img" aria-hidden="true"/><span>Shapes</span>
+                            </button>
+                            <button type="button" class="o_lf_tool" data-panel="layers">
+                                <i class="fa fa-clone" role="img" aria-hidden="true"/><span>Layers</span>
+                            </button>
+                            <button type="button" class="o_lf_tool d-none" data-panel="variant">
+                                <i class="fa fa-th-large" role="img" aria-hidden="true"/><span>Variant</span>
+                            </button>
+                        </nav>
+
+                        <div class="o_lf_panels">
+                            <!-- Templates -->
+                            <section class="o_lf_panel" data-panel="templates">
+                                <h6>Start from a design</h6>
+                                <div class="o_lf_presets row g-2"/>
+                            </section>
+
+                            <!-- Text -->
+                            <section class="o_lf_panel" data-panel="text">
+                                <h6>Add text</h6>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control o_lf_text_input"
+                                           placeholder="Type your text" aria-label="Text"/>
+                                    <button type="button" class="btn btn-primary o_lf_add_text">
+                                        <i class="fa fa-plus" role="img" aria-hidden="true"/>
+                                        <span class="ms-1">Add</span>
+                                    </button>
+                                </div>
+                                <div class="o_lf_text_controls d-none">
+                                    <label class="form-label small mb-1">Edit selected text</label>
+                                    <input type="text" class="form-control mb-2 o_lf_text_edit"
+                                           aria-label="Selected text"/>
+                                    <label class="form-label small mb-1">Font</label>
+                                    <select class="form-select mb-2 o_lf_font" aria-label="Font"/>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <input type="number" class="form-control o_lf_font_size"
+                                               min="8" max="300" aria-label="Font size"/>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-secondary o_lf_style"
+                                                    data-style="bold" title="Bold" aria-label="Bold">
+                                                <i class="fa fa-bold" role="img" aria-hidden="true"/></button>
+                                            <button type="button" class="btn btn-outline-secondary o_lf_style"
+                                                    data-style="italic" title="Italic" aria-label="Italic">
+                                                <i class="fa fa-italic" role="img" aria-hidden="true"/></button>
+                                            <button type="button" class="btn btn-outline-secondary o_lf_style"
+                                                    data-style="underline" title="Underline" aria-label="Underline">
+                                                <i class="fa fa-underline" role="img" aria-hidden="true"/></button>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group w-100 mb-2" role="group" aria-label="Alignment">
+                                        <button type="button" class="btn btn-outline-secondary o_lf_align" data-align="left"
+                                                title="Align left" aria-label="Align left">
+                                            <i class="fa fa-align-left" role="img" aria-hidden="true"/></button>
+                                        <button type="button" class="btn btn-outline-secondary o_lf_align" data-align="center"
+                                                title="Center" aria-label="Center">
+                                            <i class="fa fa-align-center" role="img" aria-hidden="true"/></button>
+                                        <button type="button" class="btn btn-outline-secondary o_lf_align" data-align="right"
+                                                title="Align right" aria-label="Align right">
+                                            <i class="fa fa-align-right" role="img" aria-hidden="true"/></button>
+                                    </div>
+                                    <label class="form-label small mb-1">Colour</label>
+                                    <div class="o_lf_palette" data-target="text"/>
+                                </div>
+                            </section>
+
+                            <!-- Upload -->
+                            <section class="o_lf_panel" data-panel="image">
+                                <h6>Upload an image</h6>
+                                <label class="o_lf_dropzone">
+                                    <i class="fa fa-cloud-upload fa-2x" role="img" aria-hidden="true"/>
+                                    <span>Choose a file or drop it here</span>
+                                    <small class="text-muted">PNG, JPG, WebP</small>
+                                    <input type="file" class="o_lf_upload visually-hidden"
+                                           accept="image/png,image/jpeg,image/webp" multiple="multiple"/>
+                                </label>
+                                <div class="o_lf_image_controls d-none mt-3">
+                                    <div class="btn-group w-100 mb-3" role="group">
+                                        <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipX">
+                                            <i class="fa fa-arrows-h me-1"/>Flip</button>
+                                        <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipY">
+                                            <i class="fa fa-arrows-v me-1"/>Flip</button>
+                                        <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="crop">
+                                            <i class="fa fa-crop me-1"/><span class="o_lf_crop_label">Crop</span></button>
+                                    </div>
+                                    <label class="form-label small mb-1">Brightness</label>
+                                    <input type="range" class="form-range o_lf_image_filter" data-op="brightness"
+                                           min="-1" max="1" step="0.05" value="0"/>
+                                    <label class="form-label small mb-1">Contrast</label>
+                                    <input type="range" class="form-range o_lf_image_filter" data-op="contrast"
+                                           min="-1" max="1" step="0.05" value="0"/>
+                                    <label class="form-label small mb-1">Saturation</label>
+                                    <input type="range" class="form-range o_lf_image_filter" data-op="saturation"
+                                           min="-1" max="1" step="0.05" value="0"/>
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary o_lf_image_op"
+                                                data-op="grayscale">Black &amp; white</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary o_lf_image_op"
+                                                data-op="sepia">Sepia</button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger o_lf_image_op"
+                                                data-op="resetFilters">Reset</button>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Clipart -->
+                            <section class="o_lf_panel" data-panel="clipart">
+                                <h6>Clipart</h6>
+                                <input type="search" class="form-control mb-2 o_lf_clipart_search"
+                                       placeholder="Search..." aria-label="Search clipart"/>
+                                <div class="o_lf_cliparts row g-2"/>
+                            </section>
+
+                            <!-- Shapes -->
+                            <section class="o_lf_panel" data-panel="shape">
+                                <h6>Shapes</h6>
+                                <div class="o_lf_shapes row g-2 mb-3"/>
+                                <div class="o_lf_shape_controls d-none">
+                                    <label class="form-label small mb-1">Fill</label>
+                                    <div class="o_lf_palette mb-2" data-target="fill"/>
+                                    <label class="form-label small mb-1">Border</label>
+                                    <div class="o_lf_palette mb-2" data-target="stroke"/>
+                                    <label class="form-label small mb-1">Border width</label>
+                                    <input type="range" class="form-range o_lf_stroke_width" min="0" max="20" step="1"/>
+                                </div>
+                            </section>
+
+                            <!-- Layers -->
+                            <section class="o_lf_panel" data-panel="layers">
+                                <h6>Layers</h6>
+                                <div class="o_lf_layers list-group"/>
+                                <p class="o_lf_layers_empty text-muted small">Nothing on this side yet.</p>
+                            </section>
+
+                            <!-- Variants -->
+                            <section class="o_lf_panel" data-panel="variant">
+                                <h6>Choose a variant</h6>
+                                <div class="o_lf_variants row g-2"/>
+                            </section>
+                        </div>
+                    </aside>
                 </div>
             </div>
         </t>

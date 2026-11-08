@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Designs under each line of the portal quotation / order -->
+    <template id="sale_order_portal_content_personalization"
+              inherit_id="sale.sale_order_portal_content" name="Order Designs">
+        <xpath expr="//td[@id='product_name']" position="inside">
+            <t t-set="lf_designs" t-value="line.sudo().personalization_ids.filtered('is_customized')"/>
+            <div t-if="lf_designs" class="d-flex flex-wrap gap-2 mt-2 o_lf_portal_designs">
+                <t t-foreach="lf_designs" t-as="design">
+                    <a t-att-href="design._lf_image_url()" target="_blank" class="text-center text-decoration-none">
+                        <img t-att-src="design._lf_image_url()" t-att-alt="design.design_type"
+                             class="border rounded" style="width: 72px; height: 72px; object-fit: contain;"
+                             loading="lazy"/>
+                        <small class="d-block text-muted" t-out="design.design_type"/>
+                        <span t-if="design.approval_state == 'rejected'" class="badge text-bg-danger">Changes needed</span>
+                        <span t-elif="design.approval_state == 'approved'" class="badge text-bg-success">Approved</span>
+                        <span t-elif="design.approval_state == 'pending'" class="badge text-bg-warning">In review</span>
+                    </a>
+                </t>
+            </div>
+            <t t-set="lf_rejected" t-value="lf_designs.filtered(lambda d: d.approval_state == 'rejected')"/>
+            <div t-if="lf_rejected and sale_order.state != 'cancel'" class="alert alert-danger mt-2 mb-0 py-2 o_lf_portal_rejected" role="alert">
+                <div t-foreach="lf_rejected" t-as="design" class="small">
+                    <b t-out="design.design_type"/>: <t t-out="design.approval_note"/>
+                </div>
+                <a t-att-href="lf_rejected[0]._lf_revision_url()" class="btn btn-sm btn-danger mt-2">
+                    <i class="fa fa-pencil me-1" role="img" aria-hidden="true"/>Fix my design
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Portal home entry -->
+    <template id="portal_my_home_designs" inherit_id="portal.portal_my_home"
+              name="My Designs" customize_show="True" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/lf_product_personalizer/static/src/img/designs.svg'"/>
+                <t t-set="title">My Designs</t>
+                <t t-set="url" t-value="'/my/designs'"/>
+                <t t-set="text">Reopen, order again or share your designs</t>
+                <t t-set="placeholder_count" t-value="'design_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_breadcrumbs_designs" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'designs'" class="breadcrumb-item active">My Designs</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_designs" name="My Designs">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">My Designs</t>
+            </t>
+            <div t-if="not designs" class="alert alert-info mt-3" role="status">
+                You have no saved design yet. Use <b>Save to my account</b> in the design editor.
+            </div>
+            <div t-else="" class="row g-3 mt-1 o_lf_my_designs">
+                <div t-foreach="designs" t-as="design" class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100">
+                        <a t-att-href="design.get_portal_url()" class="ratio ratio-1x1 bg-light">
+                            <img t-if="design.preview_image" t-att-src="image_data_uri(design.preview_image)"
+                                 t-att-alt="design.name" class="object-fit-contain p-2"/>
+                        </a>
+                        <div class="card-body p-2">
+                            <div class="fw-bold text-truncate" t-out="design.name"/>
+                            <small class="text-muted d-block text-truncate" t-out="design.product_tmpl_id.name"/>
+                            <small class="text-muted" t-field="design.write_date" t-options="{'widget': 'date'}"/>
+                        </div>
+                        <div class="card-footer d-flex gap-1 p-2">
+                            <a t-att-href="design.get_portal_url()" class="btn btn-sm btn-primary flex-grow-1">Open</a>
+                            <button type="button" class="btn btn-sm btn-light o_lf_copy_link"
+                                    t-att-data-url="design.get_base_url() + design.get_portal_url()"
+                                    title="Copy share link" aria-label="Copy share link">
+                                <i class="fa fa-link" role="img" aria-hidden="true"/>
+                            </button>
+                            <form t-attf-action="/my/designs/#{design.id}/delete" method="post"
+                                  class="o_lf_delete_design">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <button type="submit" class="btn btn-sm btn-light text-danger"
+                                        title="Delete" aria-label="Delete">
+                                    <i class="fa fa-trash-o" role="img" aria-hidden="true"/>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
