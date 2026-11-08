@@ -1,4 +1,4 @@
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -27,4 +27,4 @@ class ProductDesignPreset(models.Model):
     def _check_owner(self):
         for preset in self:
             if not (preset.product_tmpl_id or preset.design_set_id):
-                raise ValidationError(_("Set a product or a design template on '%s'.", preset.name))
+                raise ValidationError(self.env._("Set a product or a design template on '%s'.", preset.name))

@@ -41,7 +41,7 @@ class TestPersonalizationFlow(PersonalizerCase):
         self.assertTrue(self.add(quantity=2)["success"])
         self.assertTrue(self.add(self.designs(front=self.text_design("Other")))["success"])
         order = self.last_cart()
-        lines = order.order_line.filtered(lambda l: l.product_id == self.variant)
+        lines = order.order_line.filtered(lambda line: line.product_id == self.variant)
         self.assertEqual(len(lines), 2, "two different designs must not be merged")
         self.assertEqual(sorted(lines.mapped("product_uom_qty")), [1, 2])
         for line in lines:
@@ -59,7 +59,7 @@ class TestPersonalizationFlow(PersonalizerCase):
         order = self.last_cart()
         order._cart_add(self.variant.id, 1)
         self.assertEqual(len(order.order_line), 2)
-        plain = order.order_line.filtered(lambda l: not l.personalization_ids)
+        plain = order.order_line.filtered(lambda line: not line.personalization_ids)
         self.assertAlmostEqual(plain.price_unit, self.base_price(order))
 
     def test_update_line(self):
@@ -120,6 +120,40 @@ class TestPersonalizationFlow(PersonalizerCase):
         self.assertRegex(src, r"^/web/content/\d+\?access_token=")
         self.assertEqual(self.url_open(src).status_code, 200)
 
+    def test_cart_page_quantity_change(self):
+        """The cart page +/- buttons update the personalized line itself."""
+        self.authenticate(None, None)
+        line_id = self.add()["line_id"]
+        self.make_jsonrpc_request("/shop/cart/update", {
+            "product_id": self.variant.id, "line_id": line_id, "quantity": 5,
+        })
+        line = self.env["sale.order.line"].browse(line_id)
+        self.assertEqual(line.product_uom_qty, 5)
+        self.assertEqual(len(line.order_id.order_line), 1)
+        self.assertTrue(line.personalization_ids)
+
+    # ------------------------------------------------------------------
+    # Pages
+    # ------------------------------------------------------------------
+
+    def test_pages_show_personalization(self):
+        # Rendered once: product pages are cached per write_date, which does
+        # not change inside a test transaction.
+        self.product.personalization_required = True
+        self.authenticate(None, None)
+        page = self.url_open(self.product.website_url).text
+        self.assertIn("o_lf_personalize_btn", page)
+        self.assertRegex(page, r'id="add_to_cart"[^>]*class="[^"]*d-none')
+
+        line = self.other_customer_line()
+        order = line.order_id
+        portal = self.url_open(order.get_portal_url()).text
+        self.assertIn("o_lf_portal_designs", portal)
+        html = self.env["ir.actions.report"]._render_qweb_html(
+            "sale.action_report_saleorder", order.ids
+        )[0].decode()
+        self.assertIn("data:image", html)
+
     # ------------------------------------------------------------------
     # Security
     # ------------------------------------------------------------------
@@ -166,6 +200,11 @@ class TestPersonalizationFlow(PersonalizerCase):
     # ------------------------------------------------------------------
     # Production
     # ------------------------------------------------------------------
+
+    def test_artwork_without_review(self):
+        line = self.other_customer_line()
+        self.assertEqual(line.personalization_ids.filtered("is_customized").approval_state, "not_required")
+        self.assertEqual(line.order_id.artwork_state, "ready")
 
     def test_approval_workflow(self):
         self.product.personalization_requires_approval = True
@@ -331,7 +370,7 @@ class TestPersonalizationFlow(PersonalizerCase):
         }
         new_test_user(self.env, "lf_customer2", groups="base.group_portal")
         self.authenticate("lf_customer2", "lf_customer2")
-        with self.assertRaises(Exception):
+        with self.assertRaises(JsonRpcException):
             self.make_jsonrpc_request("/shop/personalize/save_preset", params)
 
         new_test_user(self.env, "lf_manager", groups="sales_team.group_sale_manager")

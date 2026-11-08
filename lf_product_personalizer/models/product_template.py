@@ -1,6 +1,6 @@
 import re
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -32,12 +32,10 @@ class ProductTemplate(models.Model):
         copy=True,
     )
     personalization_required = fields.Boolean(
-        string="Personalization Required",
         help="Hide the standard 'Add to cart' button: this product can only be "
         "bought personalized.",
     )
     personalization_fee = fields.Float(
-        string="Personalization Fee",
         digits="Product Price",
         help="Added to the unit price of every personalized item, on top of "
         "the extra price of each customized area.",
@@ -83,7 +81,7 @@ class ProductTemplate(models.Model):
             for color in template._lf_split_palette():
                 if not HEX_COLOR.match(color):
                     raise ValidationError(
-                        _("'%s' is not a valid colour. Use the #RRGGBB format.", color)
+                        self.env._("'%s' is not a valid colour. Use the #RRGGBB format.", color)
                     )
 
     def _lf_split_palette(self):

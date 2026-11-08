@@ -1,6 +1,6 @@
 from urllib.parse import quote_plus
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -29,7 +29,7 @@ class ProductDesignFont(models.Model):
         "Visitors' browsers then contact Google, keep that in mind for GDPR.\n"
         "Uploaded File: a .woff2/.woff/.ttf file served by your own website.",
     )
-    font_file = fields.Binary(string="Font File", attachment=True)
+    font_file = fields.Binary(attachment=True)
     font_filename = fields.Char()
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
@@ -38,7 +38,7 @@ class ProductDesignFont(models.Model):
     def _check_font_file(self):
         for font in self:
             if font.source == "upload" and not font.font_file:
-                raise ValidationError(_("Upload a font file for '%s'.", font.name))
+                raise ValidationError(self.env._("Upload a font file for '%s'.", font.name))
 
     def _lf_to_frontend(self):
         result = []

@@ -4,24 +4,6 @@
     "category": "Website/eCommerce",
     "summary": "Let customers design products online: text, images, clipart, "
     "personalization fees, print-ready artwork and artwork approval.",
-    "description": """
-Product Personalization Editor
-==============================
-Let your eCommerce customers personalize products (t-shirts, mugs, engraved gifts,
-jerseys, signs...) directly from the product page.
-
-* Design editor with text, images, clipart, shapes, layers and undo/redo. Each
-  tool can be turned off per product (e.g. text only for engraving).
-* Several design areas per product (front, back, sleeve...) with optional printable zone.
-* Reusable design templates shared by many products.
-* Personalization fees (per product and per customized area), added to the line price.
-* High-resolution PNG and SVG print files, downloadable from the sales order.
-* Original uploaded artwork kept as attachments.
-* Artwork approval workflow for the production team.
-* Designs shown in the cart, customer portal and quotation / order PDF.
-* Customers can save designs to their account and share them with a link.
-* Ready-made templates (presets), fonts and clipart managed from the backend.
-    """,
     "author": "Leofren Technologies",
     "website": "https://leofren.com",
     "depends": ["website_sale"],
@@ -83,7 +65,5 @@ jerseys, signs...) directly from the product page.
         ],
     },
     "images": ["static/description/banner/lf_product_personalizer_cover.png"],
-    "installable": True,
-    "application": False,
     "license": "LGPL-3",
 }

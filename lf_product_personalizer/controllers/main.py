@@ -6,12 +6,12 @@ import zipfile
 
 from werkzeug.exceptions import Forbidden, NotFound
 
-from odoo import _, http
+from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
 from odoo.tools import consteq
 
-from odoo.addons.lf_product_personalizer.models.design_tools import (
+from ..models.design_tools import (
     check_json_size,
     decode_data_url,
     extract_artwork,
@@ -60,7 +60,7 @@ class ProductPersonalizerController(http.Controller):
     def _lf_get_cart_line(self, line_id):
         """Only lines of the visitor's own, still editable cart."""
         order = request.cart
-        line = order.order_line.filtered(lambda l: l.id == _to_int(line_id)) if order else None
+        line = order.order_line.filtered(lambda line: line.id == _to_int(line_id)) if order else None
         if not line or not line.personalization_ids:
             raise NotFound()
         return line
@@ -279,9 +279,9 @@ class ProductPersonalizerController(http.Controller):
                 values = order_sudo.with_context(lf_personalized=True)._cart_add(
                     product_id=variant.id, quantity=self._lf_quantity(quantity),
                 )
-                line = order_sudo.order_line.filtered(lambda l: l.id == values.get("line_id"))
+                line = order_sudo.order_line.filtered(lambda line: line.id == values.get("line_id"))
                 if not line:
-                    raise UserError(values.get("warning") or _("This product is not available."))
+                    raise UserError(values.get("warning") or request.env._("This product is not available."))
                 line._lf_set_personalization(parse_json(request.env, designs))
         except UserError as error:
             return {"error": error.args[0]}
@@ -329,7 +329,7 @@ class ProductPersonalizerController(http.Controller):
     def _lf_clean_designs(self, product, variant, designs):
         designs = parse_json(request.env, designs)
         if not isinstance(designs, dict):
-            raise UserError(_("The design data is invalid."))
+            raise UserError(request.env._("The design data is invalid."))
         area_keys = {str(area.id) for area in product._lf_get_areas(variant)}
         clean = {}
         for key, design in designs.items():
@@ -341,7 +341,7 @@ class ProductPersonalizerController(http.Controller):
             if canvas["objects"]:
                 clean[key] = {"json": canvas}
         if not clean:
-            raise UserError(_("Add some text or an image to your design first."))
+            raise UserError(request.env._("Add some text or an image to your design first."))
         return clean
 
     def _lf_store_designs(self, record, designs, preview):

@@ -9,6 +9,13 @@ registry.category("web_tour.tours").add("lf_personalizer_editor_tour", {
         { trigger: ".o_lf_text_controls:not(.d-none) .o_lf_text_edit:value(Hello Tour)" },
         { trigger: ".o_lf_area.active .o_lf_area_dot" },
         { trigger: ".o_lf_price_info:contains(Personalization)" },
+        // Preview modal shows every side.
+        { trigger: ".o_lf_topbar .dropdown-toggle", run: "click" },
+        { trigger: ".o_lf_preview", run: "click" },
+        { trigger: ".o_lf_preview_modal.show .o_lf_preview_grid img" },
+        // Close once fully shown (Bootstrap ignores hide() while animating).
+        { trigger: ".o_lf_preview_modal.show.modal_shown .btn-close", run: "click" },
+        { trigger: ".o_lf_preview_modal:not(:visible)" },
         // Second area: leave it empty, it is optional.
         { trigger: ".o_lf_area:not(.active)", run: "click" },
         { trigger: ".o_lf_area.active:not(:has(.o_lf_area_dot))" },

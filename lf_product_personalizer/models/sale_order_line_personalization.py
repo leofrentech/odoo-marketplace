@@ -4,7 +4,7 @@ import re
 
 from markupsafe import Markup
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import consteq
 
@@ -175,7 +175,7 @@ class SaleOrderLinePersonalization(models.Model):
     def action_approve(self):
         if self.filtered(lambda rec: rec.approval_state != "pending"):
             raise UserError(
-                _("Only designs waiting for review can be approved. "
+                self.env._("Only designs waiting for review can be approved. "
                   "Use 'Back to Review' first.")
             )
         self.write({
@@ -187,11 +187,11 @@ class SaleOrderLinePersonalization(models.Model):
 
     def action_reject(self):
         if self.filtered(lambda rec: rec.approval_state != "pending"):
-            raise UserError(_("Only designs waiting for review can be rejected."))
+            raise UserError(self.env._("Only designs waiting for review can be rejected."))
         missing = self.filtered(lambda rec: not rec.approval_note)
         if missing:
             raise UserError(
-                _("Write a note to the customer explaining why the design is rejected.")
+                self.env._("Write a note to the customer explaining why the design is rejected.")
             )
         self.write({
             "approval_state": "rejected",
@@ -199,14 +199,14 @@ class SaleOrderLinePersonalization(models.Model):
         })
         for order in self.order_id:
             records = self.filtered(lambda rec, order=order: rec.order_id == order)
-            text = _(
+            text = self.env._(
                 "We could not approve your design for %(areas)s: %(notes)s",
                 areas=", ".join(records.mapped("design_type")),
                 notes=" / ".join(records.mapped("approval_note")),
             )
             url = order.get_base_url() + order.get_portal_url()
             body = Markup("<p>%s</p><p><a href='%s'>%s</a></p>") % (
-                text, url, _("Fix my design"),
+                text, url, self.env._("Fix my design"),
             )
             order.message_post(
                 body=body,

@@ -1,4 +1,4 @@
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -15,6 +15,7 @@ class SaleOrder(models.Model):
             ("pending", "To Review"),
             ("rejected", "Rejected"),
             ("approved", "Approved"),
+            ("ready", "Ready"),
         ],
         string="Artwork",
         compute="_compute_artwork_state",
@@ -39,8 +40,11 @@ class SaleOrder(models.Model):
                 order.artwork_state = "rejected"
             elif "pending" in states:
                 order.artwork_state = "pending"
-            else:
+            elif "approved" in states:
                 order.artwork_state = "approved"
+            else:
+                # No design of this order needs a review.
+                order.artwork_state = "ready"
 
     # ------------------------------------------------------------------
     # Cart
@@ -59,7 +63,7 @@ class SaleOrder(models.Model):
             template = self.env["product.product"].browse(product_id).product_tmpl_id
             if template.personalization_required and template._lf_is_personalizable():
                 raise UserError(
-                    _("%s must be personalized: use the 'Personalize' button.",
+                    self.env._("%s must be personalized: use the 'Personalize' button.",
                       template.display_name)
                 )
         return super()._cart_add(product_id, quantity, **kwargs)
@@ -84,7 +88,7 @@ class SaleOrder(models.Model):
             order.activity_schedule(
                 "mail.mail_activity_data_todo",
                 summary=self._lf_artwork_activity_summary(),
-                note=_("Approve or reject the designs before production."),
+                note=self.env._("Approve or reject the designs before production."),
                 user_id=order.user_id.id or self.env.uid,
             )
 
@@ -113,7 +117,7 @@ class SaleOrder(models.Model):
     def action_view_personalizations(self):
         self.ensure_one()
         return {
-            "name": _("Designs"),
+            "name": self.env._("Designs"),
             "type": "ir.actions.act_window",
             "res_model": "sale.order.line.personalization",
             "view_mode": "kanban,list,form",
@@ -124,7 +128,7 @@ class SaleOrder(models.Model):
     def action_download_artwork(self):
         self.ensure_one()
         if not self.personalization_ids.filtered("is_customized"):
-            raise UserError(_("This order has no personalized design."))
+            raise UserError(self.env._("This order has no personalized design."))
         return {
             "type": "ir.actions.act_url",
             "url": f"/lf_personalizer/order/{self.id}/artwork.zip",

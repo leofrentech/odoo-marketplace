@@ -1,4 +1,4 @@
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 # Every design area is drawn on a square logical canvas of this size (in px).
@@ -73,7 +73,7 @@ class ProductDesignConfig(models.Model):
         for area in self:
             if bool(area.product_tmpl_id) == bool(area.design_set_id):
                 raise ValidationError(
-                    _("Area '%s' must belong to either a product or a design template.",
+                    self.env._("Area '%s' must belong to either a product or a design template.",
                       area.design_type)
                 )
 
@@ -83,7 +83,7 @@ class ProductDesignConfig(models.Model):
             variant = area.product_variant_id
             if variant and variant.product_tmpl_id != area.product_tmpl_id:
                 raise ValidationError(
-                    _("The variant of area '%s' must belong to the same product.",
+                    self.env._("The variant of area '%s' must belong to the same product.",
                       area.design_type)
                 )
 
@@ -92,13 +92,13 @@ class ProductDesignConfig(models.Model):
         for area in self.filtered("is_restricted_area"):
             if area.bound_width <= 0 or area.bound_height <= 0:
                 raise ValidationError(
-                    _("The printable zone of area '%s' needs a width and a height.",
+                    self.env._("The printable zone of area '%s' needs a width and a height.",
                       area.design_type)
                 )
             if (area.bound_x + area.bound_width > EDITOR_SIZE
                     or area.bound_y + area.bound_height > EDITOR_SIZE):
                 raise ValidationError(
-                    _("The printable zone of area '%(area)s' must fit in the %(size)sx%(size)s editor.",
+                    self.env._("The printable zone of area '%(area)s' must fit in the %(size)sx%(size)s editor.",
                       area=area.design_type, size=EDITOR_SIZE)
                 )
 

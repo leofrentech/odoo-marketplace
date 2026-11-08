@@ -21,7 +21,7 @@
                 <field name="artwork_state" widget="badge" invisible="artwork_state == 'none'"
                        decoration-warning="artwork_state == 'pending'"
                        decoration-danger="artwork_state == 'rejected'"
-                       decoration-success="artwork_state == 'approved'"/>
+                       decoration-success="artwork_state in ('approved', 'ready')"/>
             </group>
             <xpath expr="//field[@name='order_line']/list" position="inside">
                 <field name="has_personalization" column_invisible="True"/>

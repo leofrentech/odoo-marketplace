@@ -1,6 +1,6 @@
 import json
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 from .design_tools import (
@@ -75,7 +75,7 @@ class SaleOrderLine(models.Model):
         description = super()._get_sale_order_line_multiline_description_sale()
         customized = self.personalization_ids.filtered("is_customized")
         if customized:
-            description += "\n" + _(
+            description += "\n" + self.env._(
                 "Personalized: %s", ", ".join(customized.mapped("design_type"))
             )
         return description
@@ -99,23 +99,23 @@ class SaleOrderLine(models.Model):
         template = self.product_id.product_tmpl_id
         areas = template._lf_get_areas(self.product_id)
         if not isinstance(designs, dict):
-            raise UserError(_("The design data is invalid."))
+            raise UserError(self.env._("The design data is invalid."))
         unknown = set(designs) - {str(area_id) for area_id in areas.ids}
         if unknown:
-            raise UserError(_("This design does not match the product areas."))
+            raise UserError(self.env._("This design does not match the product areas."))
 
         max_bytes = max_upload_bytes(self.env)
         values_list = []
         for area in areas:
             design = designs.get(str(area.id)) or {}
             if not isinstance(design, dict):
-                raise UserError(_("The design data is invalid."))
+                raise UserError(self.env._("The design data is invalid."))
             canvas = sanitize_canvas_json(
                 self.env, design.get("json"), template.personalization_max_text_length
             )
             customized = bool(canvas["objects"])
             if area.is_required and not customized:
-                raise UserError(_("Please personalize the area '%s'.", area.design_type))
+                raise UserError(self.env._("Please personalize the area '%s'.", area.design_type))
             approval_state = (
                 "pending"
                 if customized and (template.personalization_requires_approval or revision)
@@ -160,13 +160,13 @@ class SaleOrderLine(models.Model):
             values_list.append(values)
 
         if not any(values["is_customized"] for values in values_list):
-            raise UserError(_("Add some text or an image to your design first."))
+            raise UserError(self.env._("Add some text or an image to your design first."))
 
         if revision:
             new_extra = sum(v["price_extra"] for v in values_list)
             old_extra = sum(previous.filtered("is_customized").mapped("price_extra"))
             if self.currency_id.compare_amounts(new_extra, old_extra) > 0:
-                raise UserError(_(
+                raise UserError(self.env._(
                     "Your order did not include a paid personalization for all these areas. "
                     "Please contact us to add one."
                 ))
@@ -189,7 +189,7 @@ class SaleOrderLine(models.Model):
     def action_view_personalizations(self):
         self.ensure_one()
         return {
-            "name": _("Designs"),
+            "name": self.env._("Designs"),
             "type": "ir.actions.act_window",
             "res_model": "sale.order.line.personalization",
             "view_mode": "kanban,list,form",
