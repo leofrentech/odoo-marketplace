@@ -9,15 +9,15 @@
             <t t-set="lf_product" t-value="product.sudo()"/>
             <t t-set="lf_personalizable" t-value="lf_product._lf_is_personalizable()"/>
         </xpath>
-        <xpath expr="//a[@id='add_to_cart']" position="before">
+        <xpath expr="//button[@name='add_to_cart']" position="before">
             <a t-if="lf_personalizable"
                role="button" id="customize_product_button"
                t-attf-class="btn {{'btn-primary' if lf_product.personalization_required else 'btn-outline-primary'}} o_lf_personalize_btn flex-grow-1"
                t-att-href="'/shop/personalize/%s' % product.id">
-                <i class="fa fa-paint-brush me-2" role="img" aria-hidden="true"/>Personalize
+                <i class="oi me-2" data-icon="brush" role="img" aria-hidden="true"/>Personalize
             </a>
         </xpath>
-        <xpath expr="//a[@id='add_to_cart']" position="attributes">
+        <xpath expr="//button[@name='add_to_cart']" position="attributes">
             <attribute name="t-attf-class" add="{{'d-none' if lf_personalizable and lf_product.personalization_required else ''}}" separator=" "/>
         </xpath>
     </template>
@@ -26,8 +26,7 @@
          Design editor page
          ================================================================ -->
     <template id="product_personalization_page" name="Product Personalization Page">
-        <t t-call="website.layout">
-            <t t-set="additional_title">Personalize <t t-out="product.name"/></t>
+        <t t-call="website.layout" additional_title.translate="Personalize {{ product.name }}">
             <div id="wrap" class="o_lf_personalizer"
                  t-att-data-product-id="product.id"
                  t-att-data-variant-id="variant_id"
@@ -42,7 +41,7 @@
                     <div class="container-fluid d-flex flex-wrap align-items-center gap-2 py-2">
                         <a t-att-href="back_url or product.website_url" class="btn btn-link px-1"
                            title="Back to product" aria-label="Back to product">
-                            <i class="fa fa-arrow-left" role="img" aria-hidden="true"/>
+                            <i class="oi" data-icon="arrow_back" role="img" aria-hidden="true"/>
                         </a>
                         <div class="me-auto min-w-0">
                             <div class="h6 mb-0 text-truncate" t-out="product.name"/>
@@ -51,35 +50,35 @@
                         <div class="btn-group" role="group" aria-label="History">
                             <button type="button" class="btn btn-light o_lf_undo" title="Undo (Ctrl+Z)"
                                     aria-label="Undo" disabled="disabled">
-                                <i class="fa fa-undo" role="img" aria-hidden="true"/>
+                                <i class="oi" data-icon="undo" role="img" aria-hidden="true"/>
                             </button>
                             <button type="button" class="btn btn-light o_lf_redo" title="Redo (Ctrl+Y)"
                                     aria-label="Redo" disabled="disabled">
-                                <i class="fa fa-repeat" role="img" aria-hidden="true"/>
+                                <i class="oi" data-icon="redo" role="img" aria-hidden="true"/>
                             </button>
                         </div>
                         <div class="dropdown">
                             <button type="button" class="btn btn-light dropdown-toggle"
                                     data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa fa-ellipsis-h" role="img" aria-hidden="true"/>
+                                <i class="oi" data-icon="more_horiz" role="img" aria-hidden="true"/>
                                 <span class="d-none d-md-inline ms-1">More</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><button type="button" class="dropdown-item o_lf_preview">
-                                    <i class="fa fa-eye fa-fw me-1"/>Preview</button></li>
+                                    <i class="oi oi-fw me-1" data-icon="visibility"/>Preview</button></li>
                                 <li><button type="button" class="dropdown-item o_lf_download">
-                                    <i class="fa fa-download fa-fw me-1"/>Download image</button></li>
+                                    <i class="oi oi-fw me-1" data-icon="download"/>Download image</button></li>
                                 <li><button type="button" class="dropdown-item o_lf_save_design">
-                                    <i class="fa fa-heart-o fa-fw me-1"/>Save to my account</button></li>
+                                    <i class="oi oi-fw me-1" data-icon="favorite"/>Save to my account</button></li>
                                 <li><button type="button" class="dropdown-item o_lf_share d-none">
-                                    <i class="fa fa-share-alt fa-fw me-1"/>Copy share link</button></li>
+                                    <i class="oi oi-fw me-1" data-icon="share"/>Copy share link</button></li>
                                 <li class="o_lf_manager_only d-none"><hr class="dropdown-divider"/></li>
                                 <li class="o_lf_manager_only d-none">
                                     <button type="button" class="dropdown-item o_lf_save_preset">
-                                        <i class="fa fa-star-o fa-fw me-1"/>Save as template</button></li>
+                                        <i class="oi oi-fw me-1" data-icon="star"/>Save as template</button></li>
                                 <li><hr class="dropdown-divider"/></li>
                                 <li><button type="button" class="dropdown-item text-danger o_lf_clear">
-                                    <i class="fa fa-trash-o fa-fw me-1"/>Clear this side</button></li>
+                                    <i class="oi oi-fw me-1" data-icon="delete"/>Clear this side</button></li>
                             </ul>
                         </div>
                         <div t-if="not revision" class="input-group o_lf_qty">
@@ -88,7 +87,7 @@
                                    t-att-value="quantity or 1" aria-label="Quantity"/>
                         </div>
                         <button type="button" class="btn btn-primary o_lf_add_to_cart">
-                            <i class="fa fa-shopping-cart me-1" role="img" aria-hidden="true"/>
+                            <i class="oi me-1" data-icon="shopping_cart" role="img" aria-hidden="true"/>
                             <t t-if="revision">Send for review</t>
                             <t t-elif="line">Update cart</t>
                             <t t-else="">Add to cart</t>
@@ -112,7 +111,7 @@
                              role="tablist" aria-label="Areas"/>
                         <div class="o_lf_canvas_wrapper">
                             <div class="o_lf_loading text-muted">
-                                <i class="fa fa-circle-o-notch fa-spin me-2" role="img" aria-hidden="true"/>
+                                <i class="oi oi-spin me-2" data-icon="progress_activity" role="img" aria-hidden="true"/>
                                 Loading the editor...
                             </div>
                         </div>
@@ -125,25 +124,25 @@
                     <aside class="o_lf_sidebar">
                         <nav class="o_lf_tools" aria-label="Design tools">
                             <button type="button" class="o_lf_tool d-none" data-panel="templates">
-                                <i class="fa fa-magic" role="img" aria-hidden="true"/><span>Templates</span>
+                                <i class="oi" data-icon="wand_stars" role="img" aria-hidden="true"/><span>Templates</span>
                             </button>
                             <button type="button" class="o_lf_tool" data-panel="text" data-tool="text">
-                                <i class="fa fa-font" role="img" aria-hidden="true"/><span>Text</span>
+                                <i class="oi" data-icon="text_fields" role="img" aria-hidden="true"/><span>Text</span>
                             </button>
                             <button type="button" class="o_lf_tool" data-panel="image" data-tool="image">
-                                <i class="fa fa-upload" role="img" aria-hidden="true"/><span>Upload</span>
+                                <i class="oi" data-icon="upload" role="img" aria-hidden="true"/><span>Upload</span>
                             </button>
                             <button type="button" class="o_lf_tool" data-panel="clipart" data-tool="clipart">
-                                <i class="fa fa-smile-o" role="img" aria-hidden="true"/><span>Clipart</span>
+                                <i class="oi" data-icon="sentiment_satisfied" role="img" aria-hidden="true"/><span>Clipart</span>
                             </button>
                             <button type="button" class="o_lf_tool" data-panel="shape" data-tool="shape">
-                                <i class="fa fa-star-o" role="img" aria-hidden="true"/><span>Shapes</span>
+                                <i class="oi" data-icon="star" role="img" aria-hidden="true"/><span>Shapes</span>
                             </button>
                             <button type="button" class="o_lf_tool" data-panel="layers">
-                                <i class="fa fa-clone" role="img" aria-hidden="true"/><span>Layers</span>
+                                <i class="oi" data-icon="content_copy" role="img" aria-hidden="true"/><span>Layers</span>
                             </button>
                             <button type="button" class="o_lf_tool d-none" data-panel="variant">
-                                <i class="fa fa-th-large" role="img" aria-hidden="true"/><span>Variant</span>
+                                <i class="oi" data-icon="grid_view" role="img" aria-hidden="true"/><span>Variant</span>
                             </button>
                         </nav>
 
@@ -161,7 +160,7 @@
                                     <input type="text" class="form-control o_lf_text_input"
                                            placeholder="Type your text" aria-label="Text"/>
                                     <button type="button" class="btn btn-primary o_lf_add_text">
-                                        <i class="fa fa-plus" role="img" aria-hidden="true"/>
+                                        <i class="oi" data-icon="add" role="img" aria-hidden="true"/>
                                         <span class="ms-1">Add</span>
                                     </button>
                                 </div>
@@ -177,25 +176,25 @@
                                         <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-outline-secondary o_lf_style"
                                                     data-style="bold" title="Bold" aria-label="Bold">
-                                                <i class="fa fa-bold" role="img" aria-hidden="true"/></button>
+                                                <i class="oi" data-icon="format_bold" role="img" aria-hidden="true"/></button>
                                             <button type="button" class="btn btn-outline-secondary o_lf_style"
                                                     data-style="italic" title="Italic" aria-label="Italic">
-                                                <i class="fa fa-italic" role="img" aria-hidden="true"/></button>
+                                                <i class="oi" data-icon="format_italic" role="img" aria-hidden="true"/></button>
                                             <button type="button" class="btn btn-outline-secondary o_lf_style"
                                                     data-style="underline" title="Underline" aria-label="Underline">
-                                                <i class="fa fa-underline" role="img" aria-hidden="true"/></button>
+                                                <i class="oi" data-icon="format_underlined" role="img" aria-hidden="true"/></button>
                                         </div>
                                     </div>
                                     <div class="btn-group w-100 mb-2" role="group" aria-label="Alignment">
                                         <button type="button" class="btn btn-outline-secondary o_lf_align" data-align="left"
                                                 title="Align left" aria-label="Align left">
-                                            <i class="fa fa-align-left" role="img" aria-hidden="true"/></button>
+                                            <i class="oi" data-icon="format_align_left" role="img" aria-hidden="true"/></button>
                                         <button type="button" class="btn btn-outline-secondary o_lf_align" data-align="center"
                                                 title="Center" aria-label="Center">
-                                            <i class="fa fa-align-center" role="img" aria-hidden="true"/></button>
+                                            <i class="oi" data-icon="format_align_center" role="img" aria-hidden="true"/></button>
                                         <button type="button" class="btn btn-outline-secondary o_lf_align" data-align="right"
                                                 title="Align right" aria-label="Align right">
-                                            <i class="fa fa-align-right" role="img" aria-hidden="true"/></button>
+                                            <i class="oi" data-icon="format_align_right" role="img" aria-hidden="true"/></button>
                                     </div>
                                     <label class="form-label small mb-1">Colour</label>
                                     <div class="o_lf_palette" data-target="text"/>
@@ -206,7 +205,7 @@
                             <section class="o_lf_panel" data-panel="image">
                                 <h6>Upload an image</h6>
                                 <label class="o_lf_dropzone">
-                                    <i class="fa fa-cloud-upload fa-2x" role="img" aria-hidden="true"/>
+                                    <i class="oi oi-2x" data-icon="cloud_upload" role="img" aria-hidden="true"/>
                                     <span>Choose a file or drop it here</span>
                                     <small class="text-muted">PNG, JPG, WebP</small>
                                     <input type="file" class="o_lf_upload visually-hidden"
@@ -215,11 +214,11 @@
                                 <div class="o_lf_image_controls d-none mt-3">
                                     <div class="btn-group w-100 mb-3" role="group">
                                         <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipX">
-                                            <i class="fa fa-arrows-h me-1"/>Flip</button>
+                                            <i class="oi me-1" data-icon="swap_horiz"/>Flip</button>
                                         <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipY">
-                                            <i class="fa fa-arrows-v me-1"/>Flip</button>
+                                            <i class="oi me-1" data-icon="swap_vert"/>Flip</button>
                                         <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="crop">
-                                            <i class="fa fa-crop me-1"/><span class="o_lf_crop_label">Crop</span></button>
+                                            <i class="oi me-1" data-icon="crop"/><span class="o_lf_crop_label">Crop</span></button>
                                     </div>
                                     <label class="form-label small mb-1">Brightness</label>
                                     <input type="range" class="form-range o_lf_image_filter" data-op="brightness"

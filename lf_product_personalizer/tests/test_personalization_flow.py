@@ -13,7 +13,7 @@ class TestPersonalizationFlow(PersonalizerCase):
 
     def last_cart(self):
         return self.env["sale.order"].search(
-            [("website_id", "=", self.website.id)], order="id desc", limit=1
+            [("website_id", "=", self.website.id)], order="id desc", limit=1,
         )
 
     def base_price(self, order):
@@ -143,14 +143,14 @@ class TestPersonalizationFlow(PersonalizerCase):
         self.authenticate(None, None)
         page = self.url_open(self.product.website_url).text
         self.assertIn("o_lf_personalize_btn", page)
-        self.assertRegex(page, r'id="add_to_cart"[^>]*class="[^"]*d-none')
+        self.assertRegex(page, r'name="add_to_cart"[^>]*class="[^"]*d-none')
 
         line = self.other_customer_line()
         order = line.order_id
         portal = self.url_open(order.get_portal_url()).text
         self.assertIn("o_lf_portal_designs", portal)
         html = self.env["ir.actions.report"]._render_qweb_html(
-            "sale.action_report_saleorder", order.ids
+            "sale.action_report_saleorder", order.ids,
         )[0].decode()
         self.assertIn("data:image", html)
 
@@ -255,7 +255,7 @@ class TestPersonalizationFlow(PersonalizerCase):
         self.product.personalization_requires_approval = True
         line = self.other_customer_line()
         line.with_context(lf_personalized=True)._lf_set_personalization(
-            self.designs(back=self.text_design("Back v1"))
+            self.designs(back=self.text_design("Back v1")),
         )
         order = line.order_id
         order.action_confirm()

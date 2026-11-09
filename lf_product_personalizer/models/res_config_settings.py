@@ -28,7 +28,7 @@ class ResConfigSettings(models.TransientModel):
 
     @api.model
     def _lf_print_scale(self):
-        quality = self.env["ir.config_parameter"].sudo().get_param(
-            "lf_product_personalizer.print_quality", "high"
+        quality = self.env["ir.config_parameter"].sudo().get_str(
+            "lf_product_personalizer.print_quality", "high",
         )
         return PRINT_QUALITY_SCALES.get(quality, PRINT_QUALITY_SCALES["high"])

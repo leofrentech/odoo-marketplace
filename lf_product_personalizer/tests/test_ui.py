@@ -9,7 +9,7 @@ class TestPersonalizerUi(PersonalizerCase):
     def test_editor_tour(self):
         self.start_tour(f"/shop/personalize/{self.product.id}", "lf_personalizer_editor_tour")
         order = self.env["sale.order"].search(
-            [("website_id", "=", self.website.id)], order="id desc", limit=1
+            [("website_id", "=", self.website.id)], order="id desc", limit=1,
         )
         design = order.order_line.personalization_ids.filtered("is_customized")
         self.assertEqual(design.design_type, "Front")

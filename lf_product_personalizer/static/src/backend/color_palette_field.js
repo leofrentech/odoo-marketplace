@@ -1,6 +1,7 @@
-import { registry } from "@web/core/registry";
-import { Component } from "@odoo/owl";
+import { Component, useProps } from "@odoo/owl";
+
 import { _t } from "@web/core/l10n/translation";
+import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -11,16 +12,16 @@ const HEX = /^#[0-9a-f]{6}$/i;
  */
 export class ColorPaletteField extends Component {
     static template = "lf_product_personalizer.ColorPaletteField";
-    static props = { ...standardFieldProps };
+    props = useProps(standardFieldProps);
 
-    get colors() {
+    colors() {
         return (this.props.record.data[this.props.name] || "")
             .split(",")
             .map((color) => color.trim())
             .filter((color) => HEX.test(color));
     }
 
-    get removeTitle() {
+    removeTitle() {
         return _t("Remove this colour");
     }
 
@@ -30,7 +31,7 @@ export class ColorPaletteField extends Component {
 
     onAdd(ev) {
         const color = ev.target.value.toUpperCase();
-        const colors = this.colors;
+        const colors = this.colors();
         if (!colors.some((c) => c.toUpperCase() === color)) {
             this.save([...colors, color]);
         }
@@ -38,7 +39,7 @@ export class ColorPaletteField extends Component {
     }
 
     onRemove(index) {
-        const colors = this.colors;
+        const colors = this.colors();
         colors.splice(index, 1);
         this.save(colors);
     }

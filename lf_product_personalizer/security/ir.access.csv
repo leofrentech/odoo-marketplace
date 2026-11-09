@@ -1,0 +1,25 @@
+id,name,model_id,group_id/id,operation,domain
+access_product_design_config_user,product.design.config user,product.design.config,base.group_user,r,
+access_product_design_config_manager,product.design.config manager,product.design.config,sales_team.group_sale_manager,crud,
+access_product_design_config_designer,product.design.config designer,product.design.config,website.group_website_designer,crud,
+access_product_design_set_user,product.design.set user,product.design.set,base.group_user,r,
+access_product_design_set_manager,product.design.set manager,product.design.set,sales_team.group_sale_manager,crud,
+access_product_design_set_designer,product.design.set designer,product.design.set,website.group_website_designer,crud,
+design_set_rule_company,Design Templates: multi-company,product.design.set,,crud,"[('company_id', 'in', company_ids + [False])]"
+access_product_design_font_everyone,product.design.font everyone,product.design.font,base.group_everyone,r,
+access_product_design_font_manager,product.design.font manager,product.design.font,sales_team.group_sale_manager,crud,
+access_product_design_font_designer,product.design.font designer,product.design.font,website.group_website_designer,crud,
+access_product_design_clipart_everyone,product.design.clipart everyone,product.design.clipart,base.group_everyone,r,
+access_product_design_clipart_manager,product.design.clipart manager,product.design.clipart,sales_team.group_sale_manager,crud,
+access_product_design_clipart_designer,product.design.clipart designer,product.design.clipart,website.group_website_designer,crud,
+access_product_design_clipart_category_everyone,product.design.clipart.category everyone,product.design.clipart.category,base.group_everyone,r,
+access_product_design_clipart_category_manager,product.design.clipart.category manager,product.design.clipart.category,sales_team.group_sale_manager,crud,
+access_product_design_clipart_category_designer,product.design.clipart.category designer,product.design.clipart.category,website.group_website_designer,crud,
+access_product_design_preset_everyone,product.design.preset everyone,product.design.preset,base.group_everyone,r,
+access_product_design_preset_manager,product.design.preset manager,product.design.preset,sales_team.group_sale_manager,crud,
+access_product_design_preset_designer,product.design.preset designer,product.design.preset,website.group_website_designer,crud,
+access_product_design_saved_salesman,product.design.saved salesman,product.design.saved,sales_team.group_sale_salesman,r,
+access_product_design_saved_manager,product.design.saved manager,product.design.saved,sales_team.group_sale_manager,crud,
+personalization_rule_personal,Personal Order Designs,sale.order.line.personalization,sales_team.group_sale_salesman,crud,"['|', ('salesman_id', '=', user.id), ('salesman_id', '=', False)]"
+personalization_rule_all,All Order Designs,sale.order.line.personalization,sales_team.group_sale_salesman_all_leads,crud,
+personalization_rule_company,Order Designs: multi-company,sale.order.line.personalization,,crud,"[('company_id', 'in', company_ids + [False])]"

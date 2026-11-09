@@ -1,4 +1,3 @@
-import base64
 import io
 import json
 import re
@@ -9,9 +8,10 @@ from werkzeug.exceptions import Forbidden, NotFound
 from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
-from odoo.tools import consteq
+from odoo.http.stream import content_disposition
+from odoo.tools import BinaryBytes, consteq
 
-from ..models.design_tools import (
+from odoo.addons.lf_product_personalizer.models.design_tools import (
     check_json_size,
     decode_data_url,
     extract_artwork,
@@ -36,13 +36,19 @@ class ProductPersonalizerController(http.Controller):
     # Access helpers
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _lf_on_current_website(product):
+        """Whether the product may be shown on the current website (it is not
+        restricted to another one)."""
+        return not product.website_id or product.website_id == request.env.website
+
     def _lf_get_product(self, product_id):
         """Return the product template (sudo) if the visitor may personalize it."""
         product = request.env["product.template"].browse(_to_int(product_id)).exists()
         if (
             not product
             or not product.has_access("read")
-            or not product.can_access_from_current_website()
+            or not self._lf_on_current_website(product)
             or not product.sudo()._lf_is_personalizable()
         ):
             raise NotFound()
@@ -76,10 +82,10 @@ class ProductPersonalizerController(http.Controller):
             raise NotFound()
         order = line.order_id
         has_token = bool(
-            access_token and order.access_token and consteq(order.access_token, access_token)
+            access_token and order.access_token and consteq(order.access_token, access_token),
         )
         is_customer = not request.env.user._is_public() and order.with_user(
-            request.env.user
+            request.env.user,
         ).has_access("read")
         if not (has_token or is_customer):
             raise NotFound()
@@ -102,11 +108,11 @@ class ProductPersonalizerController(http.Controller):
     def _lf_can_manage_presets(self):
         user = request.env.user
         return user.has_group("sales_team.group_sale_manager") or user.has_group(
-            "website.group_website_designer"
+            "website.group_website_designer",
         )
 
     def _lf_currency_info(self):
-        currency = request.website.currency_id
+        currency = request.env.website.currency_id
         return {
             "symbol": currency.symbol,
             "position": currency.position,
@@ -117,7 +123,7 @@ class ProductPersonalizerController(http.Controller):
         if not amount:
             return 0.0
         return product.currency_id._convert(
-            amount, request.website.currency_id, request.website.company_id,
+            amount, request.env.website.currency_id, request.env.website.company_id,
         )
 
     # ------------------------------------------------------------------
@@ -164,7 +170,7 @@ class ProductPersonalizerController(http.Controller):
             line=line,
             revision=True,
             rejected=line.personalization_ids.filtered(
-                lambda p: p.approval_state == "rejected"
+                lambda p: p.approval_state == "rejected",
             ),
             access_token=access_token or "",
             back_url=line.order_id.get_portal_url(),
@@ -192,7 +198,7 @@ class ProductPersonalizerController(http.Controller):
     @http.route("/shop/personalize/data", type="jsonrpc", auth="public", website=True)
     def personalization_data(
         self, product_id, variant_id=None, line_id=None, design_id=None, access_token=None,
-        revision=False, **kw
+        revision=False, **kw,
     ):
         if revision:
             # The order is placed: the product may not be published anymore.
@@ -269,20 +275,29 @@ class ProductPersonalizerController(http.Controller):
             quantity = 1.0
         return max(1.0, quantity)
 
+    def _lf_cart_add(self, variant, designs, quantity):
+        """Add the variant to the cart as a new personalized line.
+
+        :return: the cart (sudo), the values of `_cart_add` and the new line
+        :raise UserError: when the line can't be added or the design is invalid
+        """
+        order_sudo = request.cart or request.env.website._create_cart()
+        values = order_sudo.with_context(lf_personalized=True)._cart_add(
+            product_id=variant.id, quantity=self._lf_quantity(quantity),
+        )
+        line = order_sudo.order_line.filtered(lambda line: line.id == values.get("line_id"))
+        if not line:
+            raise UserError(values.get("warning") or request.env._("This product is not available."))
+        line._lf_set_personalization(parse_json(request.env, designs))
+        return order_sudo, values, line
+
     @http.route("/shop/personalize/add", type="jsonrpc", auth="public", website=True)
     def personalization_add(self, product_id, variant_id, designs, quantity=1, **kw):
         product = self._lf_get_product(product_id)
         variant = self._lf_get_variant(product, variant_id)
         try:
             with request.env.cr.savepoint():
-                order_sudo = request.cart or request.website._create_cart()
-                values = order_sudo.with_context(lf_personalized=True)._cart_add(
-                    product_id=variant.id, quantity=self._lf_quantity(quantity),
-                )
-                line = order_sudo.order_line.filtered(lambda line: line.id == values.get("line_id"))
-                if not line:
-                    raise UserError(values.get("warning") or request.env._("This product is not available."))
-                line._lf_set_personalization(parse_json(request.env, designs))
+                order_sudo, values, line = self._lf_cart_add(variant, designs, quantity)
         except UserError as error:
             return {"error": error.args[0]}
         return {
@@ -299,7 +314,7 @@ class ProductPersonalizerController(http.Controller):
         try:
             with request.env.cr.savepoint():
                 values = order_sudo._cart_update_line_quantity(
-                    line.id, self._lf_quantity(quantity)
+                    line.id, self._lf_quantity(quantity),
                 )
                 line._lf_set_personalization(parse_json(request.env, designs))
         except UserError as error:
@@ -336,7 +351,7 @@ class ProductPersonalizerController(http.Controller):
             if key not in area_keys or not isinstance(design, dict):
                 continue
             canvas = sanitize_canvas_json(
-                request.env, design.get("json"), product.personalization_max_text_length
+                request.env, design.get("json"), product.personalization_max_text_length,
             )
             if canvas["objects"]:
                 clean[key] = {"json": canvas}
@@ -351,12 +366,12 @@ class ProductPersonalizerController(http.Controller):
         values = {"design_json": json.dumps(designs)}
         if preview:
             raw, _mimetype = decode_data_url(record.env, preview, max_upload_bytes(record.env))
-            values["preview_image"] = base64.b64encode(raw)
+            values["preview_image"] = BinaryBytes(raw)
         record.write(values)
 
     @http.route("/shop/personalize/save_design", type="jsonrpc", auth="public", website=True)
     def personalization_save_design(
-        self, product_id, variant_id, designs, name=None, preview=None, design_id=None, **kw
+        self, product_id, variant_id, designs, name=None, preview=None, design_id=None, **kw,
     ):
         product = self._lf_get_product(product_id)
         if request.env.user._is_public():
@@ -378,7 +393,7 @@ class ProductPersonalizerController(http.Controller):
                         "partner_id": request.env.user.partner_id.id,
                         "product_tmpl_id": product.id,
                         "product_id": variant.id,
-                        "website_id": request.website.id,
+                        "website_id": request.env.website.id,
                         "design_json": "{}",
                     })
                 elif name:
@@ -463,7 +478,7 @@ class ProductPersonalizerController(http.Controller):
         products = area.product_tmpl_id or area.design_set_id.product_tmpl_ids
         visible = any(
             product.with_user(request.env.user).has_access("read")
-            and product.can_access_from_current_website()
+            and self._lf_on_current_website(product)
             for product in products
         )
         if not visible and not request.env.user._is_internal():
@@ -496,15 +511,13 @@ class ProductPersonalizerController(http.Controller):
                         f"{area}-print.svg": design.print_svg,
                         f"{area}-preview.png": design.product_image,
                     }
-                    for name, b64 in files.items():
-                        if b64:
-                            archive.writestr(
-                                f"{folder}/{name}", base64.b64decode(b64)
-                            )
+                    for name, content in files.items():
+                        if content:
+                            archive.writestr(f"{folder}/{name}", bytes(content))
                     for attachment in design.sudo().artwork_attachment_ids:
                         archive.writestr(
                             f"{folder}/{area}-original-{self._lf_safe_name(attachment.name)}",
-                            attachment.raw,
+                            bytes(attachment.raw),
                         )
                     archive.writestr(f"{folder}/{area}-design.json", design.personalized_json or "{}")
         filename = f"{self._lf_safe_name(order.name)}-artwork.zip"
@@ -512,7 +525,7 @@ class ProductPersonalizerController(http.Controller):
             buffer.getvalue(),
             headers=[
                 ("Content-Type", "application/zip"),
-                ("Content-Disposition", http.content_disposition(filename)),
+                ("Content-Disposition", content_disposition(filename)),
             ],
         )
 

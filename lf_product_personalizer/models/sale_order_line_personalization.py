@@ -1,4 +1,3 @@
-import base64
 import json
 import re
 
@@ -6,7 +5,7 @@ from markupsafe import Markup
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import consteq
+from odoo.tools import BinaryBytes, consteq
 
 from .design_tools import check_json_size, extract_artwork
 
@@ -27,7 +26,7 @@ class SaleOrderLinePersonalization(models.Model):
         index=True,
     )
     order_id = fields.Many2one(
-        related="sale_order_line_id.order_id", store=True, index=True
+        related="sale_order_line_id.order_id", store=True, index=True,
     )
     company_id = fields.Many2one(related="order_id.company_id", store=True)
     partner_id = fields.Many2one(related="order_id.partner_id", string="Customer")
@@ -40,11 +39,11 @@ class SaleOrderLinePersonalization(models.Model):
         help="Name of the area (e.g. Front) when the design was made.",
     )
     design_config_id = fields.Many2one(
-        "product.design.config", string="Area Configuration", ondelete="set null"
+        "product.design.config", string="Area Configuration", ondelete="set null",
     )
     personalized_json = fields.Text(string="Design Data")
     is_customized = fields.Boolean(
-        string="Customized", help="The customer added something on this area."
+        string="Customized", help="The customer added something on this area.",
     )
     price_extra = fields.Float(
         string="Extra Price",
@@ -74,7 +73,7 @@ class SaleOrderLinePersonalization(models.Model):
         index=True,
     )
     approval_note = fields.Text(
-        string="Note to Customer", help="Explain what must change when rejecting a design."
+        string="Note to Customer", help="Explain what must change when rejecting a design.",
     )
     approved_by_id = fields.Many2one("res.users", string="Reviewed By", readonly=True)
 
@@ -133,7 +132,7 @@ class SaleOrderLinePersonalization(models.Model):
                         and consteq(source.access_token, match.group(2))
                     ):
                         raise UserError(rec.env._(
-                            "An image of this design is no longer available. Please upload it again."
+                            "An image of this design is no longer available. Please upload it again.",
                         ))
                     if source.res_model == rec._name and source.res_id == rec.id:
                         attachment = source  # just extracted from a data URL
@@ -176,7 +175,7 @@ class SaleOrderLinePersonalization(models.Model):
         if self.filtered(lambda rec: rec.approval_state != "pending"):
             raise UserError(
                 self.env._("Only designs waiting for review can be approved. "
-                  "Use 'Back to Review' first.")
+                  "Use 'Back to Review' first."),
             )
         self.write({
             "approval_state": "approved",
@@ -191,7 +190,7 @@ class SaleOrderLinePersonalization(models.Model):
         missing = self.filtered(lambda rec: not rec.approval_note)
         if missing:
             raise UserError(
-                self.env._("Write a note to the customer explaining why the design is rejected.")
+                self.env._("Write a note to the customer explaining why the design is rejected."),
             )
         self.write({
             "approval_state": "rejected",
@@ -201,7 +200,7 @@ class SaleOrderLinePersonalization(models.Model):
             records = self.filtered(lambda rec, order=order: rec.order_id == order)
             text = self.env._(
                 "We could not approve your design for %(areas)s: %(notes)s",
-                areas=", ".join(records.mapped("design_type")),
+                areas=records.mapped("design_type"),
                 notes=" / ".join(records.mapped("approval_note")),
             )
             url = order.get_base_url() + order.get_portal_url()
@@ -246,5 +245,6 @@ class SaleOrderLinePersonalization(models.Model):
         )
 
     @api.model
-    def _lf_b64(self, raw):
-        return base64.b64encode(raw) if raw else False
+    def _lf_binary(self, raw):
+        """Binary field value of raw file content."""
+        return BinaryBytes(raw) if raw else False

@@ -24,15 +24,15 @@ export class ShapeHandler {
 
     static get shapes() {
         return [
-            { id: "rect", name: _t("Rectangle"), icon: "fa-square" },
-            { id: "circle", name: _t("Circle"), icon: "fa-circle" },
-            { id: "triangle", name: _t("Triangle"), icon: "fa-play fa-rotate-270" },
-            { id: "star", name: _t("Star"), icon: "fa-star" },
-            { id: "heart", name: _t("Heart"), icon: "fa-heart" },
-            { id: "diamond", name: _t("Diamond"), icon: "fa-square fa-rotate-45" },
-            { id: "hexagon", name: _t("Hexagon"), icon: "fa-stop-circle-o" },
-            { id: "arrow", name: _t("Arrow"), icon: "fa-long-arrow-right" },
-            { id: "line", name: _t("Line"), icon: "fa-minus" },
+            { id: "rect", name: _t("Rectangle"), icon: "square", iconClasses: "oi-filled" },
+            { id: "circle", name: _t("Circle"), icon: "circle", iconClasses: "oi-filled" },
+            { id: "triangle", name: _t("Triangle"), icon: "play_arrow", iconClasses: "oi-filled oi-rotate-270" },
+            { id: "star", name: _t("Star"), icon: "star", iconClasses: "oi-filled" },
+            { id: "heart", name: _t("Heart"), icon: "favorite", iconClasses: "oi-filled" },
+            { id: "diamond", name: _t("Diamond"), icon: "square", iconClasses: "oi-filled o_lf_icon_diamond" },
+            { id: "hexagon", name: _t("Hexagon"), icon: "stop_circle" },
+            { id: "arrow", name: _t("Arrow"), icon: "arrow_forward" },
+            { id: "line", name: _t("Line"), icon: "remove" },
         ];
     }
 

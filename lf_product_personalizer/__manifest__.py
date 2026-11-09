@@ -1,6 +1,6 @@
 {
     "name": "Product Personalizer - Online Product Designer, Custom Printing & Engraving",
-    "version": "19.0.2.0.0",
+    "version": "20.0.2.0.0",
     "category": "Website/eCommerce",
     "summary": "Let customers design products online: text, images, clipart, "
     "personalization fees, print-ready artwork and artwork approval.",
@@ -8,9 +8,9 @@
     "website": "https://leofren.com",
     "depends": ["website_sale"],
     "data": [
-        "security/ir.model.access.csv",
-        "security/security.xml",
+        "security/ir.access.csv",
         "data/product_design_font_data.xml",
+        "data/portal_entry_data.xml",
         "views/product_design_config_views.xml",
         "views/product_design_set_views.xml",
         "views/product_design_font_views.xml",

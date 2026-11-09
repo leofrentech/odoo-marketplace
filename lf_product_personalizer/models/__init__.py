@@ -1,11 +1,13 @@
-from . import product_design_set
-from . import product_design_config
-from . import product_design_font
-from . import product_design_clipart
-from . import product_design_preset
-from . import product_design_saved
-from . import product_template
-from . import sale_order_line_personalization
-from . import sale_order_line
-from . import sale_order
-from . import res_config_settings
+from . import (
+    product_design_clipart,
+    product_design_config,
+    product_design_font,
+    product_design_preset,
+    product_design_saved,
+    product_design_set,
+    product_template,
+    res_config_settings,
+    sale_order,
+    sale_order_line,
+    sale_order_line_personalization,
+)

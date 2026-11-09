@@ -125,7 +125,7 @@ $lf-tools-width: 76px;
         align-items: center;
         gap: 4px;
         font-size: $font-size-sm;
-        .fa {
+        .oi {
             font-size: 1.25rem;
         }
         &:hover {
@@ -258,7 +258,7 @@ $lf-tools-width: 76px;
     background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
     color: $white;
     margin: 0;
-    .fa {
+    .oi {
         text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
         font-size: 0.8rem;
     }
@@ -274,4 +274,9 @@ $lf-tools-width: 76px;
         object-fit: contain;
         background: $white;
     }
+}
+
+// Diamond shape button: a filled square turned a quarter.
+.o_lf_icon_diamond {
+    transform: rotate(45deg);
 }

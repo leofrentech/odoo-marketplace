@@ -13,7 +13,7 @@ class PersonalizerCase(HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.website = cls.env["website"].get_current_website()
+        cls.website = cls.env.ref("base.default_website")
         cls.product = cls.env["product.template"].create({
             "name": "Test Mug",
             "list_price": 10.0,

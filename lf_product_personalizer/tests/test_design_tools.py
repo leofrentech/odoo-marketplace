@@ -1,13 +1,12 @@
 from odoo.exceptions import UserError
 from odoo.tests import TransactionCase, tagged
 
+from .common import PNG_DATA_URL
 from odoo.addons.lf_product_personalizer.models.design_tools import (
     decode_data_url,
     sanitize_canvas_json,
     sanitize_svg,
 )
-
-from .common import PNG_DATA_URL
 
 
 @tagged("post_install", "-at_install")

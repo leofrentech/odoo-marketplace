@@ -7,14 +7,14 @@
         <field name="arch" type="xml">
             <div name="button_box" position="inside">
                 <button name="action_view_personalizations" type="object"
-                        class="oe_stat_button" icon="fa-paint-brush"
+                        class="oe_stat_button" icon="brush"
                         invisible="personalization_count == 0">
                     <field name="personalization_count" widget="statinfo" string="Designs"/>
                 </button>
             </div>
             <header position="inside">
                 <button name="action_download_artwork" type="object"
-                        string="Download Artwork" icon="fa-download"
+                        string="Download Artwork" icon="download"
                         invisible="artwork_state == 'none'"/>
             </header>
             <group name="order_details" position="inside">
@@ -26,7 +26,7 @@
             <xpath expr="//field[@name='order_line']/list" position="inside">
                 <field name="has_personalization" column_invisible="True"/>
                 <button name="action_view_personalizations" type="object"
-                        icon="fa-paint-brush" title="View Design"
+                        icon="brush" title="View Design"
                         invisible="not has_personalization"/>
             </xpath>
         </field>

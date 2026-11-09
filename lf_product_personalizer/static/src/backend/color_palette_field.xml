@@ -2,21 +2,21 @@
 <templates xml:space="preserve">
     <t t-name="lf_product_personalizer.ColorPaletteField">
         <div class="o_lf_palette_field d-flex flex-wrap align-items-center gap-2">
-            <t t-foreach="colors" t-as="color" t-key="color_index">
+            <t t-foreach="this.colors()" t-as="color" t-key="color_index">
                 <button type="button" class="o_lf_palette_swatch"
                         t-att-style="'background-color: ' + color"
-                        t-att-title="props.readonly ? color : color + ' - ' + removeTitle"
-                        t-att-disabled="props.readonly"
+                        t-att-title="this.props.readonly ? color : color + ' - ' + this.removeTitle()"
+                        t-att-disabled="this.props.readonly"
                         t-on-click="() => this.onRemove(color_index)">
-                    <i t-if="!props.readonly" class="fa fa-times" role="img" aria-hidden="true"/>
+                    <i t-if="!this.props.readonly" class="oi" data-icon="close" role="img" aria-hidden="true"/>
                 </button>
             </t>
-            <label t-if="!props.readonly" class="o_lf_palette_add btn btn-sm btn-secondary mb-0"
+            <label t-if="!this.props.readonly" class="o_lf_palette_add btn btn-sm btn-secondary mb-0"
                    title="Add a colour">
-                <i class="fa fa-plus" role="img" aria-hidden="true"/>
-                <input type="color" class="visually-hidden" value="#000000" t-on-change="onAdd"/>
+                <i class="oi" data-icon="add" role="img" aria-hidden="true"/>
+                <input type="color" class="visually-hidden" value="#000000" t-on-change="this.onAdd"/>
             </label>
-            <span t-if="!colors.length" class="text-muted">
+            <span t-if="!this.colors().length" class="text-muted">
                 Default colours, customers can also pick any colour
             </span>
         </div>

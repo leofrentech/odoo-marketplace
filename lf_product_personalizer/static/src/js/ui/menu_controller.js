@@ -93,7 +93,7 @@ export class MenuController {
             );
             if (allowCustom) {
                 const label = el("label", { classes: "o_lf_swatch o_lf_swatch_custom", attrs: { title: _t("Custom colour") } });
-                label.append(icon("fa-eyedropper"), el("input", {
+                label.append(icon("colorize"), el("input", {
                     classes: "o_lf_color_input visually-hidden",
                     attrs: { type: "color", "aria-label": _t("Custom colour") },
                 }));
@@ -120,7 +120,7 @@ export class MenuController {
                     classes: "o_lf_tile o_lf_shape w-100",
                     attrs: { type: "button", "data-shape": shape.id, title: shape.name },
                 });
-                button.append(icon(`${shape.icon} fa-2x`), el("small", { text: shape.name }));
+                button.append(icon(shape.icon, `${shape.iconClasses || ""} oi-2x`), el("small", { text: shape.name }));
                 col.appendChild(button);
                 return col;
             })

@@ -19,7 +19,7 @@ class ProductDesignPreset(models.Model):
         help="Offer this design on every product using this design template.",
     )
     design_json = fields.Text(
-        required=True, help="Design per area id, as saved by the editor."
+        required=True, help="Design per area id, as saved by the editor.",
     )
     preview_image = fields.Image(max_width=1024, max_height=1024)
 

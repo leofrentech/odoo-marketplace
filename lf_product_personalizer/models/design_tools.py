@@ -36,7 +36,7 @@ DATA_URL_RE = re.compile(r"^data:image/(png|jpeg|jpg|webp|gif);base64,(.*)$", re
 SAFE_SRC_RE = re.compile(
     r"^/web/(content/\d+\?access_token=[\w-]+"
     r"|image/product\.design\.clipart/\d+/image"
-    r"|image/product\.product/\d+/image_1920)$"
+    r"|image/product\.product/\d+/image_1920)$",
 )
 MAGIC_BYTES = {
     "image/png": (b"\x89PNG\r\n\x1a\n",),
@@ -47,14 +47,10 @@ MAGIC_BYTES = {
 
 
 def max_upload_bytes(env):
-    value = env["ir.config_parameter"].sudo().get_param(
-        "lf_product_personalizer.max_upload_mb", DEFAULT_MAX_UPLOAD_MB
+    megabytes = env["ir.config_parameter"].sudo().get_int(
+        "lf_product_personalizer.max_upload_mb", DEFAULT_MAX_UPLOAD_MB,
     )
-    try:
-        megabytes = max(1, int(value))
-    except (TypeError, ValueError):
-        megabytes = DEFAULT_MAX_UPLOAD_MB
-    return megabytes * 1024 * 1024
+    return max(1, megabytes) * 1024 * 1024
 
 
 def decode_data_url(env, data_url, max_bytes):
@@ -66,7 +62,7 @@ def decode_data_url(env, data_url, max_bytes):
     payload = match.group(2)
     if len(payload) * 3 // 4 > max_bytes:
         raise UserError(
-            env._("This image is too large (maximum %s MB).", max_bytes // (1024 * 1024))
+            env._("This image is too large (maximum %s MB).", max_bytes // (1024 * 1024)),
         )
     try:
         raw = base64.b64decode(payload, validate=True)
@@ -98,7 +94,7 @@ def sanitize_canvas_json(env, canvas_json, max_text_length=0):
         raise UserError(env._("The design data is invalid."))
     if len(objects) > MAX_OBJECTS_PER_AREA:
         raise UserError(
-            env._("A design can contain at most %s elements per area.", MAX_OBJECTS_PER_AREA)
+            env._("A design can contain at most %s elements per area.", MAX_OBJECTS_PER_AREA),
         )
     text_limit = min(max_text_length or MAX_TEXT_CHARS, MAX_TEXT_CHARS)
     clean = []
@@ -114,7 +110,7 @@ def sanitize_canvas_json(env, canvas_json, max_text_length=0):
                 raise UserError(env._("The design data is invalid."))
             if len(text) > text_limit:
                 raise UserError(
-                    env._("Texts are limited to %s characters.", text_limit)
+                    env._("Texts are limited to %s characters.", text_limit),
                 )
         if obj_type == "image":
             src = obj.get("src")
@@ -197,12 +193,8 @@ def sanitize_svg(env, svg, max_bytes):
         for attr in list(element.attrib):
             value = element.attrib[attr].strip().lower()
             name = etree.QName(attr).localname.lower()
-            if name.startswith("on"):
-                del element.attrib[attr]
-            elif name == "href" and not (
+            if name.startswith("on") or (name == "href" and not (
                 value.startswith("#") or DATA_URL_RE.match(element.attrib[attr].strip())
-            ):
-                del element.attrib[attr]
-            elif "javascript:" in value or "expression(" in value:
+            )) or "javascript:" in value or "expression(" in value:
                 del element.attrib[attr]
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8")

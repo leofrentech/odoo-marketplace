@@ -11,13 +11,12 @@ class PersonalizerPortal(CustomerPortal):
     def _lf_designs_domain(self):
         return [("partner_id", "=", request.env.user.partner_id.id)]
 
-    def _prepare_home_portal_values(self, counters):
-        values = super()._prepare_home_portal_values(counters)
-        if "design_count" in counters:
-            values["design_count"] = request.env["product.design.saved"].sudo().search_count(
-                self._lf_designs_domain()
-            )
-        return values
+    def _prepare_portal_counter_values(self, counter):
+        # sudo: portal users have no access to saved designs, the domain
+        # limits the count to their own.
+        if counter == "design_count":
+            return "product.design.saved", self._lf_designs_domain(), "sudo"
+        return super()._prepare_portal_counter_values(counter)
 
     @http.route("/my/designs", type="http", auth="user", website=True)
     def portal_my_designs(self, **kw):
@@ -32,7 +31,7 @@ class PersonalizerPortal(CustomerPortal):
     )
     def portal_delete_design(self, design_id, **kw):
         design = request.env["product.design.saved"].sudo().search(
-            self._lf_designs_domain() + [("id", "=", design_id)]
+            self._lf_designs_domain() + [("id", "=", design_id)],
         )
         if not design:
             raise NotFound()

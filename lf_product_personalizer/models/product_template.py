@@ -23,7 +23,7 @@ class ProductTemplate(models.Model):
         help="Reuse the areas of a design template. Areas defined on the product take priority.",
     )
     design_set_area_ids = fields.One2many(
-        related="design_set_id.area_ids", string="Template Areas"
+        related="design_set_id.area_ids", string="Template Areas",
     )
     design_config_ids = fields.One2many(
         "product.design.config",
@@ -81,7 +81,7 @@ class ProductTemplate(models.Model):
             for color in template._lf_split_palette():
                 if not HEX_COLOR.match(color):
                     raise ValidationError(
-                        self.env._("'%s' is not a valid colour. Use the #RRGGBB format.", color)
+                        self.env._("'%s' is not a valid colour. Use the #RRGGBB format.", color),
                     )
 
     def _lf_split_palette(self):
@@ -93,14 +93,14 @@ class ProductTemplate(models.Model):
         self.ensure_one()
         areas = self.design_config_ids or self.design_set_id.area_ids
         return areas.filtered(
-            lambda area: not area.product_variant_id or area.product_variant_id == variant
+            lambda area: not area.product_variant_id or area.product_variant_id == variant,
         )
 
     def _lf_is_personalizable(self):
         self.ensure_one()
         return bool(
             self.is_product_personalization
-            and (self.design_config_ids or self.design_set_id.area_ids)
+            and (self.design_config_ids or self.design_set_id.area_ids),
         )
 
     def _lf_get_fonts(self):

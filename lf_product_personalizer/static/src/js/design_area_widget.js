@@ -1,6 +1,9 @@
+import { Component, onWillUnmount, proxy, signal, useProps } from "@odoo/owl";
+
 import { registry } from "@web/core/registry";
-import { Component, onWillUnmount, useEffect, useRef, useState } from "@odoo/owl";
+import { useLayoutEffect } from "@web/owl2/utils";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+
 import { EDITOR_SIZE, loadFabric } from "./utils/fabric_loader";
 
 /**
@@ -9,24 +12,24 @@ import { EDITOR_SIZE, loadFabric } from "./utils/fabric_loader";
  */
 export class DesignAreaWidget extends Component {
     static template = "lf_product_personalizer.DesignAreaWidget";
-    static props = { ...standardFieldProps };
+    props = useProps(standardFieldProps);
+    canvasRef = signal.ref();
+    containerRef = signal.ref();
 
     setup() {
-        this.canvasRef = useRef("canvas");
-        this.containerRef = useRef("container");
-        this.state = useState({ ready: false });
+        this.state = proxy({ ready: false });
         this.canvas = null;
         this.rect = null;
         this.imageKey = null;
         this.syncing = false;
 
-        useEffect(
+        useLayoutEffect(
             (image) => {
                 this.renderImage(image);
             },
             () => [this.props.record.data[this.props.name]]
         );
-        useEffect(
+        useLayoutEffect(
             () => {
                 this.syncRectFromRecord();
             },
@@ -41,18 +44,20 @@ export class DesignAreaWidget extends Component {
         });
     }
 
-    get hasImage() {
+    hasImage() {
         return Boolean(this.props.record.data[this.props.name]);
     }
 
-    get imageUrl() {
+    imageUrl() {
+        // Odoo 20 binary values are objects: `content` (base64) is only
+        // there for a new or changed image, a saved one is served by URL.
         const record = this.props.record;
         const value = record.data[this.props.name];
-        if (record.resId && !record.dirtyFields?.has?.(this.props.name) && !String(value).startsWith("data:")) {
-            const unique = encodeURIComponent(record.data.write_date || "");
-            return `/web/image/${record.resModel}/${record.resId}/${this.props.name}?unique=${unique}`;
+        if (value?.content) {
+            return `data:image/png;base64,${value.content}`;
         }
-        return `data:image/png;base64,${value}`;
+        const unique = encodeURIComponent(value?.checksum || record.data.write_date || "");
+        return `/web/image/${record.resModel}/${record.resId}/${this.props.name}?unique=${unique}`;
     }
 
     async renderImage(image) {
@@ -66,17 +71,18 @@ export class DesignAreaWidget extends Component {
             this.state.ready = false;
             return;
         }
-        const key = `${this.props.record.resId}-${String(image).length}-${String(image).slice(-16)}`;
+        const content = image.content || "";
+        const key = `${this.props.record.resId}-${image.size}-${content.slice(-16)}`;
         if (key === this.imageKey && this.canvas) {
             return;
         }
         this.imageKey = key;
         const fabric = await loadFabric();
-        if (!this.canvasRef.el) {
+        if (!this.canvasRef()) {
             return;
         }
         if (!this.canvas) {
-            this.canvas = new fabric.Canvas(this.canvasRef.el, {
+            this.canvas = new fabric.Canvas(this.canvasRef(), {
                 width: EDITOR_SIZE,
                 height: EDITOR_SIZE,
                 backgroundColor: "#f5f5f5",
@@ -86,10 +92,10 @@ export class DesignAreaWidget extends Component {
             this.canvas.on("object:scaling", () => this.clampRect());
             this.canvas.on("object:modified", () => this.writeRect());
             this.resizeObserver = new ResizeObserver(() => this.resize());
-            this.resizeObserver.observe(this.containerRef.el);
+            this.resizeObserver.observe(this.containerRef());
         }
         fabric.Image.fromURL(
-            this.imageUrl,
+            this.imageUrl(),
             (img) => {
                 if (img && img.width) {
                     const scale = Math.min(EDITOR_SIZE / img.width, EDITOR_SIZE / img.height);
@@ -112,10 +118,10 @@ export class DesignAreaWidget extends Component {
     }
 
     resize() {
-        if (!this.canvas || !this.containerRef.el) {
+        if (!this.canvas || !this.containerRef()) {
             return;
         }
-        const size = Math.min(this.containerRef.el.clientWidth || EDITOR_SIZE, EDITOR_SIZE);
+        const size = Math.min(this.containerRef().clientWidth || EDITOR_SIZE, EDITOR_SIZE);
         this.canvas.setDimensions({ width: size, height: size });
         this.canvas.setZoom(size / EDITOR_SIZE);
         this.canvas.requestRenderAll();

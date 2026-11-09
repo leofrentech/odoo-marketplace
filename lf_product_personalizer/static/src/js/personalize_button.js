@@ -1,10 +1,14 @@
 import { Interaction } from "@web/public/interaction";
 import { registry } from "@web/core/registry";
 
-/** Variant currently selected on the product page. */
+/**
+ * Variant currently selected on the product page: Odoo 20 keeps it on the
+ * `data-product-id` of the product page elements, the add to cart button
+ * included, and updates it on each variant change.
+ */
 function selectedVariantId(fromEl) {
-    const root = fromEl.closest("form") || fromEl.closest("#product_detail") || document;
-    return parseInt(root.querySelector("input.product_id[name='product_id']")?.value) || null;
+    const root = fromEl.closest("#product_detail") || document;
+    return parseInt(root.querySelector("[name='add_to_cart'][data-product-id]")?.dataset.productId) || null;
 }
 
 /**

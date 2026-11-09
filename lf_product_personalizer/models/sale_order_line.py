@@ -34,7 +34,7 @@ class SaleOrderLine(models.Model):
         help="Designs made by the customer for this line.",
     )
     has_personalization = fields.Boolean(
-        compute="_compute_has_personalization", store=True
+        compute="_compute_has_personalization", store=True,
     )
 
     @api.depends("personalization_ids")
@@ -53,7 +53,7 @@ class SaleOrderLine(models.Model):
         if not customized:
             return 0.0
         amount = self.product_id.product_tmpl_id.personalization_fee + sum(
-            customized.mapped("price_extra")
+            customized.mapped("price_extra"),
         )
         if not amount:
             return 0.0
@@ -76,7 +76,7 @@ class SaleOrderLine(models.Model):
         customized = self.personalization_ids.filtered("is_customized")
         if customized:
             description += "\n" + self.env._(
-                "Personalized: %s", ", ".join(customized.mapped("design_type"))
+                "Personalized: %s", customized.mapped("design_type"),
             )
         return description
 
@@ -111,7 +111,7 @@ class SaleOrderLine(models.Model):
             if not isinstance(design, dict):
                 raise UserError(self.env._("The design data is invalid."))
             canvas = sanitize_canvas_json(
-                self.env, design.get("json"), template.personalization_max_text_length
+                self.env, design.get("json"), template.personalization_max_text_length,
             )
             customized = bool(canvas["objects"])
             if area.is_required and not customized:
@@ -144,7 +144,7 @@ class SaleOrderLine(models.Model):
                 raw, _mimetype = decode_data_url(self.env, design["preview"], max_bytes)
                 values["product_image"] = self.env[
                     "sale.order.line.personalization"
-                ]._lf_b64(raw)
+                ]._lf_binary(raw)
             elif area.design_image:
                 values["product_image"] = area.design_image
             if customized and design.get("print"):
@@ -152,11 +152,11 @@ class SaleOrderLine(models.Model):
                 raw, _mimetype = decode_data_url(self.env, design["print"], max_bytes * 4)
                 values["print_image"] = self.env[
                     "sale.order.line.personalization"
-                ]._lf_b64(raw)
+                ]._lf_binary(raw)
             if customized and design.get("svg"):
                 values["print_svg"] = self.env[
                     "sale.order.line.personalization"
-                ]._lf_b64(sanitize_svg(self.env, design["svg"], max_bytes * 4))
+                ]._lf_binary(sanitize_svg(self.env, design["svg"], max_bytes * 4))
             values_list.append(values)
 
         if not any(values["is_customized"] for values in values_list):
@@ -168,7 +168,7 @@ class SaleOrderLine(models.Model):
             if self.currency_id.compare_amounts(new_extra, old_extra) > 0:
                 raise UserError(self.env._(
                     "Your order did not include a paid personalization for all these areas. "
-                    "Please contact us to add one."
+                    "Please contact us to add one.",
                 ))
 
         Personalization = self.env["sale.order.line.personalization"].sudo()

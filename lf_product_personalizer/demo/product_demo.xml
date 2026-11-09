@@ -8,7 +8,7 @@
         <field name="design_set_id" ref="demo_design_set_tshirt"/>
         <field name="sequence">1</field>
         <field name="design_type">Front</field>
-        <field name="design_image" type="base64" file="lf_product_personalizer/static/img/demo/tshirt_front.png"/>
+        <field name="design_image" type="bytes" file="lf_product_personalizer/static/img/demo/tshirt_front.png"/>
         <field name="is_restricted_area" eval="True"/>
         <field name="bound_x">280</field>
         <field name="bound_y">200</field>
@@ -19,7 +19,7 @@
         <field name="design_set_id" ref="demo_design_set_tshirt"/>
         <field name="sequence">2</field>
         <field name="design_type">Back</field>
-        <field name="design_image" type="base64" file="lf_product_personalizer/static/img/demo/tshirt_back.png"/>
+        <field name="design_image" type="bytes" file="lf_product_personalizer/static/img/demo/tshirt_back.png"/>
         <field name="is_restricted_area" eval="True"/>
         <field name="bound_x">270</field>
         <field name="bound_y">180</field>
@@ -34,7 +34,7 @@
         <field name="list_price">19.0</field>
         <field name="type">consu</field>
         <field name="is_published" eval="True"/>
-        <field name="image_1920" type="base64" file="lf_product_personalizer/static/img/demo/tshirt_front.png"/>
+        <field name="image_1920" type="bytes" file="lf_product_personalizer/static/img/demo/tshirt_front.png"/>
         <field name="is_product_personalization" eval="True"/>
         <field name="design_set_id" ref="demo_design_set_tshirt"/>
         <field name="personalization_fee">5.0</field>
@@ -51,7 +51,7 @@
         <field name="list_price">29.0</field>
         <field name="type">consu</field>
         <field name="is_published" eval="True"/>
-        <field name="image_1920" type="base64" file="lf_product_personalizer/static/img/demo/wood_sign.png"/>
+        <field name="image_1920" type="bytes" file="lf_product_personalizer/static/img/demo/wood_sign.png"/>
         <field name="is_product_personalization" eval="True"/>
         <field name="personalization_allow_image" eval="False"/>
         <field name="personalization_allow_clipart" eval="False"/>
@@ -63,7 +63,7 @@
     <record id="demo_area_sign" model="product.design.config">
         <field name="product_tmpl_id" ref="demo_product_sign"/>
         <field name="design_type">Engraving</field>
-        <field name="design_image" type="base64" file="lf_product_personalizer/static/img/demo/wood_sign.png"/>
+        <field name="design_image" type="bytes" file="lf_product_personalizer/static/img/demo/wood_sign.png"/>
         <field name="is_restricted_area" eval="True"/>
         <field name="is_required" eval="True"/>
         <field name="bound_x">130</field>

@@ -17,7 +17,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep editing</button>
                             <button type="button" class="btn btn-primary o_lf_add_to_cart" data-bs-dismiss="modal">
-                                <i class="fa fa-shopping-cart me-1" role="img" aria-hidden="true"/>
+                                <i class="oi me-1" data-icon="shopping_cart" role="img" aria-hidden="true"/>
                                 <t t-if="revision">Send for review</t>
                                 <t t-else="">Add to cart</t>
                             </button>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- "My Designs" card of the customer portal home (Odoo 20 portal cards) -->
+    <record id="portal_my_designs_entry" model="portal.entry">
+        <field name="name">My Designs</field>
+        <field name="description">Reopen, order again or share your designs</field>
+        <field name="url">/my/designs</field>
+        <field name="image" type="bytes" file="lf_product_personalizer/static/src/img/designs.svg"/>
+        <field name="placeholder_count">design_count</field>
+        <field name="category">client_category</field>
+        <field name="sequence" eval="60"/>
+    </record>
+</odoo>

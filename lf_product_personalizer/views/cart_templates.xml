@@ -15,18 +15,18 @@
                 </t>
             </div>
         </xpath>
-        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/a[hasclass('js_delete_product')]"
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']/button[hasclass('js_delete_product')]"
                position="before">
             <a t-if="line.personalization_ids" t-attf-href="/shop/personalize/edit/#{line.id}"
                class="small o_lf_edit_design">
-                <i class="fa fa-pencil me-1" role="img" aria-hidden="true"/>Edit design
+                <i class="oi me-1" data-icon="edit" role="img" aria-hidden="true"/>Edit design
             </a>
         </xpath>
         <xpath expr="//div[@name='o_wsale_cart_line_button_container_mobile']/button[hasclass('js_delete_product')]"
                position="before">
             <a t-if="line.personalization_ids" t-attf-href="/shop/personalize/edit/#{line.id}"
                class="btn btn-link px-2 o_lf_edit_design" title="Edit design" aria-label="Edit design">
-                <i class="fa fa-fw fa-pencil" role="img" aria-hidden="true"/>
+                <i class="oi oi-fw" data-icon="edit" role="img" aria-hidden="true"/>
             </a>
         </xpath>
     </template>

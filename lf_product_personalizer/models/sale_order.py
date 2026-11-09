@@ -6,7 +6,7 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     personalization_ids = fields.One2many(
-        "sale.order.line.personalization", "order_id", string="Designs"
+        "sale.order.line.personalization", "order_id", string="Designs",
     )
     personalization_count = fields.Integer(compute="_compute_personalization_count")
     artwork_state = fields.Selection(
@@ -32,7 +32,7 @@ class SaleOrder(models.Model):
     def _compute_artwork_state(self):
         for order in self:
             states = set(
-                order.personalization_ids.filtered("is_customized").mapped("approval_state")
+                order.personalization_ids.filtered("is_customized").mapped("approval_state"),
             )
             if not states:
                 order.artwork_state = "none"
@@ -64,7 +64,7 @@ class SaleOrder(models.Model):
             if template.personalization_required and template._lf_is_personalizable():
                 raise UserError(
                     self.env._("%s must be personalized: use the 'Personalize' button.",
-                      template.display_name)
+                      template.display_name),
                 )
         return super()._cart_add(product_id, quantity, **kwargs)
 
@@ -96,7 +96,7 @@ class SaleOrder(models.Model):
         summary = self._lf_artwork_activity_summary()
         for order in self.filtered(lambda order: order.artwork_state == "approved"):
             order.activity_ids.filtered(
-                lambda act: act.summary == summary
+                lambda act: act.summary == summary,
             ).action_feedback(feedback=self.env._("Artwork approved"))
 
     def _lf_notify_design_revised(self, line):

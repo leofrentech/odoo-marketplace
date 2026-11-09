@@ -37,7 +37,7 @@ export class LayerHandler {
                 if (isImage(obj)) {
                     thumb.appendChild(el("img", { attrs: { src: obj.getSrc(), alt: "" } }));
                 } else {
-                    thumb.appendChild(icon(isText(obj) ? "fa-font" : "fa-star-o"));
+                    thumb.appendChild(icon(isText(obj) ? "text_fields" : "star"));
                 }
                 const name = el("button", {
                     classes: "btn btn-link text-start text-truncate flex-grow-1 p-0 o_lf_layer_name",
@@ -54,18 +54,18 @@ export class LayerHandler {
     _actions(obj) {
         const group = el("div", { classes: "btn-group btn-group-sm flex-shrink-0" });
         const actions = [
-            ["fa-arrow-up", _t("Bring forward"), () => this.canvas.bringForward(obj)],
-            ["fa-arrow-down", _t("Send backward"), () => this.canvas.sendBackwards(obj)],
-            ["fa-clone", _t("Duplicate"), () => this.duplicate(obj)],
-            [obj.lfLocked ? "fa-lock" : "fa-unlock", _t("Lock"), () => this.toggleLock(obj)],
-            ["fa-trash-o", _t("Delete"), () => this.remove(obj)],
+            ["arrow_upward", _t("Bring forward"), () => this.canvas.bringForward(obj)],
+            ["arrow_downward", _t("Send backward"), () => this.canvas.sendBackwards(obj)],
+            ["content_copy", _t("Duplicate"), () => this.duplicate(obj)],
+            [obj.lfLocked ? "lock" : "lock_open", _t("Lock"), () => this.toggleLock(obj)],
+            ["delete", _t("Delete"), () => this.remove(obj)],
         ];
-        for (const [faClass, title, action] of actions) {
+        for (const [iconName, title, action] of actions) {
             const button = el("button", {
                 classes: "btn btn-light",
                 attrs: { type: "button", title, "aria-label": title },
             });
-            button.appendChild(icon(faClass));
+            button.appendChild(icon(iconName));
             button.addEventListener("click", (ev) => {
                 ev.stopPropagation();
                 action();

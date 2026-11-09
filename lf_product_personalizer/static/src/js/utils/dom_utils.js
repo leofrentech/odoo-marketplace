@@ -22,8 +22,17 @@ export function el(tag, { classes = "", attrs = {}, text = null } = {}) {
     return node;
 }
 
-export function icon(faClass) {
-    return el("i", { classes: `fa ${faClass}`, attrs: { role: "img", "aria-hidden": "true" } });
+/**
+ * Odoo icon (Material Symbols, the icon font of Odoo 20).
+ *
+ * @param {string} name icon name, e.g. "delete"
+ * @param {string} [classes] extra classes, e.g. "oi-filled oi-2x"
+ */
+export function icon(name, classes = "") {
+    return el("i", {
+        classes: `oi ${classes}`.trim(),
+        attrs: { "data-icon": name, role: "img", "aria-hidden": "true" },
+    });
 }
 
 /** Format an amount with the website currency information. */

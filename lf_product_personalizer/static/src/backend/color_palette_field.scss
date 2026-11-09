@@ -9,13 +9,13 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        .fa {
+        .oi {
             opacity: 0;
             color: $white;
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
             font-size: 0.8rem;
         }
-        &:hover:not(:disabled) .fa {
+        &:hover:not(:disabled) .oi {
             opacity: 1;
         }
     }

@@ -21,7 +21,7 @@ def migrate(cr, version):
         )
     cr.execute(
         "UPDATE sale_order_line SET has_personalization = TRUE WHERE id IN "
-        "(SELECT sale_order_line_id FROM sale_order_line_personalization)"
+        "(SELECT sale_order_line_id FROM sale_order_line_personalization)",
     )
     # Stored fields computed before this script ran must see the new flags.
     env = api.Environment(cr, SUPERUSER_ID, {})

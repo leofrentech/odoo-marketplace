@@ -24,27 +24,10 @@
                     <b t-out="design.design_type"/>: <t t-out="design.approval_note"/>
                 </div>
                 <a t-att-href="lf_rejected[0]._lf_revision_url()" class="btn btn-sm btn-danger mt-2">
-                    <i class="fa fa-pencil me-1" role="img" aria-hidden="true"/>Fix my design
+                    <i class="oi me-1" data-icon="edit" role="img" aria-hidden="true"/>Fix my design
                 </a>
             </div>
         </xpath>
-    </template>
-
-    <!-- Portal home entry -->
-    <template id="portal_my_home_designs" inherit_id="portal.portal_my_home"
-              name="My Designs" customize_show="True" priority="40">
-        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
-            <t t-set="portal_client_category_enable" t-value="True"/>
-        </xpath>
-        <div id="portal_client_category" position="inside">
-            <t t-call="portal.portal_docs_entry">
-                <t t-set="icon" t-value="'/lf_product_personalizer/static/src/img/designs.svg'"/>
-                <t t-set="title">My Designs</t>
-                <t t-set="url" t-value="'/my/designs'"/>
-                <t t-set="text">Reopen, order again or share your designs</t>
-                <t t-set="placeholder_count" t-value="'design_count'"/>
-            </t>
-        </div>
     </template>
 
     <template id="portal_breadcrumbs_designs" inherit_id="portal.portal_breadcrumbs" priority="40">
@@ -54,11 +37,8 @@
     </template>
 
     <template id="portal_my_designs" name="My Designs">
-        <t t-call="portal.portal_layout">
-            <t t-set="breadcrumbs_searchbar" t-value="True"/>
-            <t t-call="portal.portal_searchbar">
-                <t t-set="title">My Designs</t>
-            </t>
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True" title.translate="My Designs"/>
             <div t-if="not designs" class="alert alert-info mt-3" role="status">
                 You have no saved design yet. Use <b>Save to my account</b> in the design editor.
             </div>
@@ -79,14 +59,14 @@
                             <button type="button" class="btn btn-sm btn-light o_lf_copy_link"
                                     t-att-data-url="design.get_base_url() + design.get_portal_url()"
                                     title="Copy share link" aria-label="Copy share link">
-                                <i class="fa fa-link" role="img" aria-hidden="true"/>
+                                <i class="oi" data-icon="link" role="img" aria-hidden="true"/>
                             </button>
                             <form t-attf-action="/my/designs/#{design.id}/delete" method="post"
                                   class="o_lf_delete_design">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                 <button type="submit" class="btn btn-sm btn-light text-danger"
                                         title="Delete" aria-label="Delete">
-                                    <i class="fa fa-trash-o" role="img" aria-hidden="true"/>
+                                    <i class="oi" data-icon="delete" role="img" aria-hidden="true"/>
                                 </button>
                             </form>
                         </div>

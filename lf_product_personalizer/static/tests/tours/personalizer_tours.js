@@ -3,6 +3,9 @@ import { registry } from "@web/core/registry";
 registry.category("web_tour.tours").add("lf_personalizer_editor_tour", {
     steps: () => [
         { trigger: ".o_lf_canvas_wrapper .canvas-container" },
+        // Wait until the area is loaded (its printable zone hint is shown):
+        // objects added while it loads are not recorded.
+        { trigger: ".o_lf_hint:not(.d-none)" },
         { trigger: ".o_lf_tool[data-panel='text']", run: "click" },
         { trigger: ".o_lf_text_input", run: "edit Hello Tour" },
         { trigger: ".o_lf_add_text", run: "click" },

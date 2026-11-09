@@ -11,10 +11,10 @@ class ProductDesignSaved(models.Model):
 
     name = fields.Char(required=True)
     partner_id = fields.Many2one(
-        "res.partner", string="Customer", required=True, index=True, ondelete="cascade"
+        "res.partner", string="Customer", required=True, index=True, ondelete="cascade",
     )
     product_tmpl_id = fields.Many2one(
-        "product.template", string="Product", required=True, ondelete="cascade"
+        "product.template", string="Product", required=True, ondelete="cascade",
     )
     product_id = fields.Many2one("product.product", string="Variant", ondelete="set null")
     website_id = fields.Many2one("website", ondelete="set null")

@@ -4,7 +4,7 @@
          The confirmation email attaches this PDF, so customers see them too. -->
     <template id="report_saleorder_document_personalization"
               inherit_id="sale.report_saleorder_document">
-        <xpath expr="//td[@name='td_product_name']/span[@t-field='line.name']" position="after">
+        <xpath expr="//td[@name='td_product_name']//div[hasclass('o_product_name_cell')]" position="inside">
             <t t-set="lf_designs" t-value="line.sudo().personalization_ids.filtered('is_customized')"/>
             <div t-if="lf_designs" class="mt-2">
                 <t t-foreach="lf_designs" t-as="design">
