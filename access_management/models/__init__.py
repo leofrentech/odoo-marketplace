@@ -3,13 +3,13 @@ from . import access_rule_chatter_setting
 from . import access_rule_field
 from . import access_rule_hidden_node
 from . import access_rule_hidden_report
+from . import access_rule_model_access
 from . import access_rule_restricted_view
 from . import access_view_node
 from . import base
+from . import ir_access
 from . import ir_actions
 from . import ir_actions_act_window
-from . import ir_model_access
-from . import ir_rule
 from . import ir_ui_menu
 from . import mail_thread
 from . import res_users

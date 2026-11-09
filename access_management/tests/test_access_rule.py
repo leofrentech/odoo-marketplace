@@ -429,9 +429,7 @@ class TestAccessRule(TransactionCase):
         self.assertIn(partner, Partner.search([]))
 
     def test_model_access_checkbox_coupling(self):
-        line = self.env["ir.rule"].with_context(
-            access_management_model_access=True
-        ).new({
+        line = self.env["access.rule.model.access"].new({
             "model_id": self.partner_model.id,
             "perm_read": True,
             "perm_write": True,
@@ -477,9 +475,7 @@ class TestAccessRule(TransactionCase):
         rule.model_access_ids.name = "Renamed"
         rule.unlink()
 
-        # but not Odoo's own record rules
-        core_rule = self.env["ir.rule"].search(
-            [("access_rule_id", "=", False)], limit=1
-        )
+        # but not Odoo's own accesses
+        core_access = self.env["ir.access"].search([], limit=1)
         with self.assertRaises(AccessError):
-            core_rule.with_user(admin).domain_force = "[(1, '=', 1)]"
+            core_access.with_user(admin).domain = "[(1, '=', 1)]"

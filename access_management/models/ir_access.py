@@ -1,13 +1,13 @@
-from odoo import api, models
+from odoo import models
 from odoo.exceptions import AccessError
 
 
-class IrModelAccess(models.Model):
+class IrAccess(models.Model):
     # ------------------------------------------------------------------
     # 1. PRIVATE ATTRIBUTES
     # ------------------------------------------------------------------
 
-    _inherit = "ir.model.access"
+    _inherit = "ir.access"
 
     # ------------------------------------------------------------------
     # 2. DEFAULT METHODS AND default_get
@@ -41,28 +41,12 @@ class IrModelAccess(models.Model):
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
 
-    @api.model
-    def check(self, model, mode="read", raise_exception=True):
-        """The Model Access lines of the user's access rules decide the
-        operation on their model: granted when a line ticks it, even if the
-        user's groups don't, and refused otherwise."""
-        if self.env.su:
-            return True
-
-        lines = self.env["access.rule"]._get_model_access_lines(model)
-        if not lines:
-            return super().check(model, mode, raise_exception)
-
-        if any(line.allows(mode) for line in lines):
-            return True
-        if raise_exception:
-            raise self._make_access_error(model, mode) from None
-        return False
-
-    def _make_access_error(self, model: str, mode: str):
-        lines = self.env["access.rule"]._get_model_access_lines(model)
-        if not lines or any(line.allows(mode) for line in lines):
-            return super()._make_access_error(model, mode)
+    def _make_model_access_error(self, model_name, operation):
+        """Name the access rules refusing the operation, rather than the
+        groups allowing it: the groups don't decide for these users."""
+        lines = self.env["access.rule"]._get_model_access_lines(model_name)
+        if not lines or any(line.allows(operation) for line in lines):
+            return super()._make_model_access_error(model_name, operation)
 
         operations = {
             "read": self.env._("read"),
@@ -76,9 +60,26 @@ class IrModelAccess(models.Model):
                 "(%(document_model)s) records.\n\n"
                 "The access rule %(rules)s does not allow it. Contact your "
                 "administrator if you need this access.",
-                operation=operations[mode],
-                document_kind=self.env["ir.model"]._get(model).name or model,
-                document_model=model,
+                operation=operations[operation],
+                document_kind=self.env["ir.model"]._get(model_name).name or model_name,
+                document_model=model_name,
                 rules=", ".join(sorted({line.rule_name for line in lines})),
             )
         )
+
+    def _make_record_access_error(self, records, operation):
+        error = super()._make_record_access_error(records, operation)
+        lines = self.env["access.rule"]._get_model_access_lines(records._name)
+        if not lines:
+            return error
+
+        access_error = AccessError(
+            self.env._(
+                "%(error)s\n\nThese records are limited by the access rule: %(rules)s",
+                error=error.args[0],
+                rules=", ".join(sorted({line.rule_name for line in lines})),
+            )
+        )
+        if context := getattr(error, "context", None):
+            access_error.context = context
+        return access_error

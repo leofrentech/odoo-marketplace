@@ -1,6 +1,6 @@
 {
     "name": "Access Management - User Access Rights, Hide Menus, Fields & Buttons",
-    "version": "19.0.4.0.1",
+    "version": "20.0.4.0.1",
     "summary": "Per-user rules for model access, menus, views, fields, buttons, "
     "reports, chatter, import, export and debug mode",
     "category": "Tools",
@@ -11,11 +11,10 @@ Easy Access Rules: choose, per user and company, which operations users may do
 on each model (enforced on the server) and which menus, views, fields, buttons,
 pages, links, reports and chatter parts they see.
 """,
-    "depends": ["base", "mail"],
+    "depends": ["mail"],
     "data": [
         "security/access_management_groups.xml",
-        "security/ir.model.access.csv",
-        "security/access_rule_security.xml",
+        "security/ir.access.csv",
         "views/access_rule_views.xml",
     ],
     "assets": {
@@ -28,7 +27,6 @@ pages, links, reports and chatter parts they see.
             "access_management/static/tests/tours/*",
         ],
     },
-    "uninstall_hook": "uninstall_hook",
     "installable": True,
     "application": True,
     "auto_install": False,

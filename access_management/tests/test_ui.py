@@ -36,7 +36,7 @@ class TestUi(HttpCase):
         user = new_test_user(
             self.env,
             "am_ui_mc",
-            groups="base.group_user",
+            groups="base.group_user,base.group_user_regular",
             company_ids=[Command.set([company_a.id, company_b.id])],
             company_id=company_a.id,
         )

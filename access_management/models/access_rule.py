@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from odoo import api, fields, models, tools
+from odoo import api, fields, models
 from odoo.fields import Domain
 
 # Models the Model Access lines can't target: restricting them breaks the
@@ -91,7 +91,7 @@ class AccessRule(models.Model):
 
     # Model Access
     model_access_ids = fields.One2many(
-        "ir.rule",
+        "access.rule.model.access",
         "access_rule_id",
         "Model Access",
         help="Operations allowed per model, enforced on the server.",
@@ -227,23 +227,23 @@ class AccessRule(models.Model):
     # 7. CRUD METHODS
     # ------------------------------------------------------------------
 
-    # Menus, bindings and record rules are cached per user: drop the caches
+    # Menus, bindings and access domains are cached per user: drop the caches
     # whenever a rule changes so it applies immediately.
 
     @api.model_create_multi
     def create(self, vals_list):
         rules = super().create(vals_list)
-        self.env.registry.clear_cache()
+        self._invalidate_access_caches()
         return rules
 
     def write(self, vals):
         res = super().write(vals)
-        self.env.registry.clear_cache()
+        self._invalidate_access_caches()
         return res
 
     def unlink(self):
         res = super().unlink()
-        self.env.registry.clear_cache()
+        self._invalidate_access_caches()
         return res
 
     # ------------------------------------------------------------------
@@ -255,12 +255,18 @@ class AccessRule(models.Model):
     # ------------------------------------------------------------------
 
     @api.model
-    @tools.ormcache("self.env.uid", "model_name", "tuple(self.env.companies.ids)")
+    def _invalidate_access_caches(self):
+        """Drop the caches holding what the rules allow, in every worker."""
+        self.env.transaction.invalidate_ormcache()
+        self.env.transaction.invalidate_access_cache()
+
+    @api.model
+    @api.ormcache("self.env.uid", "model_name", "tuple(self.env.companies.ids)")
     def _get_model_access_lines(self, model_name):
         """Return the Model Access lines of the current user for ``model_name``.
 
-        Cached, as the ACL check and the record rules call it constantly; the
-        cache is cleared whenever an access rule or a record rule changes.
+        Cached, as the access checks call it constantly; the cache is cleared
+        whenever an access rule or a Model Access line changes.
         """
         if not model_name or is_protected_model(model_name):
             return ()
@@ -316,7 +322,7 @@ class AccessRule(models.Model):
                 )
             ]
 
-        # Global conditions — these booleans apply to all models
+        # Global conditions: these booleans apply to all models
         conditions += [
             [(field, "=", True)]
             for field in (

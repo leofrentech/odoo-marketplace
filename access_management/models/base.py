@@ -1,8 +1,11 @@
 from lxml import etree
 
 from odoo import api, models
+from odoo.addons.base.models.ir_access import IN_SELECTION
 from odoo.exceptions import AccessError
+from odoo.fields import Domain
 from odoo.http import request
+from odoo.tools.safe_eval import safe_eval
 
 RESTRICTED_VIEW_TYPES = ("form", "list", "kanban")
 
@@ -56,6 +59,72 @@ class Base(models.AbstractModel):
     # ------------------------------------------------------------------
     # 9. BUSINESS METHODS
     # ------------------------------------------------------------------
+
+    @api.model
+    @api.ormcache("operation", "self.env._access_context")
+    def _access_domain(self, operation):
+        """Let the Model Access lines of the user's access rules decide the
+        operation: it is allowed on the domains of the lines ticking it, even
+        if the user's groups don't allow it, and refused otherwise.
+
+        Each line's domain is combined with Odoo's own access domain, unless
+        the line ignores the standard rules.
+        """
+        domain = super()._access_domain(operation)
+        lines = self.env["access.rule"]._get_model_access_lines(self._name)
+        if not lines:
+            return domain
+
+        allowing_lines = [line for line in lines if line.allows(operation)]
+        if not allowing_lines:
+            return Domain.FALSE
+
+        IrAccess = self.env["ir.access"]
+        eval_context = IrAccess._eval_context()
+        standard_domain = self._access_management_standard_domain(operation)
+        return Domain.OR(
+            (Domain(safe_eval(line.domain, eval_context)) if line.domain else Domain.TRUE)
+            & (Domain.TRUE if line.ignore_standard_rules else standard_domain)
+            for line in allowing_lines
+        )
+
+    def _access_management_standard_domain(self, operation):
+        """Odoo's own access domain of ``operation``, for a Model Access line
+        granting it.
+
+        Like ``_access_domain``, without requiring a permission of the user's
+        groups: the line grants the operation. When the groups do grant it,
+        their domains (e.g. own documents only) still limit it, as do the
+        restrictions applying to everyone (e.g. multi-company).
+        """
+        operations = IN_SELECTION[operation]
+        IrAccess = self.env["ir.access"]
+        group_ids = set(self.env.user._get_group_ids())
+        permissions, restrictions = [], []
+        eval_context = None
+
+        if self._check_inherits_access:
+            for parent_model_name, parent_field_name in self._inherits.items():
+                parent_domain = self.env[parent_model_name]._access_domain(operation)
+                restrictions.append(Domain(parent_field_name, "any", parent_domain))
+
+        for access in IrAccess._get_all_access().get(self._name, ()):
+            if access.operation not in operations:
+                continue
+            if access.group_id and access.group_id not in group_ids:
+                continue
+            access_domain = access.domain
+            if not isinstance(access_domain, Domain):
+                if eval_context is None:
+                    eval_context = IrAccess._eval_context()
+                access_domain = Domain(safe_eval(access_domain, eval_context))
+            if access.group_id:
+                permissions.append(access_domain)
+            else:
+                restrictions.append(access_domain)
+
+        permission_domain = Domain.OR(permissions) if permissions else Domain.TRUE
+        return permission_domain & Domain.AND(restrictions)
 
     def export_data(self, fields_to_export):
         if rules := self._get_access_rules_setting("restrict_export"):
@@ -151,7 +220,7 @@ class Base(models.AbstractModel):
             arch.set("import", "0")
 
         # Readonly rules lock the whole model. The Model Access lines need no
-        # handling here: the ACL check hides the buttons of refused operations.
+        # handling here: the access check hides the buttons of refused operations.
         if any(model_rules.mapped("readonly")):
             for attr in ("create", "edit", "delete"):
                 arch.set(attr, "False")

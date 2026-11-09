@@ -1,0 +1,14 @@
+id,name,model_id,group_id/id,operation,domain
+access_access_rule_admin,access.rule.admin,access.rule,access_management.access_management_group_admin,crud,
+access_access_rule_model_access_admin,access.rule.model.access.admin,access.rule.model.access,access_management.access_management_group_admin,crud,
+access_access_rule_field_admin,access.rule.field.admin,access.rule.field,access_management.access_management_group_admin,crud,
+access_access_rule_hidden_node_admin,access.rule.hidden.node.admin,access.rule.hidden.node,access_management.access_management_group_admin,crud,
+access_access_rule_hidden_report_admin,access.rule.hidden.report.admin,access.rule.hidden.report,access_management.access_management_group_admin,crud,
+access_access_rule_restricted_view_admin,access.rule.restricted.view.admin,access.rule.restricted.view,access_management.access_management_group_admin,crud,
+access_access_rule_chatter_setting_admin,access.rule.chatter.setting.admin,access.rule.chatter.setting,access_management.access_management_group_admin,crud,
+access_access_view_node_admin,access.view.node.admin,access.view.node,access_management.access_management_group_admin,crud,
+access_ir_model_access_management_admin,ir.model.access.management.admin,ir.model,access_management.access_management_group_admin,r,
+access_ir_model_fields_access_management_admin,ir.model.fields.access.management.admin,ir.model.fields,access_management.access_management_group_admin,r,
+access_ir_ui_view_access_management_admin,ir.ui.view.access.management.admin,ir.ui.view,access_management.access_management_group_admin,r,
+access_ir_actions_report_access_management_admin,ir.actions.report.access.management.admin,ir.actions.report,access_management.access_management_group_admin,r,
+access_rule_rule_multi_company,Easy Access Rule: multi-company,access.rule,,crud,"['|', ('company_ids', '=', False), ('company_ids', 'in', company_ids)]"
