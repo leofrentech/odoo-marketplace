@@ -1,4 +1,4 @@
-import { fields, Record } from "@mail/core/common/record";
+import { fields, Record } from "@mail/model/export";
 
 /** Open tracking of one sent email, for one recipient (email.tracker.recipient). */
 export class EmailTrackerRecipient extends Record {
@@ -21,7 +21,7 @@ export class EmailTrackerRecipient extends Record {
         },
     });
 
-    get isOpened() {
+    isOpened() {
         return this.open_count > 0;
     }
 }

@@ -4,16 +4,17 @@
     <t t-name="email_tracker.EmailTrackerPopover">
         <div class="o-email-tracker-popover m-2">
             <div class="fw-bold small text-muted mb-1">Email opens</div>
-            <div t-foreach="trackers" t-as="tracker" t-key="tracker.id" class="o-email-tracker-popover-line d-flex align-items-baseline gap-2 py-1">
-                <i class="fa fa-fw" t-att-class="tracker.isOpened ? 'fa-eye text-success' : 'fa-eye-slash text-muted'" role="img"
-                   t-att-aria-label="tracker.isOpened ? 'Opened' : 'Not opened'"/>
+            <div t-foreach="this.trackers()" t-as="tracker" t-key="tracker.id" class="o-email-tracker-popover-line d-flex align-items-baseline gap-2 py-1">
+                <t t-set="isOpened" t-value="tracker.isOpened()"/>
+                <i class="fa fa-fw" t-att-class="isOpened ? 'fa-eye text-success' : 'fa-eye-slash text-muted'" role="img"
+                   t-att-aria-label="isOpened ? 'Opened' : 'Not opened'"/>
                 <div>
-                    <div t-esc="tracker.recipient_label or tracker.email"/>
+                    <div t-out="tracker.recipient_label or tracker.email"/>
                     <div class="small text-muted">
-                        <t t-if="tracker.isOpened">
-                            <span t-att-title="formatDate(tracker.first_open_date)">Opened <RelativeTime datetime="tracker.first_open_date"/></span>
+                        <t t-if="isOpened">
+                            <span t-att-title="this.formatDate(tracker.first_open_date)">Opened <RelativeTime datetime="tracker.first_open_date"/></span>
                             <t t-if="tracker.open_count > 1">
-                                · <span t-att-title="formatDate(tracker.last_open_date)"><t t-esc="tracker.open_count"/> times, last <RelativeTime datetime="tracker.last_open_date"/></span>
+                                &#183; <span t-att-title="this.formatDate(tracker.last_open_date)"><t t-out="tracker.open_count"/> times, last <RelativeTime datetime="tracker.last_open_date"/></span>
                             </t>
                         </t>
                         <t t-else="">Not opened yet</t>

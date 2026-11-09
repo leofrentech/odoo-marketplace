@@ -1,5 +1,5 @@
 import { Message } from "@mail/core/common/message_model";
-import { fields } from "@mail/core/common/record";
+import { fields } from "@mail/model/export";
 
 import { patch } from "@web/core/utils/patch";
 
@@ -10,7 +10,7 @@ patch(Message.prototype, {
             inverse: "mail_message_id",
         });
     },
-    get emailTrackerOpenedCount() {
-        return this.email_tracker_recipient_ids.filter((tracker) => tracker.isOpened).length;
+    emailTrackerOpenedCount() {
+        return this.email_tracker_recipient_ids.filter((tracker) => tracker.isOpened()).length;
     },
 });

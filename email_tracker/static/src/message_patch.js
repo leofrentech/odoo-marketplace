@@ -11,9 +11,9 @@ patch(Message.prototype, {
         super.setup(...arguments);
         this.emailTrackerPopover = usePopover(EmailTrackerPopover, { position: "top" });
     },
-    get emailTrackerLabel() {
+    emailTrackerLabel() {
         const total = this.message.email_tracker_recipient_ids.length;
-        const opened = this.message.emailTrackerOpenedCount;
+        const opened = this.message.emailTrackerOpenedCount();
         if (!opened) {
             return _t("Not opened");
         }

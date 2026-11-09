@@ -164,7 +164,7 @@ class EmailTrackerRecipient(models.Model):
             if record and user_field and user_field.type == "many2one" and user_field.comodel_name == "res.users":
                 users |= record.user_id
         for user in users.filtered(lambda user: not user.share):
-            Store(bus_channel=user).add(self).bus_send()
+            Store(bus_channel=user).add(self, "_store_email_tracker_fields")
 
     def _get_recipient_label(self):
         """"Brandon Freeman (Azure Interior)" rather than Odoo's display name
@@ -190,24 +190,16 @@ class EmailTrackerRecipient(models.Model):
         user_field = record._fields.get("user_id")
         if user_field and user_field.type == "many2one" and user_field.comodel_name == "res.users":
             users |= record.user_id
-        company_default = bool(
-            self.env["ir.config_parameter"].sudo().get_param(PARAM_OPEN_NOTIFICATION)
-        )
+        company_default = self.env["ir.config_parameter"].sudo().get_bool(PARAM_OPEN_NOTIFICATION)
         users = users.filtered(
             lambda user: not user.share and user._email_tracker_wants_open_notification(company_default)
         )
         return users.partner_id - self.partner_id - self.env.ref("base.partner_root")
 
-    def _to_store_defaults(self, target):
+    def _store_email_tracker_fields(self, res: Store.FieldList):
         """Data sent to the chatter ("opened" badge on sent emails)."""
-        return [
-            "email",
-            "first_open_date",
-            "last_open_date",
-            "mail_message_id",
-            "open_count",
-            Store.Attr("recipient_label", value=lambda tracker: tracker._get_recipient_label()),
-        ]
+        res.extend(["email", "first_open_date", "last_open_date", "mail_message_id", "open_count"])
+        res.attr("recipient_label", lambda tracker: tracker._get_recipient_label())
 
     def _log_open(self):
         self.ensure_one()
@@ -220,7 +212,7 @@ class EmailTrackerRecipient(models.Model):
         lang = self.author_id.lang or self.env.lang
         env = self.with_context(lang=lang).env
         body = Markup("<p>%s</p>") % env._(
-            "%(recipient)s opened the email “%(subject)s”.",
+            "%(recipient)s opened the email \"%(subject)s\".",
             recipient=self._get_recipient_label() or env._("The recipient"),
             subject=self.subject or record.display_name,
         )

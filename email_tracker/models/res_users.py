@@ -17,17 +17,10 @@ class ResUsers(models.Model):
         string="Email Opened Notifications",
         default="default",
         required=True,
+        user_writeable=True,
         help="Get notified when a customer opens an email you sent or one sent "
              "from a document you are responsible for.",
     )
-
-    @property
-    def SELF_READABLE_FIELDS(self):
-        return super().SELF_READABLE_FIELDS + ["email_tracker_open_notification"]
-
-    @property
-    def SELF_WRITEABLE_FIELDS(self):
-        return super().SELF_WRITEABLE_FIELDS + ["email_tracker_open_notification"]
 
     # ------------------------------------------------------------------
     # BUSINESS METHODS

@@ -13,8 +13,8 @@ class TestEmailTracker(MailCommon, HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.env["ir.config_parameter"].sudo().set_param("email_tracker.track_opens", True)
-        cls.env["ir.config_parameter"].sudo().set_param("email_tracker.open_notification", True)
+        cls.env["ir.config_parameter"].sudo().set_bool("email_tracker.track_opens", True)
+        cls.env["ir.config_parameter"].sudo().set_bool("email_tracker.open_notification", True)
         cls.Tracker = cls.env["email.tracker.recipient"]
         cls.user_responsible = cls.user_employee
         cls.customer = cls.env["res.partner"].create({
@@ -113,7 +113,7 @@ class TestEmailTracker(MailCommon, HttpCase):
         self.assertNotIn("email_tracker", self._mails[0]["body"])
 
     def test_no_pixel_when_disabled(self):
-        self.env["ir.config_parameter"].sudo().set_param("email_tracker.track_opens", False)
+        self.env["ir.config_parameter"].sudo().set_bool("email_tracker.track_opens", False)
         self._post_email(self.customer)
         self.assertFalse(self._pixel_url("customer@example.com"))
 
@@ -264,7 +264,7 @@ class TestEmailTracker(MailCommon, HttpCase):
             self.assertNotIn("email_tracker", mail["body"])
 
     def test_open_no_notification_when_disabled(self):
-        self.env["ir.config_parameter"].sudo().set_param("email_tracker.open_notification", False)
+        self.env["ir.config_parameter"].sudo().set_bool("email_tracker.open_notification", False)
         self._post_email(self.customer)
         self.url_open(self._pixel_url("customer@example.com"))
         self.assertEqual(len(self._open_logs()), 1)
@@ -403,7 +403,7 @@ class TestEmailTracker(MailCommon, HttpCase):
         ]
         for company_default, preference, notified in cases:
             with self.subTest(company_default=company_default, preference=preference):
-                ICP.set_param("email_tracker.open_notification", company_default)
+                ICP.set_bool("email_tracker.open_notification", company_default)
                 self.user_responsible.email_tracker_open_notification = preference
                 # the sender (admin) opts out: only the responsible's preference matters
                 self.user_admin.email_tracker_open_notification = "never"
@@ -433,15 +433,15 @@ class TestEmailTracker(MailCommon, HttpCase):
         tracker = self._tracker(self._pixel_url("customer@example.com"))
         self.url_open(self._pixel_url("customer@example.com"))
         self.authenticate(self.user_responsible.login, self.user_responsible.login)
-        result = self.make_jsonrpc_request(
-            "/mail/thread/messages", {"thread_model": "res.partner", "thread_id": self.record.id}
-        )
-        trackers = result["data"]["email.tracker.recipient"]
+        result = self.make_jsonrpc_request("/mail/store", {"fetch_params": [[
+            "/mail/thread/messages", {"thread_model": "res.partner", "thread_id": self.record.id},
+        ]]})
+        trackers = result["email.tracker.recipient"]
         self.assertEqual([t["id"] for t in trackers], [tracker.id])
         self.assertEqual(trackers[0]["open_count"], 1)
         self.assertTrue(trackers[0]["first_open_date"])
         self.assertTrue(trackers[0]["recipient_label"].startswith("Customer"))
-        message = next(m for m in result["data"]["mail.message"] if m["id"] == tracker.mail_message_id.id)
+        message = next(m for m in result["mail.message"] if m["id"] == tracker.mail_message_id.id)
         self.assertEqual(message["email_tracker_recipient_ids"], [tracker.id])
 
     def test_chatter_badge_tour(self):

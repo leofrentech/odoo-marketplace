@@ -56,17 +56,11 @@ class MailMessage(models.Model):
     # BUSINESS METHODS
     # ------------------------------------------------------------------
 
-    def _to_store_defaults(self, target):
+    def _store_message_fields(self, res: Store.FieldList, **kwargs):
         """Send open tracking of sent emails to the chatter, internal users only
         (same visibility as Odoo's own delivery status of notifications)."""
-        field_names = super()._to_store_defaults(target)
-        if target.is_internal(self.env):
-            field_names.append(
-                # sudo: email.tracker.recipient - internal users can see the open
-                # status of emails on documents they can read, like notifications
-                Store.Many(
-                    "email_tracker_recipient_ids",
-                    value=lambda message: message.sudo().email_tracker_recipient_ids,
-                ),
-            )
-        return field_names
+        super()._store_message_fields(res, **kwargs)
+        if res.is_for_internal_users():
+            # sudo: email.tracker.recipient - internal users can see the open
+            # status of emails on documents they can read, like notifications
+            res.many("email_tracker_recipient_ids", "_store_email_tracker_fields", sudo=True)

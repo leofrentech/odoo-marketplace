@@ -4,13 +4,15 @@
     <!-- "Opened" badge next to the delivery status of sent emails, on any chatter -->
     <t t-inherit="mail.Message.notification" t-inherit-mode="extension">
         <xpath expr="." position="inside">
-            <div t-if="message.thread?.eq(props.thread) and message.email_tracker_recipient_ids.length" class="mx-1">
+            <div t-if="this.message.thread?.eq(this.props.thread) and this.message.email_tracker_recipient_ids.length" class="mx-1">
+                <t t-set="emailTrackerOpened" t-value="this.message.emailTrackerOpenedCount()"/>
+                <t t-set="emailTrackerLabel" t-value="this.emailTrackerLabel()"/>
                 <span class="o-email-tracker-badge cursor-pointer small text-nowrap"
-                      t-att-class="message.emailTrackerOpenedCount ? 'text-success' : 'text-muted opacity-75 opacity-100-hover'"
+                      t-att-class="emailTrackerOpened ? 'text-success' : 'text-muted opacity-75 opacity-100-hover'"
                       role="button" tabindex="0" t-att-title="emailTrackerLabel"
-                      t-on-click="onClickEmailTracker">
-                    <i class="fa" t-att-class="message.emailTrackerOpenedCount ? 'fa-eye' : 'fa-eye-slash'" role="img"/>
-                    <span class="ms-1" t-esc="emailTrackerLabel"/>
+                      t-on-click="this.onClickEmailTracker">
+                    <i class="fa" t-att-class="emailTrackerOpened ? 'fa-eye' : 'fa-eye-slash'" role="img"/>
+                    <span class="ms-1" t-out="emailTrackerLabel"/>
                 </span>
             </div>
         </xpath>

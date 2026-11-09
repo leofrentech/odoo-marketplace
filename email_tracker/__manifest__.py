@@ -9,15 +9,14 @@ Adds an invisible tracking pixel to emails sent from any document chatter.
 When a recipient opens the email, the first open is logged on the document
 chatter and, optionally, the sender / responsible user is notified.
 """,
-    "version": "19.0.1.1.0",
+    "version": "20.0.1.1.0",
     "category": "Productivity/Discuss",
     "author": "Leofren Technologies",
     "website": "https://www.leofren.com",
     "license": "LGPL-3",
     "depends": ["mail"],
     "data": [
-        "security/ir.model.access.csv",
-        "security/email_tracker_security.xml",
+        "security/ir.access.csv",
         "data/ir_config_parameter_data.xml",
         "views/email_tracker_recipient_views.xml",
         "views/mail_message_views.xml",

@@ -1,0 +1,3 @@
+id,name,model_id,group_id/id,operation,domain
+access_email_tracker_recipient_user,email.tracker.recipient.user,email.tracker.recipient,base.group_user,r,"['|', ('author_id', '=', user.partner_id.id), ('user_id', '=', user.id)]"
+access_email_tracker_recipient_system,email.tracker.recipient.system,email.tracker.recipient,base.group_system,crud,

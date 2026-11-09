@@ -45,7 +45,7 @@ class MailMail(models.Model):
         "email opened" notifications themselves are never tracked.
         """
         self.ensure_one()
-        if not self.env["ir.config_parameter"].sudo().get_param(PARAM_TRACK_OPENS):
+        if not self.env["ir.config_parameter"].sudo().get_bool(PARAM_TRACK_OPENS):
             return False
         # Email Marketing (mass_mailing, marketing_automation) has its own
         # open/click statistics: never add our pixel nor log on contacts.
