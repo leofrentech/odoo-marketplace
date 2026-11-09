@@ -106,7 +106,7 @@ class AccessRule(models.Model):
         string="Hidden Menus",
         help="Menus removed from the users' navigation, with their sub-menus.",
     )
-    hide_menu_domain = fields.Binary(
+    hide_menu_domain = fields.Json(
         string="Hidden Menus Domain", compute="_compute_hide_menu_domain"
     )
 

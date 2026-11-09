@@ -269,6 +269,14 @@ class TestAccessRule(TransactionCase):
         self.rule.hide_menu_ids = [Command.clear()]
         self.assertIn(menu.id, Menu.with_user(self.user).load_menus(False))
 
+    def test_rule_form_with_hidden_menus(self):
+        """The rule form reads the domain of the menus left to pick."""
+        menu = self.env["ir.ui.menu"].search([("parent_id", "=", False)], limit=1)
+        self.rule.hide_menu_ids = [Command.set(menu.ids)]
+        values = self.rule.web_read({"hide_menu_ids": {}, "hide_menu_domain": {}})[0]
+        self.assertEqual(values["hide_menu_domain"][0][:2], ["id", "not in"])
+        self.assertIn(menu.id, values["hide_menu_domain"][0][2])
+
     def test_multi_company(self):
         company_a = self.env.company
         company_b = self.env["res.company"].create({"name": "Company B"})
