@@ -52,11 +52,11 @@ class IrActions(models.Model):
 
         access_rules = self.env["access.rule"]._get_model_rules(model_name)
         hidden_report_lines = access_rules.hidden_report_ids.filtered(
-            lambda line: line.model_id.model == model_name
+            lambda line: line.model_id.model == model_name,
         )
         result = dict(result)
         if any(access_rules.mapped("hide_all_reports")) or any(
-            hidden_report_lines.mapped("hide_all_reports")
+            hidden_report_lines.mapped("hide_all_reports"),
         ):
             del result["report"]
         elif hidden_report_ids := set(hidden_report_lines.report_id.ids):

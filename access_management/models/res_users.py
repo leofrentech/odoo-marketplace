@@ -53,7 +53,7 @@ class ResUsers(models.Model):
         """Menus hidden from the current user in the companies they work in."""
         user = self or self.env.user
         AccessRule = self.env["access.rule"].with_user(user).with_context(
-            allowed_company_ids=user._get_active_company_ids()
+            allowed_company_ids=user._get_active_company_ids(),
         )
         # sudo: users are hidden menus by rules they cannot read; the domain
         # limits the search to their own rules.

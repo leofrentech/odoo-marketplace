@@ -44,7 +44,7 @@ class AccessViewNode(models.Model):
         help="Whether the button or link runs a method or opens an action.",
     )
     is_smart_button = fields.Boolean(
-        "Smart Button", help="Button of the button box at the top of the form."
+        "Smart Button", help="Button of the button box at the top of the form.",
     )
 
     # ------------------------------------------------------------------

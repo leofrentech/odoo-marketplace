@@ -32,7 +32,7 @@ class IrActionsActWindow(models.Model):
                 model_rules = self.env["access.rule"]._get_model_rules(res_model)
                 restricted_views_by_model[res_model] = (
                     model_rules.restricted_view_ids.filtered(
-                        lambda line: line.model == res_model
+                        lambda line: line.model == res_model,
                     ).view_id
                 )
             restricted_views = restricted_views_by_model[res_model]

@@ -63,8 +63,8 @@ class IrAccess(models.Model):
                 operation=operations[operation],
                 document_kind=self.env["ir.model"]._get(model_name).name or model_name,
                 document_model=model_name,
-                rules=", ".join(sorted({line.rule_name for line in lines})),
-            )
+                rules=sorted({line.rule_name for line in lines}),
+            ),
         )
 
     def _make_record_access_error(self, records, operation):
@@ -77,8 +77,8 @@ class IrAccess(models.Model):
             self.env._(
                 "%(error)s\n\nThese records are limited by the access rule: %(rules)s",
                 error=error.args[0],
-                rules=", ".join(sorted({line.rule_name for line in lines})),
-            )
+                rules=sorted({line.rule_name for line in lines}),
+            ),
         )
         if context := getattr(error, "context", None):
             access_error.context = context

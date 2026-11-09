@@ -1,15 +1,17 @@
-from . import access_rule
-from . import access_rule_chatter_setting
-from . import access_rule_field
-from . import access_rule_hidden_node
-from . import access_rule_hidden_report
-from . import access_rule_model_access
-from . import access_rule_restricted_view
-from . import access_view_node
-from . import base
-from . import ir_access
-from . import ir_actions
-from . import ir_actions_act_window
-from . import ir_ui_menu
-from . import mail_thread
-from . import res_users
+from . import (
+    access_rule,
+    access_rule_chatter_setting,
+    access_rule_field,
+    access_rule_hidden_node,
+    access_rule_hidden_report,
+    access_rule_model_access,
+    access_rule_restricted_view,
+    access_view_node,
+    base,
+    ir_access,
+    ir_actions,
+    ir_actions_act_window,
+    ir_ui_menu,
+    mail_thread,
+    res_users,
+)

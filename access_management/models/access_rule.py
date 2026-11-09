@@ -17,7 +17,7 @@ PROTECTED_MODELS = {"res.company"}
 
 def is_protected_model(model_name):
     return model_name in PROTECTED_MODELS or model_name.startswith(
-        PROTECTED_MODEL_PREFIXES
+        PROTECTED_MODEL_PREFIXES,
     )
 
 
@@ -107,7 +107,7 @@ class AccessRule(models.Model):
         help="Menus removed from the users' navigation, with their sub-menus.",
     )
     hide_menu_domain = fields.Json(
-        string="Hidden Menus Domain", compute="_compute_hide_menu_domain"
+        string="Hidden Menus Domain", compute="_compute_hide_menu_domain",
     )
 
     # Views and fields
@@ -175,7 +175,7 @@ class AccessRule(models.Model):
         help="Chatter parts hidden on the forms of a model.",
     )
     hide_chatter = fields.Boolean(
-        "Hide Chatter", help="Hide the whole chatter, on every model."
+        "Hide Chatter", help="Hide the whole chatter, on every model.",
     )
     hide_send_message = fields.Boolean(
         "Hide Send Message",
@@ -271,7 +271,7 @@ class AccessRule(models.Model):
         if not model_name or is_protected_model(model_name):
             return ()
         lines = self._get_model_rules(model_name).model_access_ids.filtered(
-            lambda line: line.model_id.model == model_name
+            lambda line: line.model_id.model == model_name,
         )
         return tuple(
             ModelAccessLine(
@@ -344,5 +344,5 @@ class AccessRule(models.Model):
         # sudo: the rules restrict users who cannot read them; the domain
         # limits the search to the rules of the current user.
         return self.sudo().search(
-            self._get_user_rules_domain() & Domain.OR(conditions)
+            self._get_user_rules_domain() & Domain.OR(conditions),
         )

@@ -78,7 +78,7 @@ class AccessRuleModelAccess(models.Model):
                         "The access of the model %(model)s can't be managed "
                         "by an access rule.",
                         model=line.model_id.name,
-                    )
+                    ),
                 )
 
     @api.constrains("model_id", "domain_force")
@@ -96,7 +96,7 @@ class AccessRuleModelAccess(models.Model):
                         "Invalid domain %(domain)s: %(error)s",
                         domain=line.domain_force,
                         error=error,
-                    )
+                    ),
                 ) from error
 
     # The checkboxes are permissions: an operation needs read.

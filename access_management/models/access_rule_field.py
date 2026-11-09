@@ -46,7 +46,7 @@ class AccessRuleField(models.Model):
         "prevents creating records from its form.",
     )
     used_field_ids = fields.Many2many(
-        "ir.model.fields", compute="_compute_used_field_ids"
+        "ir.model.fields", compute="_compute_used_field_ids",
     )
 
     # ------------------------------------------------------------------
@@ -75,7 +75,7 @@ class AccessRuleField(models.Model):
                         "The field %(field)s doesn't belong to %(model)s.",
                         field=line.field_id.field_description,
                         model=line.model_id.name,
-                    )
+                    ),
                 )
 
     @api.onchange("model_id")

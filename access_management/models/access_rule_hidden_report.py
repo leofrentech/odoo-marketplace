@@ -60,7 +60,7 @@ class AccessRuleHiddenReport(models.Model):
                         "Select the report to hide for %(model)s, or hide all "
                         "its reports.",
                         model=line.model_id.name,
-                    )
+                    ),
                 )
             if line.report_id.model != line.model_id.model:
                 raise ValidationError(
@@ -68,7 +68,7 @@ class AccessRuleHiddenReport(models.Model):
                         "The report %(report)s doesn't belong to %(model)s.",
                         report=line.report_id.name,
                         model=line.model_id.name,
-                    )
+                    ),
                 )
 
     @api.onchange("hide_all_reports", "model_id")

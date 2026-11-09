@@ -57,7 +57,7 @@ class AccessRuleRestrictedView(models.Model):
                         "The view %(view)s doesn't belong to %(model)s.",
                         view=line.view_id.name,
                         model=line.model_id.name,
-                    )
+                    ),
                 )
 
     @api.onchange("model_id")

@@ -52,7 +52,7 @@ class TestAccessRule(TransactionCase):
         self.rule.field_access_ids.access = "invisible"
         self.assertEqual(self._get_field_attrs(self.user, "phone", "invisible"), {"1"})
         self.assertLessEqual(
-            self._get_field_attrs(self.user, "phone", "column_invisible", "list"), {"1"}
+            self._get_field_attrs(self.user, "phone", "column_invisible", "list"), {"1"},
         )
 
     def test_record_rules_follow_rule_activity(self):
@@ -82,7 +82,7 @@ class TestAccessRule(TransactionCase):
         form = self._get_arch(self.other_user)
         page = nodes.filtered(
             lambda node: node.node_type == "page"
-            and form.xpath("//page[@name=$name]", name=node.name or "")
+            and form.xpath("//page[@name=$name]", name=node.name or ""),
         )[:1]
         self.assertTrue(page, "The form's pages are collected")
 
@@ -126,7 +126,7 @@ class TestAccessRule(TransactionCase):
         # A model without anything to hide in its views
         empty_model = self.env["ir.model"]._get("res.partner.industry")
         HideNode = self.env["access.rule.hidden.node"].with_context(
-            access_management_node_type="link"
+            access_management_node_type="link",
         )
 
         line = HideNode.new({
@@ -173,7 +173,7 @@ class TestAccessRule(TransactionCase):
         self.assertFalse(
             self.env["res.users"]
             .with_user(self.user)
-            .check_export_enable("res.partner")
+            .check_export_enable("res.partner"),
         )
         arch = self._get_arch(self.other_user, "list")
         self.assertNotEqual(arch.get("create"), "False")
@@ -200,7 +200,7 @@ class TestAccessRule(TransactionCase):
 
     def test_hidden_reports_are_per_user(self):
         report = self.env["ir.actions.report"].search(
-            [("binding_model_id", "!=", False)], limit=1
+            [("binding_model_id", "!=", False)], limit=1,
         )
         model = report.binding_model_id.model
         self.rule.hidden_report_ids = [Command.create({
@@ -222,10 +222,10 @@ class TestAccessRule(TransactionCase):
 
     def test_hidden_report_line(self):
         report = self.env["ir.actions.report"].search(
-            [("binding_model_id", "!=", False)], limit=1
+            [("binding_model_id", "!=", False)], limit=1,
         )
         other_report = self.env["ir.actions.report"].search(
-            [("model", "!=", report.model)], limit=1
+            [("model", "!=", report.model)], limit=1,
         )
         report_model = self.env["ir.model"]._get(report.model)
         HiddenReport = self.env["access.rule.hidden.report"]
@@ -258,7 +258,7 @@ class TestAccessRule(TransactionCase):
         Partner = self.env["res.partner"]
         self.assertTrue(Partner.with_user(self.user).get_chatter_data()["hideLogNote"])
         self.assertFalse(
-            Partner.with_user(self.other_user).get_chatter_data()["hideLogNote"]
+            Partner.with_user(self.other_user).get_chatter_data()["hideLogNote"],
         )
 
         menu = self.env["ir.ui.menu"].search([("parent_id", "=", False)], limit=1)
@@ -467,8 +467,8 @@ class TestAccessRule(TransactionCase):
             self.assertFalse(AccessRule.with_user(self.user).has_access(operation))
         self.assertTrue(
             self.env.ref("base.user_admin").has_group(
-                "access_management.access_management_group_admin"
-            )
+                "access_management.access_management_group_admin",
+            ),
         )
 
         # The administrators manage the rules, Model Access included

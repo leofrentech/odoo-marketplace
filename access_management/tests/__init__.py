@@ -1,2 +1,1 @@
-from . import test_access_rule
-from . import test_ui
+from . import test_access_rule, test_ui

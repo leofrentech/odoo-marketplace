@@ -75,7 +75,7 @@ class MailThread(models.AbstractModel):
 
         # Check per-model chatter settings for this model only
         chatter_settings = model_rules.chatter_setting_ids.filtered(
-            lambda setting: setting.model_id.model == self._name
+            lambda setting: setting.model_id.model == self._name,
         )
         for field, key in field_map.items():
             if any(chatter_settings.mapped(field)):

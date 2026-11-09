@@ -50,7 +50,7 @@ class AccessRuleHiddenNode(models.Model):
         help="Button, page or link to hide in the views of the model.",
     )
     is_smart_button = fields.Boolean(
-        "Smart Button", related="view_node_id.is_smart_button"
+        "Smart Button", related="view_node_id.is_smart_button",
     )
 
     # ------------------------------------------------------------------
@@ -77,7 +77,7 @@ class AccessRuleHiddenNode(models.Model):
                         "%(node)s is not part of the views of %(model)s.",
                         node=line.view_node_id.display_name,
                         model=line.model_id.name,
-                    )
+                    ),
                 )
 
     @api.onchange("model_id")
@@ -92,7 +92,7 @@ class AccessRuleHiddenNode(models.Model):
             self.view_node_id = False
 
         if not self.model_id or self.model_id.model not in self.env:
-            return
+            return None
 
         # sudo: collect the nodes of every view, whatever the groups of the
         # rule manager; only their names and labels are stored.
@@ -128,6 +128,7 @@ class AccessRuleHiddenNode(models.Model):
                     nodes=labels[node_type],
                 ),
             }}
+        return None
 
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
@@ -223,7 +224,7 @@ class AccessRuleHiddenNode(models.Model):
             pages += arch.xpath("//app[@string]")
         for page in pages:
             self._ensure_view_node(
-                "page", page.get("string"), name=page.get("name")
+                "page", page.get("string"), name=page.get("name"),
             )
 
 

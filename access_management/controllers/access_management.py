@@ -17,6 +17,6 @@ class AccessManagementController(Controller):
             return []
         rules = request.env["access.rule"]._get_model_rules(model)
         views = rules.restricted_view_ids.filtered(
-            lambda line: line.model == model
+            lambda line: line.model == model,
         ).view_id
         return [[view.id, view.type] for view in views]

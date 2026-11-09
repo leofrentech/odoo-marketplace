@@ -52,7 +52,7 @@ def _rename_model(cr, old, new):
     cr.execute(SQL("UPDATE ir_model SET model = %s WHERE model = %s", new, old))
     cr.execute(SQL("UPDATE ir_model_fields SET model = %s WHERE model = %s", new, old))
     cr.execute(SQL(
-        "UPDATE ir_model_fields SET relation = %s WHERE relation = %s", new, old
+        "UPDATE ir_model_fields SET relation = %s WHERE relation = %s", new, old,
     ))
     cr.execute(SQL("UPDATE ir_model_data SET model = %s WHERE model = %s", new, old))
     _rename_xmlids(cr, f"model_{old_table}", f"model_{new_table}")

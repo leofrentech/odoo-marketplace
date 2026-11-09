@@ -53,7 +53,7 @@ class IrUiMenu(models.Model):
     @api.model
     def load_menus_root(self):
         menu_root = super(
-            IrUiMenu, self.with_context(access_management_all_menus=True)
+            IrUiMenu, self.with_context(access_management_all_menus=True),
         ).load_menus_root()
         hidden_menu_ids = set(self.env.user._get_hidden_menus().ids)
         if not hidden_menu_ids:

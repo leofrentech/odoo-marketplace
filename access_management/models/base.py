@@ -1,11 +1,12 @@
 from lxml import etree
 
 from odoo import api, models
-from odoo.addons.base.models.ir_access import IN_SELECTION
 from odoo.exceptions import AccessError
 from odoo.fields import Domain
 from odoo.http import request
 from odoo.tools.safe_eval import safe_eval
+
+from odoo.addons.base.models.ir_access import IN_SELECTION
 
 RESTRICTED_VIEW_TYPES = ("form", "list", "kanban")
 
@@ -133,8 +134,8 @@ class Base(models.AbstractModel):
                     "You are not allowed to export %(model)s records: the access "
                     "rule %(rules)s restricts the export.",
                     model=self._description,
-                    rules=", ".join(rules.mapped("name")),
-                )
+                    rules=rules.mapped("name"),
+                ),
             )
         return super().export_data(fields_to_export)
 
@@ -146,8 +147,8 @@ class Base(models.AbstractModel):
                     "You are not allowed to import %(model)s records: the access "
                     "rule %(rules)s restricts the import.",
                     model=self._description,
-                    rules=", ".join(rules.mapped("name")),
-                )
+                    rules=rules.mapped("name"),
+                ),
             )
         return super().load(fields, data)
 
@@ -204,7 +205,7 @@ class Base(models.AbstractModel):
         view_nodes = on_model(
             model_rules.hide_link_ids
             | model_rules.hide_page_ids
-            | model_rules.hide_button_ids
+            | model_rules.hide_button_ids,
         ).view_node_id
         for view_node in view_nodes:
             if view_node.node_type == "page" and not view_node.name:
