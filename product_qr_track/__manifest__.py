@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     'name': 'Product QR Track',
     'version': '20.0.1.0.1',

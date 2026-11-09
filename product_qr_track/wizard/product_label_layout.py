@@ -20,7 +20,7 @@ class ProductLabelLayout(models.TransientModel):
     # ------------------------------------------------------------------
 
     print_format = fields.Selection(
-        selection_add=[("qr", "QR")], ondelete={"qr": "cascade"}
+        selection_add=[("qr", "QR")], ondelete={"qr": "cascade"},
     )
 
     # ------------------------------------------------------------------
@@ -58,7 +58,7 @@ class ProductLabelLayout(models.TransientModel):
 
         xml_id, data = self._prepare_report_data()
         pdf_content, __ = self.env["ir.actions.report"]._render_qweb_pdf(
-            xml_id, data=data
+            xml_id, data=data,
         )
         attachment = self.env["ir.attachment"].create(
             {
@@ -66,7 +66,7 @@ class ProductLabelLayout(models.TransientModel):
                 "type": "binary",
                 "raw": pdf_content,
                 "mimetype": "application/pdf",
-            }
+            },
         )
 
         return {
@@ -112,7 +112,7 @@ class ProductLabelLayout(models.TransientModel):
         # would it even carry? Require printing from the Product
         # Variants list instead, where each variant is picked explicitly.
         multi_variant_templates = self.product_tmpl_ids.filtered(
-            lambda template: len(template.product_variant_ids) > 1
+            lambda template: len(template.product_variant_ids) > 1,
         )
         if multi_variant_templates:
             raise UserError(
@@ -121,7 +121,7 @@ class ProductLabelLayout(models.TransientModel):
                     "Product Variants list instead, so each variant gets "
                     "its own code.",
                     multi_variant_templates.mapped("name"),
-                )
+                ),
             )
 
         data = {
@@ -146,7 +146,7 @@ class ProductLabelLayout(models.TransientModel):
                     }
                     for product in products
                 ],
-            }
+            },
         )
 
         return "product_qr_track.action_report_product_qr", data

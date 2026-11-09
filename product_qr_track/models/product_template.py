@@ -18,7 +18,7 @@ class ProductTemplate(models.Model):
 
     qr_url = fields.Char("QR URL", compute="_compute_qr_url")
     qr_visit_count = fields.Integer(
-        "#QR Visits", compute="_compute_qr_visit_count"
+        "#QR Visits", compute="_compute_qr_visit_count",
     )
 
     # ------------------------------------------------------------------
@@ -34,7 +34,7 @@ class ProductTemplate(models.Model):
     def _compute_qr_visit_count(self):
         for template in self:
             template.qr_visit_count = sum(
-                template.product_variant_ids.mapped("qr_visit_count")
+                template.product_variant_ids.mapped("qr_visit_count"),
             )
 
     # ------------------------------------------------------------------

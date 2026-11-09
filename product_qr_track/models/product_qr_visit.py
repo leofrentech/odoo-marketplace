@@ -24,7 +24,7 @@ class ProductQrVisit(models.Model):
     city = fields.Char("City")
 
     product_id = fields.Many2one(
-        "product.product", "Product", ondelete="cascade", required=True
+        "product.product", "Product", ondelete="cascade", required=True,
     )
     country_id = fields.Many2one("res.country", "Country", ondelete="set null")
 

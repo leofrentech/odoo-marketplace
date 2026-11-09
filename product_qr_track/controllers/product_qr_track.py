@@ -38,7 +38,7 @@ class ProductQrScanTrack(Controller):
                 "os": os,
                 "browser": browser,
                 "country_id": country.id if country else False,
-            }
+            },
         )
 
         return request.redirect(product.website_url)

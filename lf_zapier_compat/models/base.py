@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import logging
 
@@ -82,7 +81,7 @@ class Base(models.AbstractModel):
         recs = self.with_context(context) if context else self
         try:
             return super(Base, recs).search(  # noqa: UP008
-                domain, offset=offset, limit=limit, order=order, **kwargs
+                domain, offset=offset, limit=limit, order=order, **kwargs,
             )
         except TypeError:
             # This only fires for a call that was going to fail anyway - log

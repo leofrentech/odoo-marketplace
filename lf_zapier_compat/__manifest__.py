@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     'name': 'Zapier RPC Compatibility',
     'version': '20.0.1.0.1',

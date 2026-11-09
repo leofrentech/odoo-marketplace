@@ -18,10 +18,10 @@ class ProductProduct(models.Model):
 
     qr_url = fields.Char("QR URL", compute="_compute_qr_url")
     qr_visit_ids = fields.One2many(
-        "product.qr.visit", "product_id", "QR Visits"
+        "product.qr.visit", "product_id", "QR Visits",
     )
     qr_visit_count = fields.Integer(
-        "#QR Visits", compute="_compute_qr_visit_count"
+        "#QR Visits", compute="_compute_qr_visit_count",
     )
 
     # ------------------------------------------------------------------

@@ -1,3 +1,1 @@
-from . import product_product
-from . import product_template
-from . import product_qr_visit
+from . import product_product, product_qr_visit, product_template

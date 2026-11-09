@@ -17,7 +17,7 @@ class TestProductQrTrack(TransactionCase):
                     Command.create({"name": "Small"}),
                     Command.create({"name": "Large"}),
                 ],
-            }
+            },
         )
         cls.template = cls.env["product.template"].create(
             {
@@ -27,16 +27,16 @@ class TestProductQrTrack(TransactionCase):
                         {
                             "attribute_id": cls.size_attribute.id,
                             "value_ids": [
-                                Command.set(cls.size_attribute.value_ids.ids)
+                                Command.set(cls.size_attribute.value_ids.ids),
                             ],
-                        }
-                    )
+                        },
+                    ),
                 ],
-            }
+            },
         )
         cls.variant_small, cls.variant_large = cls.template.product_variant_ids
         cls.single_variant_template = cls.env["product.template"].create(
-            {"name": "Test QR Single Variant Product"}
+            {"name": "Test QR Single Variant Product"},
         )
 
     def test_product_qr_url_is_per_variant(self):
@@ -46,12 +46,12 @@ class TestProductQrTrack(TransactionCase):
             f"{base_url}/qr/{self.variant_small.id}",
         )
         self.assertNotEqual(
-            self.variant_small.qr_url, self.variant_large.qr_url
+            self.variant_small.qr_url, self.variant_large.qr_url,
         )
 
     def test_template_qr_url_mirrors_default_variant(self):
         self.assertEqual(
-            self.template.qr_url, self.template.product_variant_id.qr_url
+            self.template.qr_url, self.template.product_variant_id.qr_url,
         )
 
     def test_qr_visit_count_aggregates_across_variants(self):
@@ -60,7 +60,7 @@ class TestProductQrTrack(TransactionCase):
                 {"product_id": self.variant_small.id},
                 {"product_id": self.variant_small.id},
                 {"product_id": self.variant_large.id},
-            ]
+            ],
         )
         self.assertEqual(self.variant_small.qr_visit_count, 2)
         self.assertEqual(self.variant_large.qr_visit_count, 1)
@@ -75,7 +75,7 @@ class TestProductQrTrack(TransactionCase):
                 "product_tmpl_ids": [Command.set([self.template.id])],
                 "print_format": "qr",
                 "custom_quantity": 1,
-            }
+            },
         )
         with self.assertRaises(UserError):
             wizard._prepare_report_data()
@@ -84,11 +84,11 @@ class TestProductQrTrack(TransactionCase):
         wizard = self.env["product.label.layout"].create(
             {
                 "product_tmpl_ids": [
-                    Command.set([self.single_variant_template.id])
+                    Command.set([self.single_variant_template.id]),
                 ],
                 "print_format": "qr",
                 "custom_quantity": 1,
-            }
+            },
         )
         __, data = wizard._prepare_report_data()
         self.assertEqual(len(data["products"]), 1)
@@ -103,12 +103,12 @@ class TestProductQrTrack(TransactionCase):
                 "product_ids": [Command.set([self.variant_small.id])],
                 "print_format": "qr",
                 "custom_quantity": 1,
-            }
+            },
         )
         __, data = wizard._prepare_report_data()
         self.assertEqual(len(data["products"]), 1)
         self.assertEqual(
-            data["products"][0]["qr_url"], self.variant_small.qr_url
+            data["products"][0]["qr_url"], self.variant_small.qr_url,
         )
 
     def test_wizard_falls_back_for_other_formats(self):
@@ -117,7 +117,7 @@ class TestProductQrTrack(TransactionCase):
                 "product_ids": [Command.set([self.variant_small.id])],
                 "print_format": "dymo",
                 "custom_quantity": 1,
-            }
+            },
         )
         xml_id, data = wizard._prepare_report_data()
         self.assertNotEqual(xml_id, "product_qr_track.action_report_product_qr")
@@ -132,14 +132,14 @@ class TestProductQrTrack(TransactionCase):
                 "product_id": self.variant_small.id,
                 "uom_id": self.variant_small.uom_id.id,
                 "barcode": "TEST-QR-TRACK-PACK-1",
-            }
+            },
         )
         wizard = self.env["product.label.layout"].create(
             {
                 "product_uom_ids": [Command.set(product_uom.ids)],
                 "print_format": "qr",
                 "custom_quantity": 1,
-            }
+            },
         )
         __, data = wizard._prepare_report_data()
         self.assertEqual(
@@ -153,12 +153,12 @@ class TestProductQrTrack(TransactionCase):
                 "product_ids": [Command.set([self.variant_small.id])],
                 "print_format": "qr",
                 "custom_quantity": 2,
-            }
+            },
         )
         action = wizard.process()
         self.assertEqual(action["type"], "ir.actions.act_url")
         attachment_id = int(
-            action["url"].removeprefix("/web/content/").split("?")[0]
+            action["url"].removeprefix("/web/content/").split("?")[0],
         )
         attachment = self.env["ir.attachment"].browse(attachment_id)
         self.assertEqual(

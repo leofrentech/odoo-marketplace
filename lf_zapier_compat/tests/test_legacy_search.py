@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from odoo.tests.common import TransactionCase
 from odoo.tools import mute_logger
