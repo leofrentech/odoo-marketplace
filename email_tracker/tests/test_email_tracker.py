@@ -1,8 +1,9 @@
 import re
 
-from odoo.addons.mail.tests.common import MailCommon, mail_new_test_user
 from odoo.tests import HttpCase, tagged
 from odoo.tools import mute_logger
+
+from odoo.addons.mail.tests.common import MailCommon, mail_new_test_user
 
 PIXEL_RE = re.compile(r'/email_tracker/open/(\d+)/(\w+)/blank\.gif')
 
@@ -39,14 +40,13 @@ class TestEmailTracker(MailCommon, HttpCase):
     def _post_email(self, partners, record=None, user=None):
         record = (record or self.record).with_user(user or self.user_admin)
         with self.mock_mail_gateway():
-            message = record.message_post(
+            return record.message_post(
                 body="<p>Please find our offer.</p>",
                 subject="Our Offer",
                 partner_ids=partners.ids,
                 message_type="comment",
                 subtype_xmlid="mail.mt_comment",
             )
-        return message
 
     def _pixel_url(self, email_to):
         mail = next((m for m in self._mails if email_to in "".join(m["email_to"])), None)
@@ -419,7 +419,7 @@ class TestEmailTracker(MailCommon, HttpCase):
 
     def test_user_can_set_own_preference(self):
         self.user_responsible.with_user(self.user_responsible).write(
-            {"email_tracker_open_notification": "never"}
+            {"email_tracker_open_notification": "never"},
         )
         self.assertEqual(self.user_responsible.email_tracker_open_notification, "never")
 

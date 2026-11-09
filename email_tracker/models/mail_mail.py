@@ -22,7 +22,7 @@ class MailMail(models.Model):
         tracker (``email.tracker.recipient``) with its own signed URL.
         """
         body = super()._personalize_outgoing_body(
-            body, partner=partner, doc_to_followers=doc_to_followers
+            body, partner=partner, doc_to_followers=doc_to_followers,
         )
         # drop pixels copied from another email (quoted reply, forward...)
         body = strip_tracking_pixels(body)
@@ -32,7 +32,7 @@ class MailMail(models.Model):
             pixel = Markup(
                 '<img src="%s" alt="" width="1" height="1" border="0" '
                 'style="height:1px !important;width:1px !important;'
-                'border-width:0 !important;margin:0 !important;padding:0 !important;"/>'
+                'border-width:0 !important;margin:0 !important;padding:0 !important;"/>',
             ) % url
             body = tools.mail.append_content_to_html(body, pixel, plaintext=False)
         return body
@@ -55,11 +55,9 @@ class MailMail(models.Model):
         if not (message and self.model and self.res_id):
             return False
         if self.model not in self.env or not isinstance(
-            self.env[self.model], self.env.registry["mail.thread"]
+            self.env[self.model], self.env.registry["mail.thread"],
         ):
             return False
         if message.message_type == "user_notification" or message.email_open_origin_message_id:
             return False
-        if partner and partner.sudo().user_ids.filtered(lambda user: not user.share):
-            return False
-        return True
+        return not (partner and partner.sudo().user_ids.filtered(lambda user: not user.share))

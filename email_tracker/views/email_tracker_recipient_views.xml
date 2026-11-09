@@ -17,7 +17,7 @@
                 <field name="open_count"/>
                 <field name="first_open_date" optional="show"/>
                 <field name="last_open_date" optional="hide"/>
-                <button name="action_open_document" type="object" icon="fa-external-link" title="Open Document"/>
+                <button name="action_open_document" type="object" icon="open_in_new" title="Open Document"/>
             </list>
         </field>
     </record>

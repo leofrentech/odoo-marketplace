@@ -11,7 +11,7 @@
                       t-att-class="emailTrackerOpened ? 'text-success' : 'text-muted opacity-75 opacity-100-hover'"
                       role="button" tabindex="0" t-att-title="emailTrackerLabel"
                       t-on-click="this.onClickEmailTracker">
-                    <i class="fa" t-att-class="emailTrackerOpened ? 'fa-eye' : 'fa-eye-slash'" role="img"/>
+                    <i class="oi" t-att-data-icon="emailTrackerOpened ? 'visibility' : 'visibility_off'" role="img"/>
                     <span class="ms-1" t-out="emailTrackerLabel"/>
                 </span>
             </div>

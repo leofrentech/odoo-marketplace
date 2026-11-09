@@ -29,7 +29,7 @@ def migrate(cr, version):
                SELECT 1 FROM ir_config_parameter
                 WHERE key = 'email_tracker.open_notification'
            )
-        """
+        """,
     ))
 
     cr.execute(SQL(

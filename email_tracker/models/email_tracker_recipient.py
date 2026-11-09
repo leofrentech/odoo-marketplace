@@ -192,7 +192,7 @@ class EmailTrackerRecipient(models.Model):
             users |= record.user_id
         company_default = self.env["ir.config_parameter"].sudo().get_bool(PARAM_OPEN_NOTIFICATION)
         users = users.filtered(
-            lambda user: not user.share and user._email_tracker_wants_open_notification(company_default)
+            lambda user: not user.share and user._email_tracker_wants_open_notification(company_default),
         )
         return users.partner_id - self.partner_id - self.env.ref("base.partner_root")
 
