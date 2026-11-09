@@ -130,10 +130,10 @@ class ResConfigSettings(models.TransientModel):
     def _check_watermark_sizes(self):
         for rec in self:
             if not is_valid_size_percent(rec.watermark_size) or not is_valid_size_percent(
-                rec.watermark_logo_size
+                rec.watermark_logo_size,
             ):
                 raise ValidationError(
-                    self.env._("Watermark and Logo Size must be between 1 and 100%.")
+                    self.env._("Watermark and Logo Size must be between 1 and 100%."),
                 )
 
     @api.constrains('watermark_opacity')
@@ -141,7 +141,7 @@ class ResConfigSettings(models.TransientModel):
         for rec in self:
             if not is_valid_opacity(rec.watermark_opacity):
                 raise ValidationError(
-                    self.env._("Watermark Opacity must be between 0 and 1.")
+                    self.env._("Watermark Opacity must be between 0 and 1."),
                 )
 
     # ------------------------------------------------------------------
@@ -157,7 +157,7 @@ class ResConfigSettings(models.TransientModel):
         large catalog never blocks the UI or risks an HTTP timeout.
         """
         self.env.ref(
-            "lf_product_watermark_overlay.ir_cron_regenerate_watermarked_images"
+            "lf_product_watermark_overlay.ir_cron_regenerate_watermarked_images",
         )._trigger()
 
         return {
@@ -166,7 +166,7 @@ class ResConfigSettings(models.TransientModel):
             "params": {
                 "title": self.env._("Watermark regeneration queued"),
                 "message": self.env._(
-                    "Product images will be updated in the background shortly."
+                    "Product images will be updated in the background shortly.",
                 ),
                 "sticky": False,
                 "type": "success",
@@ -176,7 +176,7 @@ class ResConfigSettings(models.TransientModel):
     def action_uncheck_all_products_watermark_eligibility(self):
         """Mass-uncheck `is_watermark_eligible` on every product.
 
-        A separate, explicit action from disabling watermarking itself —
+        A separate, explicit action from disabling watermarking itself,
         this button lets an admin deliberately reset which products are
         eligible, e.g. before re-launching the feature with a hand-picked
         subset, without it happening automatically just from toggling the
@@ -191,7 +191,7 @@ class ResConfigSettings(models.TransientModel):
                 "title": self.env._("Watermarks removed"),
                 "message": self.env._(
                     "Every product's original photo has been restored, and "
-                    "every product has been marked not eligible for watermarking."
+                    "every product has been marked not eligible for watermarking.",
                 ),
                 "sticky": False,
                 "type": "success",
@@ -212,7 +212,7 @@ class ResConfigSettings(models.TransientModel):
             return False
 
         with file_open(
-            "lf_product_watermark_overlay/static/img/watermark_preview_demo.jpg", "rb"
+            "lf_product_watermark_overlay/static/img/watermark_preview_demo.jpg", "rb",
         ) as f:
             base_image = Image.open(io.BytesIO(f.read())).convert("RGBA")
 
@@ -226,8 +226,8 @@ class ResConfigSettings(models.TransientModel):
             "color": self.watermark_color or "#FFFFFF",
             "position": self.watermark_position or "bottom_right",
             # No `or 0.5` fallback here: a Float field always holds a
-            # real number (0.0 included), and 0 is a valid — if
-            # pointless — opacity that must not be silently overridden.
+            # real number (0.0 included), and 0 is a valid, if
+            # pointless, opacity that must not be silently overridden.
             "opacity": self.watermark_opacity,
         }
         try:

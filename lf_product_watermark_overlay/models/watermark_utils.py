@@ -1,13 +1,13 @@
-import base64
-import binascii
 import functools
 import glob
 import importlib
 import io
 import logging
 import os
+
 from PIL import Image, ImageDraw, ImageFont
 
+from odoo.tools import BinaryBytes
 
 _logger = logging.getLogger(__name__)
 
@@ -46,17 +46,32 @@ _FONT_FALLBACKS = {
 FONT_SELECTION = [(font, font) for font in _FONT_FALLBACKS]
 
 
-# Convert base64 to PIL Image
+def _raw_bytes(image_data):
+    """The raw content of an image value. Odoo 20 binary fields hold
+    `BinaryValue` objects with the file's own bytes (no more base64)."""
+    return bytes(image_data) if image_data else b""
+
+
+def detach_image(image_data):
+    """A standalone copy of an image field value. Odoo 20 reads images
+    stored as attachments lazily, straight from that attachment: a value
+    read from `image_1920` must be copied before `image_1920` itself is
+    overwritten in the same write, or it would point to the new
+    content."""
+    return BinaryBytes(_raw_bytes(image_data), filename=image_data.filename) if image_data else False
+
+
+# Convert a binary field value to a PIL Image
 def decode_image(image_data):
-    """Decode base64 image to PIL Image."""
+    """Decode an image field value (`BinaryValue` or raw bytes) to a PIL
+    Image."""
     if not image_data:
         return None
 
     try:
-        image_bytes = base64.b64decode(image_data)
-        return Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+        return Image.open(io.BytesIO(_raw_bytes(image_data))).convert("RGBA")
 
-    except (binascii.Error, OSError, ValueError):
+    except (OSError, ValueError):
         return None
 
 
@@ -85,19 +100,20 @@ def decode_watermarkable_image(image_data):
         return None, None
 
     try:
-        image = Image.open(io.BytesIO(base64.b64decode(image_data)))
+        image = Image.open(io.BytesIO(_raw_bytes(image_data)))
         if image.format not in _WATERMARKABLE_FORMATS:
             return None, None
         return image.convert("RGBA"), image.format
 
-    except (binascii.Error, OSError, ValueError):
+    except (OSError, ValueError):
         return None, None
 
-# Convert PIL Image to base64
+
+# Convert PIL Image to a binary field value
 def encode_image(pil_image, output_format="PNG"):
-    """Encode PIL Image to base64, in `output_format` (PNG, JPEG or
-    WEBP). JPEG has no alpha channel, so transparency is flattened onto
-    white."""
+    """Encode PIL Image as a `BinaryBytes` value, ready to be written to
+    a binary field, in `output_format` (PNG, JPEG or WEBP). JPEG has no
+    alpha channel, so transparency is flattened onto white."""
     if not pil_image:
         return False
 
@@ -109,7 +125,7 @@ def encode_image(pil_image, output_format="PNG"):
             pil_image.save(output, format="WEBP", quality=90)
         else:
             pil_image.save(output, format="PNG", optimize=True)
-        return base64.b64encode(output.getvalue())
+        return BinaryBytes(output.getvalue())
 
     except (OSError, ValueError):
         return False
@@ -125,19 +141,19 @@ def encode_watermarked_image(env, pil_image, output_format):
     WebP is new content with no such alternates, so they are created
     here the same way the client does, before the image field is
     written (the related resized fields look them up on write)."""
-    image_b64 = encode_image(pil_image, output_format)
-    if image_b64 and output_format == "WEBP":
-        _create_webp_alternates(env, pil_image, image_b64)
-    return image_b64
+    image_data = encode_image(pil_image, output_format)
+    if image_data and output_format == "WEBP":
+        _create_webp_alternates(env, pil_image, image_data)
+    return image_data
 
 
-def render_watermark(env, image_b64, settings):
-    """Watermark a base64 image with `settings`, returning the result in
-    the image's own format — or False when the image must be left as is:
+def render_watermark(env, image_data, settings):
+    """Watermark an image field value with `settings`, returning the result in
+    the image's own format, or False when the image must be left as is:
     an unsupported format (see `_WATERMARKABLE_FORMATS`), or a failed
     rendering (bad font, color, ...), which is logged. Never raises for
     a bad image or setting, so it can't block saving the record."""
-    base_image, source_format = decode_watermarkable_image(image_b64)
+    base_image, source_format = decode_watermarkable_image(image_data)
     if base_image is None:
         return False
     try:
@@ -154,40 +170,40 @@ def _flatten_on_white(pil_image):
     return background
 
 
-def _create_webp_alternates(env, pil_image, image_b64):
-    """Mirror of the web client's WebP upload handling: store the image
-    as a standalone attachment, plus one resized WebP per smaller size
-    and a JPEG fallback (for wkhtmltopdf) of each."""
-    Attachment = env["ir.attachment"]
-    name = "watermarked.webp"
+def _create_webp_alternates(env, pil_image, image_data):
+    """Mirror of the web client's WebP upload handling (see
+    `generateImageVariants` in web/static/src/core/utils/image_library.js):
+    the image as a standalone attachment, plus one resized WebP per smaller
+    size and a JPEG fallback (for wkhtmltopdf) of each, created through the
+    same `ir.attachment.web_create_image_variants` the client calls."""
     original_size = max(pil_image.size)
     sizes = [original_size] + [size for size in _WEBP_RESIZE_SIZES if size < original_size]
 
-    reference_id = False
+    variants = []
     for size in sizes:
         if size == original_size:
-            resized, datas = pil_image, image_b64
+            resized, webp_data = pil_image, image_data
         else:
             resized = pil_image.copy()
             resized.thumbnail((size, size), Image.LANCZOS)
-            datas = encode_image(resized, "WEBP")
-        [resized_id] = Attachment.create_unique([{
-            "name": name,
-            "description": "" if size == original_size else f"resize: {size}",
-            "datas": datas,
-            "res_id": reference_id,
-            "res_model": "ir.attachment",
-            "mimetype": "image/webp",
-        }])
-        reference_id = reference_id or resized_id  # keep track of the original
-        Attachment.create_unique([{
-            "name": "watermarked.jpg",
-            "description": "format: jpeg",
-            "datas": encode_image(resized, "JPEG"),
-            "res_id": resized_id,
-            "res_model": "ir.attachment",
-            "mimetype": "image/jpeg",
-        }])
+            webp_data = encode_image(resized, "WEBP")
+        size_prefix = "" if size == original_size else f"resize: {size}"
+        variants.append({"images": [
+            {
+                "name": "watermarked.webp",
+                "description": size_prefix,
+                "raw": webp_data,
+                "mimetype": "image/webp",
+            },
+            {
+                "name": "watermarked.jpg",
+                "description": f"{size_prefix} - format: jpeg",
+                "raw": encode_image(resized, "JPEG"),
+                "mimetype": "image/jpeg",
+            },
+        ]})
+    env["ir.attachment"].web_create_image_variants(variants)
+
 
 # Apply watermark main method
 def apply_watermark(base_image, settings):
@@ -211,7 +227,7 @@ def apply_watermark(base_image, settings):
     alpha = int(255 * settings.get("opacity", 0.5))
     overlay_alpha = overlay.getchannel("A")
     overlay.putalpha(
-        overlay_alpha.point(lambda x: min(x, alpha) if x > 0 else 0)
+        overlay_alpha.point(lambda x: min(x, alpha) if x > 0 else 0),
     )
 
     return Image.alpha_composite(img, overlay)
@@ -266,6 +282,7 @@ def _load_font(font_name, font_size):
         # Older Pillow: fixed-size bitmap default font.
         return ImageFont.load_default()
 
+
 # Text Watermark
 def _draw_text_watermark(overlay, settings):
     draw = ImageDraw.Draw(overlay)
@@ -283,13 +300,14 @@ def _draw_text_watermark(overlay, settings):
     text_height = bbox[3] - bbox[1]
 
     x, y = _calculate_position(
-        overlay.size, (text_width, text_height), settings.get("position")
+        overlay.size, (text_width, text_height), settings.get("position"),
     )
 
     color = _hex_to_rgb(settings.get("color", "#FFFFFF"))
     draw.text((x, y), text, font=font, fill=color + (255,))
 
     return overlay
+
 
 # Image Watermark
 def _draw_image_watermark(overlay, settings):
@@ -320,15 +338,17 @@ def _draw_image_watermark(overlay, settings):
     logo_width, logo_height = logo_image.size
 
     x, y = _calculate_position(
-        overlay.size, (logo_width, logo_height), settings.get("position")
+        overlay.size, (logo_width, logo_height), settings.get("position"),
     )
 
     overlay.paste(logo_image, (x, y), logo_image)
     return overlay
 
+
 def _padding(image_size):
     """Watermark distance from the image edges: 5% of its shorter side."""
     return int(min(image_size) * 0.05)
+
 
 # Position Caluculation
 def _calculate_position(image_size, watermark_size, position):
@@ -351,6 +371,7 @@ def _calculate_position(image_size, watermark_size, position):
     }
 
     return positions.get(position, positions["bottom_right"])
+
 
 # Covert Hex code to RGB
 def _hex_to_rgb(hex_color):

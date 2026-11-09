@@ -1,6 +1,6 @@
 from odoo import api, fields, models
 
-from .watermark_utils import render_watermark
+from .watermark_utils import detach_image, render_watermark
 
 
 class ProductProduct(models.Model):
@@ -34,7 +34,7 @@ class ProductProduct(models.Model):
         not eligible for watermarking."""
         records = super().create(vals_list)
         records.filtered(
-            lambda p: p.image_variant_1920 and p.product_tmpl_id.is_watermark_eligible
+            lambda p: p.image_variant_1920 and p.product_tmpl_id.is_watermark_eligible,
         )._apply_variant_watermark()
         return records
 
@@ -42,14 +42,15 @@ class ProductProduct(models.Model):
         """Auto re-apply the watermark whenever a new variant-specific
         photo is uploaded."""
         res = super().write(vals)
-        if "image_variant_1920" in vals:
+        # See ProductTemplate.write() for `lf_watermark_mirror`.
+        if "image_variant_1920" in vals and not self.env.context.get("lf_watermark_mirror"):
             # See ProductTemplate.write() for why the stale original must
             # be cleared before re-evaluating: a freshly uploaded photo
             # is never "sticky" to a previous watermark. Applies to every
             # variant in `self` regardless of eligibility.
-            super(ProductProduct, self).write({"original_image_variant_1920": False})
+            super().write({"original_image_variant_1920": False})
             self.filtered(
-                lambda p: p.product_tmpl_id.is_watermark_eligible
+                lambda p: p.product_tmpl_id.is_watermark_eligible,
             )._apply_variant_watermark()
         return res
 
@@ -60,8 +61,8 @@ class ProductProduct(models.Model):
     def _apply_variant_watermark(self, settings=None):
         """Mirror of `ProductTemplate._apply_watermark()`, scoped to this
         variant's own `image_variant_1920`. Settings are resolved from
-        the template — there is no separate per-variant configuration
-        (watermarking applies uniformly per product) — unless `settings`
+        the template, there is no separate per-variant configuration
+        (watermarking applies uniformly per product), unless `settings`
         overrides them, which callers use to force a revert
         (`{"type": "none"}`) regardless of what the template's own
         settings currently resolve to: like `_get_watermark_settings()`
@@ -76,12 +77,12 @@ class ProductProduct(models.Model):
                 if not product.original_image_variant_1920:
                     continue  # already plain, nothing to restore
                 super(ProductProduct, product).write({
-                    "image_variant_1920": product.original_image_variant_1920,
+                    "image_variant_1920": detach_image(product.original_image_variant_1920),
                     "original_image_variant_1920": False,
                 })
                 continue
 
-            original = product.original_image_variant_1920 or product.image_variant_1920
+            original = detach_image(product.original_image_variant_1920 or product.image_variant_1920)
             if not original:
                 continue  # no variant-specific photo yet, nothing to watermark
 

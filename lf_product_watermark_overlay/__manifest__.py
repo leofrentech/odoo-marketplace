@@ -1,6 +1,6 @@
 {
     "name": "Product Image Watermark Overlay",
-    "version": "19.0.2.2.0",
+    "version": "20.0.2.2.0",
     "category": "Sales/Sales",
     "summary": "Add your logo or text as a watermark on product images.",
     "description": """
@@ -29,7 +29,7 @@ format (JPEG, PNG or WebP); GIF and SVG images are left untouched.
     "support": "contact@leofren.com",
     "depends": ["base_setup", "product"],
     "data": [
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
         "data/ir_cron_data.xml",
         "wizard/product_template_watermark_views.xml",
         "views/res_config_settings_views.xml",

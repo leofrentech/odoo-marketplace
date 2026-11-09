@@ -1,6 +1,11 @@
 from odoo import api, fields, models
 
-from .watermark_utils import DEFAULT_LOGO_SIZE, render_watermark, resolve_watermark_type
+from .watermark_utils import (
+    DEFAULT_LOGO_SIZE,
+    detach_image,
+    render_watermark,
+    resolve_watermark_type,
+)
 
 
 class ProductTemplate(models.Model):
@@ -26,8 +31,8 @@ class ProductTemplate(models.Model):
              "watermarking on new photo uploads, the \"Add/Update "
              "Watermark\" button, and \"Regenerate All Images\" all "
              "require this. Defaults to unchecked, so enabling watermarking "
-             "company-wide never silently watermarks — and duplicates the "
-             "storage of — every product's image; each one has to be "
+             "company-wide never silently watermarks, and duplicates the "
+             "storage of, every product's image; each one has to be "
              "opted in explicitly.",
     )
     has_watermark = fields.Boolean(
@@ -68,9 +73,9 @@ class ProductTemplate(models.Model):
         # fresh per read rather than tracked via `@api.depends`.
         # sudo: reading the global config parameter must work regardless
         # of the calling user's own access rights.
-        enabled = self.env["ir.config_parameter"].sudo().get_param(
-            "lf_product_watermark_overlay.watermark_enabled", "False"
-        ) == "True"
+        enabled = self.env["ir.config_parameter"].sudo().get_bool(
+            "lf_product_watermark_overlay.watermark_enabled",
+        )
         self.watermark_globally_enabled = enabled
 
     # ------------------------------------------------------------------
@@ -98,10 +103,11 @@ class ProductTemplate(models.Model):
                     "title": self.env._("This will remove the watermark"),
                     "message": self.env._(
                         "Marking this product as not eligible for watermarking "
-                        "will restore its original, unwatermarked images once saved."
+                        "will restore its original, unwatermarked images once saved.",
                     ),
-                }
+                },
             }
+        return None
 
     # ------------------------------------------------------------------
     # 7. CRUD METHODS
@@ -113,7 +119,7 @@ class ProductTemplate(models.Model):
         created with a photo already set."""
         records = super().create(vals_list)
         records.filtered(
-            lambda p: p.image_1920 and p.is_watermark_eligible
+            lambda p: p.image_1920 and p.is_watermark_eligible,
         )._apply_watermark()
         return records
 
@@ -122,16 +128,20 @@ class ProductTemplate(models.Model):
         and immediately remove any existing watermark from a product
         that just got marked not eligible."""
         res = super().write(vals)
-        if "image_1920" in vals:
+        # `lf_watermark_mirror`: the new image mirrors another image whose
+        # watermark is already handled (e.g. the eCommerce gallery in
+        # Odoo 20, see lf_product_watermark_overlay_website_sale), so it
+        # is not a fresh upload to watermark again.
+        if "image_1920" in vals and not self.env.context.get("lf_watermark_mirror"):
             # A freshly uploaded photo is never "sticky" to a previous
-            # watermark (company default or wizard-applied) — clear any
+            # watermark (company default or wizard-applied), clear any
             # stale original first so `_apply_watermark()` treats the
             # new upload itself as the original to (maybe) watermark,
             # instead of mistaking this for a "remove watermark" request
             # and restoring the *old* photo over the new one. Applies to
             # every product in `self` regardless of eligibility, so an
             # ineligible product never keeps a stale original around.
-            super(ProductTemplate, self).write({"original_image_1920": False})
+            super().write({"original_image_1920": False})
             self.filtered("is_watermark_eligible")._apply_watermark()
 
         if "is_watermark_eligible" in vals and not vals["is_watermark_eligible"]:
@@ -158,7 +168,7 @@ class ProductTemplate(models.Model):
         """Backfill a watermark on every eligible product (and variant)
         that has a photo but no watermark yet.
 
-        Does nothing at all — not even a query — if watermarking is
+        Does nothing at all, not even a query, if watermarking is
         currently disabled company-wide. This cron only ever *adds*
         watermarks; it never removes/reverts one. Removing an existing
         watermark is always an explicit action instead: the per-product
@@ -171,20 +181,20 @@ class ProductTemplate(models.Model):
         inline on the request, so a large catalog never blocks the UI or
         risks an HTTP timeout. Products with `is_watermark_eligible =
         False` are skipped entirely, left untouched regardless of their
-        current state. A product that already has a watermark — whether
+        current state. A product that already has a watermark, whether
         from the automatic on-upload mechanism or customized by hand via
-        the wizard — is also excluded, never silently re-derived/
+        the wizard, is also excluded, never silently re-derived/
         overridden by this pass.
 
-        Returns whether the backfill ran to completion — False when
-        watermarking is disabled or the cron ran out of time — so
+        Returns whether the backfill ran to completion, False when
+        watermarking is disabled or the cron ran out of time, so
         extensions backfilling further images only continue when True.
         """
         # sudo: reading the global config parameter must work regardless
         # of the calling user's own access rights.
-        watermark_enabled = self.env["ir.config_parameter"].sudo().get_param(
-            "lf_product_watermark_overlay.watermark_enabled", "False"
-        ) == "True"
+        watermark_enabled = self.env["ir.config_parameter"].sudo().get_bool(
+            "lf_product_watermark_overlay.watermark_enabled",
+        )
         if not watermark_enabled:
             return False
 
@@ -248,7 +258,7 @@ class ProductTemplate(models.Model):
         disabling watermarking, so a product's eligibility only ever
         changes because someone actually chose to change it."""
         self.search([("is_watermark_eligible", "=", True)]).write(
-            {"is_watermark_eligible": False}
+            {"is_watermark_eligible": False},
         )
 
     def _apply_watermark_to_all_images(self, settings):
@@ -269,7 +279,7 @@ class ProductTemplate(models.Model):
         images of a product (e.g. eCommerce extra media) extend this."""
         self.filtered("original_image_1920")._apply_watermark({"type": "none"})
         self.product_variant_ids.filtered(
-            "original_image_variant_1920"
+            "original_image_variant_1920",
         )._apply_variant_watermark({"type": "none"})
 
     def _has_any_watermark(self):
@@ -292,24 +302,24 @@ class ProductTemplate(models.Model):
         # (or the cron's user) is allowed to read.
         company = (self.company_id or self.env.company).sudo()
 
-        enabled = params.get_param("lf_product_watermark_overlay.watermark_enabled", "False") == "True"
-        watermark_type = params.get_param("lf_product_watermark_overlay.watermark_type", "image")
+        enabled = params.get_bool("lf_product_watermark_overlay.watermark_enabled")
+        watermark_type = params.get_str("lf_product_watermark_overlay.watermark_type", "image")
 
         return {
             "type": resolve_watermark_type(enabled, watermark_type),
             "logo": company.watermark_logo,
-            "text": params.get_param("lf_product_watermark_overlay.watermark_text", company.name),
-            "font": params.get_param("lf_product_watermark_overlay.watermark_font", "Arial"),
-            "size": int(params.get_param("lf_product_watermark_overlay.watermark_size", 6)),
-            "logo_size": int(params.get_param(
-                "lf_product_watermark_overlay.watermark_logo_size", DEFAULT_LOGO_SIZE
-            )),
-            "color": params.get_param("lf_product_watermark_overlay.watermark_color", "#FFFFFF"),
-            "position": params.get_param(
-                "lf_product_watermark_overlay.watermark_position", "bottom_right"
+            "text": params.get_str("lf_product_watermark_overlay.watermark_text", company.name),
+            "font": params.get_str("lf_product_watermark_overlay.watermark_font", "Arial"),
+            "size": params.get_int("lf_product_watermark_overlay.watermark_size", 6),
+            "logo_size": params.get_int(
+                "lf_product_watermark_overlay.watermark_logo_size", DEFAULT_LOGO_SIZE,
             ),
-            "opacity": float(
-                params.get_param("lf_product_watermark_overlay.watermark_opacity", 0.5)
+            "color": params.get_str("lf_product_watermark_overlay.watermark_color", "#FFFFFF"),
+            "position": params.get_str(
+                "lf_product_watermark_overlay.watermark_position", "bottom_right",
+            ),
+            "opacity": params.get_float(
+                "lf_product_watermark_overlay.watermark_opacity", 0.5,
             ),
         }
 
@@ -334,12 +344,12 @@ class ProductTemplate(models.Model):
                 if not product.original_image_1920:
                     continue  # already plain, nothing to restore
                 super(ProductTemplate, product).write({
-                    "image_1920": product.original_image_1920,
+                    "image_1920": detach_image(product.original_image_1920),
                     "original_image_1920": False,
                 })
                 continue
 
-            original = product.original_image_1920 or product.image_1920
+            original = detach_image(product.original_image_1920 or product.image_1920)
             if not original:
                 continue  # no photo at all yet, nothing to watermark
 

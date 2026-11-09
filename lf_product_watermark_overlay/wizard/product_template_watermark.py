@@ -3,7 +3,7 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
-from ..models.watermark_utils import (
+from odoo.addons.lf_product_watermark_overlay.models.watermark_utils import (
     DEFAULT_LOGO_SIZE,
     FONT_SELECTION,
     apply_watermark,
@@ -12,7 +12,6 @@ from ..models.watermark_utils import (
     is_valid_opacity,
     is_valid_size_percent,
 )
-
 
 _logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ class ProductTemplateWatermark(models.TransientModel):
 
     @api.model
     def default_get(self, fields):
-        """Pre-fill from the company-wide resolved defaults — there is
+        """Pre-fill from the company-wide resolved defaults, there is
         no per-product persisted customization to remember, by design
         (see the module's watermarking architecture notes)."""
         res = super().default_get(fields)
@@ -156,8 +155,8 @@ class ProductTemplateWatermark(models.TransientModel):
         for wizard in self:
             wizard.watermark_preview = False
             product = wizard.product_tmpl_id
-            base_b64 = product and (product.original_image_1920 or product.image_1920)
-            if not base_b64:
+            base_data = product and (product.original_image_1920 or product.image_1920)
+            if not base_data:
                 continue
             if wizard.watermark_type == "text" and not wizard.watermark_text:
                 continue
@@ -165,7 +164,7 @@ class ProductTemplateWatermark(models.TransientModel):
                 continue
 
             try:
-                base_image = decode_image(base_b64)
+                base_image = decode_image(base_data)
                 settings = wizard._get_wizard_settings()
                 result = apply_watermark(base_image, settings)
                 wizard.watermark_preview = encode_image(result)
@@ -181,10 +180,10 @@ class ProductTemplateWatermark(models.TransientModel):
     def _check_watermark_sizes(self):
         for rec in self:
             if not is_valid_size_percent(rec.watermark_size) or not is_valid_size_percent(
-                rec.watermark_logo_size
+                rec.watermark_logo_size,
             ):
                 raise ValidationError(
-                    self.env._("Watermark and Logo Size must be between 1 and 100%.")
+                    self.env._("Watermark and Logo Size must be between 1 and 100%."),
                 )
 
     @api.constrains('watermark_opacity')
@@ -192,7 +191,7 @@ class ProductTemplateWatermark(models.TransientModel):
         for rec in self:
             if not is_valid_opacity(rec.watermark_opacity):
                 raise ValidationError(
-                    self.env._("Watermark Opacity must be between 0 and 1.")
+                    self.env._("Watermark Opacity must be between 0 and 1."),
                 )
 
     # ------------------------------------------------------------------
