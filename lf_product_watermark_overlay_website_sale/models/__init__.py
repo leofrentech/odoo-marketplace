@@ -1,2 +1,1 @@
-from . import product_image
-from . import product_template
+from . import product_image, product_product, product_template
