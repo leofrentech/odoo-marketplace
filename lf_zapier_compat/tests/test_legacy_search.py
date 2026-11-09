@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo.tests.common import TransactionCase
+from odoo.tools import mute_logger
 
 
 class TestLegacySearchCompat(TransactionCase):
@@ -54,7 +55,8 @@ class TestLegacySearchCompat(TransactionCase):
         # 'count' was removed from search()'s signature - this shape
         # was always going to fail, legacy or not, and must keep
         # raising rather than being silently swallowed.
-        with self.assertRaises(TypeError):
+        with mute_logger('odoo.addons.lf_zapier_compat.models.base'), \
+                self.assertRaises(TypeError):
             self.env['res.partner'].search(0, count=True)
 
     def test_api_model_marker_preserved(self):

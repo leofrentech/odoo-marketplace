@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Zapier RPC Compatibility',
-    'version': '19.0.1.0.1',
+    'version': '20.0.1.0.1',
     'category': 'Extra Tools',
     'summary': 'Accepts a legacy search() call shape some XML-RPC clients still send',
     'description': """
@@ -21,7 +21,6 @@ it, rather than erroring - without changing behavior for any normal call.
     'author': 'Leofren Technologies',
     'website': 'https://leofren.com',
     'support': 'contact@leofren.com',
-    'depends': ['base'],
     'images': ['static/description/banner/lf_zapier_compat_cover.png'],
     'installable': True,
     'application': False,
