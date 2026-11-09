@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Product QR Track',
-    'version': '19.0.1.0.1',
+    'version': '20.0.1.0.1',
     'category': 'Website/eCommerce',
     'summary': 'Adds QR code to track the customer analytics.',
     'description': """
@@ -25,11 +25,12 @@ smart button on its form.
     'support': 'contact@leofren.com',
     'depends': ['website_sale'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/report_paperformat_data.xml',
         'views/product_product_views.xml',
         'views/product_template_views.xml',
         'views/product_qr_visit_views.xml',
+        'wizard/product_label_layout_views.xml',
         'report/product_qr_track_templates.xml',
         'report/product_qr_track_reports.xml',
     ],

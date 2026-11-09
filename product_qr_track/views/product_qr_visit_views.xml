@@ -87,6 +87,27 @@
         <field name="context">{'search_default_filter_today': 1}</field>
     </record>
 
+    <!-- Odoo 20 dropped the global Product Variants action from Sales
+         (product.product_normal_action_sell); QR labels of a multi-variant
+         product are printed from this list, so the module ships its own. -->
+    <record id="product_product_action" model="ir.actions.act_window">
+        <field name="name">Product Variants</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="context">{'search_default_filter_to_sell': 1}</field>
+        <field name="view_id" ref="product.product_product_tree_view" />
+        <field name="search_view_id" ref="product.product_search_form_view" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new product variant
+            </p>
+            <p>
+                Each variant gets its own QR code. Select the variants to label
+                and use Print Labels with the QR format.
+            </p>
+        </field>
+    </record>
+
     <menuitem id="product_qr_visit_menu_main" name="Product QR Visits"
         groups="base.group_no_one,base.group_system"
         web_icon="product_qr_track,static/description/icon.png">
@@ -102,7 +123,7 @@
                 action="sale.product_template_action"
                 sequence="1" />
             <menuitem id="menu_products"
-                action="product.product_normal_action_sell"
+                action="product_product_action"
                 groups="product.group_product_variant"
                 sequence="2" />
         </menuitem>

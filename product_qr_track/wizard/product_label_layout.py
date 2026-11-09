@@ -120,7 +120,7 @@ class ProductLabelLayout(models.TransientModel):
                     "%s has multiple variants. Print QR labels from the "
                     "Product Variants list instead, so each variant gets "
                     "its own code.",
-                    ", ".join(multi_variant_templates.mapped("name")),
+                    multi_variant_templates.mapped("name"),
                 )
             )
 
@@ -128,8 +128,12 @@ class ProductLabelLayout(models.TransientModel):
             "quantity": self.custom_quantity,
             "layout_wizard": self.id,
         }
+        # Odoo 20 can also open the wizard on packaging barcodes
+        # (product.uom); their QR label is the product's own.
         products = (
-            self.product_tmpl_ids.product_variant_ids or self.product_ids
+            self.product_tmpl_ids.product_variant_ids
+            or self.product_ids
+            or self.product_uom_ids.product_id
         )
 
         data.update(

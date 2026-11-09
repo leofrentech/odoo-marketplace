@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Odoo 20 added a barcode type, a price toggle and packagings to the
+         Print Labels dialog. None of them apply to a QR tracking label, which
+         only carries the variant's scan URL, so hide them for that format. -->
+    <record id="product_label_layout_form" model="ir.ui.view">
+        <field name="name">product.label.layout.form.inherit.product_qr_track</field>
+        <field name="model">product.label.layout</field>
+        <field name="inherit_id" ref="product.product_label_layout_form" />
+        <field name="arch" type="xml">
+            <field name="barcode_format" position="attributes">
+                <attribute name="invisible">print_format == 'qr'</attribute>
+            </field>
+            <field name="packaging_id" position="attributes">
+                <attribute name="invisible" add="print_format == 'qr'" separator="or" />
+            </field>
+            <field name="with_price" position="attributes">
+                <attribute name="invisible">print_format == 'qr'</attribute>
+            </field>
+            <field name="pricelist_id" position="attributes">
+                <attribute name="invisible" add="print_format == 'qr'" separator="or" />
+            </field>
+        </field>
+    </record>
+</odoo>

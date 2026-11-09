@@ -119,6 +119,59 @@ class TestProductQrTrack(TransactionCase):
                 "custom_quantity": 1,
             }
         )
-        __, data = wizard._prepare_report_data()
+        xml_id, data = wizard._prepare_report_data()
+        self.assertNotEqual(xml_id, "product_qr_track.action_report_product_qr")
         self.assertNotIn("products", data)
-        self.assertIn("quantity_by_product", data)
+        self.assertIn("labels", data)
+
+    def test_wizard_prints_from_packaging_barcodes(self):
+        """Odoo 20 opens the wizard on packaging barcodes (product.uom)
+        too; their QR label is the one of the barcode's variant."""
+        product_uom = self.env["product.uom"].create(
+            {
+                "product_id": self.variant_small.id,
+                "uom_id": self.variant_small.uom_id.id,
+                "barcode": "TEST-QR-TRACK-PACK-1",
+            }
+        )
+        wizard = self.env["product.label.layout"].create(
+            {
+                "product_uom_ids": [Command.set(product_uom.ids)],
+                "print_format": "qr",
+                "custom_quantity": 1,
+            }
+        )
+        __, data = wizard._prepare_report_data()
+        self.assertEqual(
+            [product["qr_url"] for product in data["products"]],
+            [self.variant_small.qr_url],
+        )
+
+    def test_process_downloads_named_qr_labels(self):
+        wizard = self.env["product.label.layout"].create(
+            {
+                "product_ids": [Command.set([self.variant_small.id])],
+                "print_format": "qr",
+                "custom_quantity": 2,
+            }
+        )
+        action = wizard.process()
+        self.assertEqual(action["type"], "ir.actions.act_url")
+        attachment_id = int(
+            action["url"].removeprefix("/web/content/").split("?")[0]
+        )
+        attachment = self.env["ir.attachment"].browse(attachment_id)
+        self.assertEqual(
+            attachment.name,
+            f"QR Label - {self.variant_small.display_name}.pdf",
+        )
+        self.assertTrue(attachment.raw)
+
+    def test_variants_menu_lists_all_variants(self):
+        """The module's own Product Variants action replaces the global
+        one Odoo 20 removed: it must list variants of every product."""
+        action = self.env.ref("product_qr_track.product_product_action")
+        self.assertEqual(action.res_model, "product.product")
+        self.assertFalse(action.domain)
+        menu = self.env.ref("product_qr_track.menu_products")
+        self.assertEqual(menu.action, action)
