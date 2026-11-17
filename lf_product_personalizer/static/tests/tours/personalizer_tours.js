@@ -10,6 +10,11 @@ registry.category("web_tour.tours").add("lf_personalizer_editor_tour", {
         { trigger: ".o_lf_text_input", run: "edit Hello Tour" },
         { trigger: ".o_lf_add_text", run: "click" },
         { trigger: ".o_lf_text_controls:not(.d-none) .o_lf_text_edit:value(Hello Tour)" },
+        // Buttons reading the clicked element (style, alignment) respond.
+        { trigger: ".o_lf_style[data-style='bold']", run: "click" },
+        { trigger: ".o_lf_style[data-style='bold'].active" },
+        { trigger: ".o_lf_align[data-align='left']", run: "click" },
+        { trigger: ".o_lf_align[data-align='left'].active" },
         { trigger: ".o_lf_area.active .o_lf_area_dot" },
         { trigger: ".o_lf_price_info:contains(Personalization)" },
         // Preview modal shows every side.

@@ -8,11 +8,12 @@ import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_d
 export class PortalDesigns extends Interaction {
     static selector = ".o_lf_my_designs";
     dynamicContent = {
-        ".o_lf_copy_link": { "t-on-click.noUpdate.withTarget": this.onCopy },
-        ".o_lf_delete_design": { "t-on-submit.noUpdate.withTarget": this.onDelete },
+        ".o_lf_copy_link": { "t-on-click.noUpdate": this.onCopy },
+        ".o_lf_delete_design": { "t-on-submit.noUpdate": this.onDelete },
     };
 
-    async onCopy(ev, button) {
+    async onCopy(ev) {
+        const button = ev.currentTarget;
         try {
             await browser.navigator.clipboard.writeText(button.dataset.url);
             this.services.notification.add(_t("Link copied: anyone with it can open this design."), {
@@ -23,7 +24,8 @@ export class PortalDesigns extends Interaction {
         }
     }
 
-    onDelete(ev, form) {
+    onDelete(ev) {
+        const form = ev.currentTarget;
         if (form.dataset.confirmed) {
             return;
         }

@@ -57,8 +57,8 @@ export class ProductPersonalizer extends Interaction {
         ".o_lf_text_edit": { "t-on-input.noUpdate": this.onTextEdit },
         ".o_lf_font": { "t-on-change.noUpdate": this.onFontChange },
         ".o_lf_font_size": { "t-on-change.noUpdate": this.onFontSizeChange },
-        ".o_lf_style": { "t-on-click.noUpdate.withTarget": this.onTextStyle },
-        ".o_lf_align": { "t-on-click.noUpdate.withTarget": this.onTextAlign },
+        ".o_lf_style": { "t-on-click.noUpdate": this.onTextStyle },
+        ".o_lf_align": { "t-on-click.noUpdate": this.onTextAlign },
         ".o_lf_panels": {
             "t-on-click.noUpdate": this.onPanelClick,
             "t-on-input.noUpdate": this.onPanelInput,
@@ -70,8 +70,8 @@ export class ProductPersonalizer extends Interaction {
             "t-on-dragleave.noUpdate": (ev) => ev.currentTarget.classList.remove("o_lf_dragover"),
             "t-on-drop.prevent.noUpdate": this.onDrop,
         },
-        ".o_lf_image_op": { "t-on-click.noUpdate.withTarget": this.onImageOperation },
-        ".o_lf_image_filter": { "t-on-input.noUpdate.withTarget": this.onImageFilter },
+        ".o_lf_image_op": { "t-on-click.noUpdate": this.onImageOperation },
+        ".o_lf_image_filter": { "t-on-input.noUpdate": this.onImageFilter },
         ".o_lf_clipart_search": { "t-on-input.noUpdate": this.onClipartSearch },
         ".o_lf_stroke_width": { "t-on-input.noUpdate": this.onStrokeWidth },
     };
@@ -325,10 +325,18 @@ export class ProductPersonalizer extends Interaction {
     }
 
     onSelectionChanged() {
-        const obj = this.activeObject;
+        const cropping = this.imageHandler.isCropping;
+        if (cropping && this.canvas.getActiveObject() !== this.imageHandler.cropRect) {
+            // Clicked elsewhere: leave crop mode without changing the image.
+            this.imageHandler.cancelCrop();
+            return this.onSelectionChanged();
+        }
+        // While cropping, the frame is selected: keep showing the image's controls.
+        const obj = cropping ? this.imageHandler.cropTarget : this.activeObject;
         this.controls.update(obj, isImage(obj) ? this.imageHandler.adjustmentValues(obj) : null);
+        this.controls.setCropping(cropping);
         this.layerHandler.render();
-        if (!obj || this.imageHandler.isCropping) {
+        if (!obj || cropping) {
             return;
         }
         const panel = isText(obj) ? "text" : isImage(obj) ? (obj.lfClipart ? "clipart" : "image") : "shape";
@@ -505,12 +513,14 @@ export class ProductPersonalizer extends Interaction {
         this.textHandler.update(this.activeObject, { fontSize: size });
     }
 
-    onTextStyle(ev, button) {
+    onTextStyle(ev) {
+        const button = ev.currentTarget;
         this.textHandler.toggleStyle(this.activeObject, button.dataset.style);
         this.onSelectionChanged();
     }
 
-    onTextAlign(ev, button) {
+    onTextAlign(ev) {
+        const button = ev.currentTarget;
         this.textHandler.update(this.activeObject, { textAlign: button.dataset.align });
         this.onSelectionChanged();
     }
@@ -530,23 +540,26 @@ export class ProductPersonalizer extends Interaction {
         await this.waitFor(this.imageHandler.addFiles([...(ev.dataTransfer?.files || [])]));
     }
 
-    onImageOperation(ev, button) {
-        const op = button.dataset.op;
-        const label = this.el.querySelector(".o_lf_crop_label");
+    onImageOperation(ev) {
+        const op = ev.currentTarget.dataset.op;
         if (op === "crop") {
-            if (this.imageHandler.isCropping) {
-                this.imageHandler.applyCrop();
-                label.textContent = _t("Crop");
-            } else if (this.imageHandler.startCrop(this.activeObject)) {
-                label.textContent = _t("Apply crop");
+            this.imageHandler.startCrop(this.activeObject);
+        } else if (op === "applyCrop") {
+            this.imageHandler.applyCrop();
+        } else if (op === "cancelCrop") {
+            const img = this.imageHandler.cropTarget;
+            this.imageHandler.cancelCrop();
+            if (img) {
+                this.canvas.setActiveObject(img);
             }
-            return;
+        } else {
+            this.imageHandler.operate(this.activeObject, op);
         }
-        this.imageHandler.operate(this.activeObject, op);
         this.onSelectionChanged();
     }
 
-    onImageFilter(ev, input) {
+    onImageFilter(ev) {
+        const input = ev.currentTarget;
         this.imageHandler.setAdjustment(this.activeObject, input.dataset.op, input.value);
         this.scheduleChange();
     }

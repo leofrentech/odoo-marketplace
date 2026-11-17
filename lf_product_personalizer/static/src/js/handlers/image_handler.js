@@ -92,8 +92,11 @@ export class ImageHandler {
             this._setFilter(img, "Sepia", new window.fabric.Image.filters.Sepia());
             this._removeFilter(img, "Grayscale");
         } else if (op === "resetFilters") {
+            // Back to the original image: no filters, no flips, no crop.
             img.filters = [];
             img.applyFilters();
+            img.set({ flipX: false, flipY: false });
+            this._resetCrop(img);
         }
         this.canvas.requestRenderAll();
         this.canvas.fire("object:modified", { target: img });
@@ -126,6 +129,21 @@ export class ImageHandler {
         filters.push(filter);
         img.filters = filters;
         img.applyFilters();
+    }
+
+    /** Show the whole source image again, keeping its centre and scale. */
+    _resetCrop(img) {
+        const source = img._originalElement || img.getElement();
+        const width = source.naturalWidth || source.width;
+        const height = source.naturalHeight || source.height;
+        if (!img.cropX && !img.cropY && img.width === width && img.height === height) {
+            return;
+        }
+        const center = img.getCenterPoint();
+        img.set({ cropX: 0, cropY: 0, width, height });
+        img.setPositionByOrigin(center, "center", "center");
+        img.setCoords();
+        this.editor.canvasManager.clampToZone(img);
     }
 
     _removeFilter(img, type) {
@@ -199,18 +217,21 @@ export class ImageHandler {
         }
         this.cancelCrop();
         this.canvas.setActiveObject(img);
+        this.canvas.requestRenderAll();
         this.canvas.fire("object:modified", { target: img });
     }
 
     cancelCrop() {
-        if (this.cropRect) {
-            this.canvas.remove(this.cropRect);
-        }
-        if (this.cropTarget) {
-            this.cropTarget.set({ selectable: true, evented: true });
-        }
+        // Reset first: removing the frame fires selection events.
+        const { cropRect, cropTarget } = this;
         this.cropRect = null;
         this.cropTarget = null;
+        if (cropTarget) {
+            cropTarget.set({ selectable: true, evented: true });
+        }
+        if (cropRect) {
+            this.canvas.remove(cropRect);
+        }
         this.canvas.requestRenderAll();
     }
 }
