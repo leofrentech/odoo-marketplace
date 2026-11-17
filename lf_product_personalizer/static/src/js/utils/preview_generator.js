@@ -1,6 +1,11 @@
 import { EDITOR_SIZE } from "./fabric_loader";
 import { ObjectUtils } from "./object_utils";
 
+/** Stored previews (cart, order, saved designs): the server keeps up to 1024 px. */
+export const PREVIEW_SIZE = 1024;
+/** Previews shown full size on screen or downloaded: sharp on high-DPI screens. */
+export const SCREEN_PREVIEW_SIZE = 1600;
+
 /**
  * Renders an area design off-screen:
  * - preview: the design on the product mockup (shown in cart, order, PDF)
@@ -67,10 +72,14 @@ export class PreviewGenerator {
         return canvas;
     }
 
-    /** @returns {Promise<string>} JPEG data URL of the design on the mockup */
-    static async preview(area, json) {
+    /**
+     * @param {number} size width in px: the design is drawn again at that size,
+     *     so text and uploaded images stay sharp (no upscaled bitmap)
+     * @returns {Promise<string>} JPEG data URL of the design on the mockup
+     */
+    static async preview(area, json, size = PREVIEW_SIZE) {
         const canvas = await this._canvas(area, json, true);
-        const url = canvas.toDataURL({ format: "jpeg", quality: 0.9 });
+        const url = canvas.toDataURL({ format: "jpeg", quality: 0.92, multiplier: size / EDITOR_SIZE });
         canvas.dispose();
         return url;
     }
