@@ -62,6 +62,13 @@ export class ControlsUpdater {
         }
     }
 
+    /** Crop mode shows only "Apply crop" and "Cancel". */
+    setCropping(cropping) {
+        // Optional chaining: never break selection if the page template is older.
+        this.q(".o_lf_crop_tools")?.classList.toggle("d-none", !cropping);
+        this.q(".o_lf_image_tools")?.classList.toggle("d-none", cropping);
+    }
+
     _toggle(selector, active) {
         const node = this.q(selector);
         node.classList.toggle("active", active);

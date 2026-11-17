@@ -213,30 +213,44 @@
                                            accept="image/png,image/jpeg,image/webp" multiple="multiple"/>
                                 </label>
                                 <div class="o_lf_image_controls d-none mt-3">
-                                    <div class="btn-group w-100 mb-3" role="group">
-                                        <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipX">
-                                            <i class="fa fa-arrows-h me-1"/>Flip</button>
-                                        <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipY">
-                                            <i class="fa fa-arrows-v me-1"/>Flip</button>
-                                        <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="crop">
-                                            <i class="fa fa-crop me-1"/><span class="o_lf_crop_label">Crop</span></button>
+                                    <div class="o_lf_crop_tools d-none">
+                                        <p class="small text-muted mb-2">
+                                            Move or resize the frame on the design, then apply.
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-primary flex-grow-1 o_lf_image_op"
+                                                    data-op="applyCrop">
+                                                <i class="fa fa-check me-1" role="img" aria-hidden="true"/>Apply crop</button>
+                                            <button type="button" class="btn btn-outline-secondary o_lf_image_op"
+                                                    data-op="cancelCrop">Cancel</button>
+                                        </div>
                                     </div>
-                                    <label class="form-label small mb-1">Brightness</label>
-                                    <input type="range" class="form-range o_lf_image_filter" data-op="brightness"
-                                           min="-1" max="1" step="0.05" value="0"/>
-                                    <label class="form-label small mb-1">Contrast</label>
-                                    <input type="range" class="form-range o_lf_image_filter" data-op="contrast"
-                                           min="-1" max="1" step="0.05" value="0"/>
-                                    <label class="form-label small mb-1">Saturation</label>
-                                    <input type="range" class="form-range o_lf_image_filter" data-op="saturation"
-                                           min="-1" max="1" step="0.05" value="0"/>
-                                    <div class="d-flex flex-wrap gap-2 mt-2">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary o_lf_image_op"
-                                                data-op="grayscale">Black &amp; white</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary o_lf_image_op"
-                                                data-op="sepia">Sepia</button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger o_lf_image_op"
-                                                data-op="resetFilters">Reset</button>
+                                    <div class="o_lf_image_tools">
+                                        <div class="btn-group w-100 mb-3" role="group">
+                                            <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipX">
+                                                <i class="fa fa-arrows-h me-1"/>Flip</button>
+                                            <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="flipY">
+                                                <i class="fa fa-arrows-v me-1"/>Flip</button>
+                                            <button type="button" class="btn btn-outline-secondary o_lf_image_op" data-op="crop">
+                                                <i class="fa fa-crop me-1"/>Crop</button>
+                                        </div>
+                                        <label class="form-label small mb-1">Brightness</label>
+                                        <input type="range" class="form-range o_lf_image_filter" data-op="brightness"
+                                               min="-1" max="1" step="0.05" value="0"/>
+                                        <label class="form-label small mb-1">Contrast</label>
+                                        <input type="range" class="form-range o_lf_image_filter" data-op="contrast"
+                                               min="-1" max="1" step="0.05" value="0"/>
+                                        <label class="form-label small mb-1">Saturation</label>
+                                        <input type="range" class="form-range o_lf_image_filter" data-op="saturation"
+                                               min="-1" max="1" step="0.05" value="0"/>
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary o_lf_image_op"
+                                                    data-op="grayscale">Black &amp; white</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary o_lf_image_op"
+                                                    data-op="sepia">Sepia</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger o_lf_image_op"
+                                                    data-op="resetFilters">Reset</button>
+                                        </div>
                                     </div>
                                 </div>
                             </section>

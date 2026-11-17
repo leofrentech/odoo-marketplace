@@ -1,6 +1,6 @@
 {
     "name": "Product Personalizer - Online Product Designer, Custom Printing & Engraving",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.0.1",
     "category": "Website/eCommerce",
     "summary": "Let customers design products online: text, images, clipart, "
     "personalization fees, print-ready artwork and artwork approval.",
