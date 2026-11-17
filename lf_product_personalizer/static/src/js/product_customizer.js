@@ -18,7 +18,7 @@ import { ControlsUpdater } from "./ui/controls_updater";
 import { loadFabric } from "./utils/fabric_loader";
 import { loadFonts } from "./utils/font_loader";
 import { ObjectUtils, isImage, isText, isUserObject } from "./utils/object_utils";
-import { PreviewGenerator } from "./utils/preview_generator";
+import { PreviewGenerator, SCREEN_PREVIEW_SIZE } from "./utils/preview_generator";
 import {
     downloadDataUrl,
     el,
@@ -690,7 +690,9 @@ export class ProductPersonalizer extends Interaction {
         const grid = this.el.querySelector(".o_lf_preview_grid");
         const cards = [];
         for (const area of this.state.areas) {
-            const url = await this.waitFor(PreviewGenerator.preview(area, this.state.getDesign(area.key)));
+            const url = await this.waitFor(
+                PreviewGenerator.preview(area, this.state.getDesign(area.key), SCREEN_PREVIEW_SIZE)
+            );
             const col = el("div", { classes: "col-12 col-md-6" });
             const figure = el("figure", { classes: "figure w-100 text-center" });
             figure.append(
@@ -712,7 +714,9 @@ export class ProductPersonalizer extends Interaction {
             return;
         }
         for (const area of areas) {
-            const url = await this.waitFor(PreviewGenerator.preview(area, this.state.getDesign(area.key)));
+            const url = await this.waitFor(
+                PreviewGenerator.preview(area, this.state.getDesign(area.key), SCREEN_PREVIEW_SIZE)
+            );
             downloadDataUrl(url, `${slugify(this.state.data.product_name)}-${slugify(area.name)}.jpg`);
         }
     }
