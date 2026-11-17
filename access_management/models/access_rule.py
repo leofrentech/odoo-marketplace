@@ -209,11 +209,11 @@ class AccessRule(models.Model):
     @api.depends("hide_menu_ids")
     def _compute_hide_menu_domain(self):
         for rule in self:
-            # Don't offer the menus already hidden, nor their sub-menus
+            # Don't offer the menus already hidden, nor their sub-menus. Never
+            # empty: a Json field stores an empty list as False, which the web
+            # client can't use as a domain.
             hidden_menus = rule.hide_menu_ids | rule.hide_menu_ids.child_id
-            rule.hide_menu_domain = (
-                [("id", "not in", hidden_menus.ids)] if hidden_menus else []
-            )
+            rule.hide_menu_domain = [("id", "not in", hidden_menus.ids)]
 
     # ------------------------------------------------------------------
     # 5. SELECTION METHODS

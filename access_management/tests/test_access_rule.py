@@ -271,6 +271,10 @@ class TestAccessRule(TransactionCase):
 
     def test_rule_form_with_hidden_menus(self):
         """The rule form reads the domain of the menus left to pick."""
+        # Without hidden menus, the domain must still be a domain (not False)
+        values = self.rule.web_read({"hide_menu_domain": {}})[0]
+        self.assertEqual(values["hide_menu_domain"], [["id", "not in", []]])
+
         menu = self.env["ir.ui.menu"].search([("parent_id", "=", False)], limit=1)
         self.rule.hide_menu_ids = [Command.set(menu.ids)]
         values = self.rule.web_read({"hide_menu_ids": {}, "hide_menu_domain": {}})[0]
